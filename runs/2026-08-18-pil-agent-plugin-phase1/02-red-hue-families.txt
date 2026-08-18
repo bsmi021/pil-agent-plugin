@@ -1,0 +1,42 @@
+RED phase 2 and 3 - captured from session transcript. Both rounds were driven by
+measurements taken on the reference image, not by speculation.
+
+--------------------------------------------------------------------------------
+RED 2 - hue families. Prompted by observing that the accent palette of the
+reference image contained only reds/browns: 7 of 8 slots went to the dominant
+red/orange accents and cyan, green, blue and purple never appeared, despite
+encoding the graphic's pipeline-status colour language.
+
+Command: python -m pytest tests/test_palette_diff.py -q
+
+E       KeyError: 'hue_families'
+tests\test_palette_diff.py:252: KeyError
+FAILED tests/test_palette_diff.py::TestHueFamilies::test_small_secondary_hue_survives_a_dominant_accent
+FAILED tests/test_palette_diff.py::TestHueFamilies::test_hue_family_shift_is_reported_in_the_diff
+FAILED tests/test_palette_diff.py::TestReferenceImageSanity::test_status_colour_language_is_fully_enumerated
+3 failed, 10 passed in 16.94s
+
+Supporting measurement (hue census of the 118,853 chroma-masked pixels,
+7.55% of frame):
+  red      55.88% of accents   4.221% of frame
+  orange   14.20%              1.072%
+  yellow    3.47%              0.262%
+  green     4.97%              0.375%
+  cyan      6.42%              0.485%   <- semantically critical, area-negligible
+  blue      8.52%              0.644%
+  purple    1.80%              0.136%
+  magenta    0.02%             0.001%
+
+--------------------------------------------------------------------------------
+RED 3 - magnitude-based shift detection. Prompted by the cyan->red recolour
+comparison, where hue_families_lost returned [] because residue pixels near the
+saturation threshold kept cyan's pixel count above zero.
+
+Command: python -m pytest tests/test_palette_diff.py -q
+
+E       KeyError: 'accent_hue_shift_detected'
+tests\test_palette_diff.py:317: KeyError
+FAILED tests/test_palette_diff.py::TestPartialHueShift::test_diminished_family_is_detected_without_full_removal
+FAILED tests/test_palette_diff.py::TestPartialHueShift::test_rescale_alone_does_not_trip_the_shift_detector
+FAILED tests/test_palette_diff.py::TestReferenceImageSanity::test_real_cyan_to_red_recolour_is_detected
+3 failed, 13 passed in 14.57s

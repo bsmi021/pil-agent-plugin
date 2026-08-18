@@ -1,0 +1,32 @@
+RED phase 1 - captured from session transcript before any implementation existed.
+Command: python -m pytest tests -q
+Working tree at capture time: tests/ only; scripts/ did not exist.
+
+FAILED tests/test_palette_diff.py::TestAccentBlindness::test_accent_hue_change_is_reported_as_a_difference
+FAILED tests/test_palette_diff.py::TestAccentBlindness::test_accent_distance_exceeds_base_distance
+FAILED tests/test_palette_diff.py::TestAccentBlindness::test_accent_palette_surfaces_the_vivid_colour
+FAILED tests/test_palette_diff.py::TestAccentBlindness::test_accent_pixel_fraction_approximates_the_planted_area
+FAILED tests/test_palette_diff.py::TestIdentity::test_identical_images_report_zero_distance
+FAILED tests/test_palette_diff.py::TestDeterminism::test_repeated_runs_produce_byte_identical_json
+FAILED tests/test_palette_diff.py::TestNoAccentCase::test_image_with_no_vivid_pixels_is_flagged_not_crashed
+FAILED tests/test_palette_diff.py::TestSingleImageMode::test_one_argument_analyses_without_a_diff_block
+FAILED tests/test_palette_diff.py::TestReferenceImageSanity::test_metrics_match_prototype_measurements
+FAILED tests/test_palette_diff.py::TestReferenceImageSanity::test_accent_mask_recovers_hues_the_global_palette_missed
+FAILED tests/test_structure_diff.py::TestScaleInvariance::test_resized_copy_remains_highly_similar
+FAILED tests/test_structure_diff.py::TestScaleInvariance::test_resized_copy_has_near_zero_hash_distance
+FAILED tests/test_structure_diff.py::TestAspectHonesty::test_mismatched_aspect_ratio_is_flagged
+FAILED tests/test_structure_diff.py::TestAspectHonesty::test_matching_aspect_ratio_is_not_flagged
+FAILED tests/test_structure_diff.py::TestChangedRegionLocalisation::test_bbox_localises_a_planted_edit
+FAILED tests/test_structure_diff.py::TestChangedRegionLocalisation::test_identical_images_report_no_changed_region
+FAILED tests/test_structure_diff.py::TestDissimilarity::test_unrelated_images_score_low
+FAILED tests/test_structure_diff.py::TestEdgeDensity::test_detailed_half_reads_denser_than_flat_half
+FAILED tests/test_structure_diff.py::TestDeterminism::test_repeated_runs_produce_byte_identical_json
+FAILED tests/test_structure_diff.py::TestSingleImageMode::test_one_argument_reports_cells_without_a_diff
+FAILED tests/test_structure_diff.py::TestSingleImageMode::test_grid_argument_controls_cell_count
+FAILED tests/test_structure_diff.py::TestScopeGuard::test_output_disclaims_geometry_inference
+FAILED tests/test_structure_diff.py::TestReferenceImageSanity::test_luminance_matches_prototype_measurement
+FAILED tests/test_structure_diff.py::TestReferenceImageSanity::test_image_is_asymmetric_left_to_right
+24 failed in 5.01s
+
+Note: the two TestReferenceImageSanity classes executed rather than skipping,
+confirming the reference image path resolved on this machine.

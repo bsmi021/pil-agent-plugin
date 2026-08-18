@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Reference images used for local validation.
+# These are derived from a private source image and are deliberately not
+# published. Tests that depend on one regenerate it in-process; the six tests
+# that need the original skip when it is absent. See tests/conftest.py.
+runs/**/*.png
+reference/

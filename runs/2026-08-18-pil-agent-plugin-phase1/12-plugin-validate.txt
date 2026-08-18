@@ -1,0 +1,19 @@
+Plugin packaging validation — 2026-08-18
+
+$ claude plugin validate .
+Validating plugin manifest: C:\Projects\pil-agent-plugin\.claude-plugin\plugin.json
+
+✔ Validation passed
+
+$ claude plugin validate . --strict
+Validating plugin manifest: C:\Projects\pil-agent-plugin\.claude-plugin\plugin.json
+
+✔ Validation passed
+
+Frontmatter checks (UTF-8 decode + YAML safe_load):
+  skills/image-measurement/SKILL.md        -> keys [description, name]
+  agents/image-comparison-analyst.md       -> keys [description, name, skills, tools]
+
+Runtime invocation via plugin-root absolute path:
+  uv run --project <root> python <root>/scripts/pil_structure_diff.py "<image>"
+  -> tool: pil_structure_diff | size: [1672, 941] | cells: 12

@@ -1,0 +1,47 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Projects\pil-agent-plugin\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Projects\pil-agent-plugin
+configfile: pyproject.toml
+testpaths: tests
+collecting ... collected 37 items
+
+tests/test_palette_diff.py::TestAccentBlindness::test_accent_hue_change_is_reported_as_a_difference PASSED [  2%]
+tests/test_palette_diff.py::TestAccentBlindness::test_accent_distance_exceeds_base_distance PASSED [  5%]
+tests/test_palette_diff.py::TestAccentBlindness::test_accent_palette_surfaces_the_vivid_colour PASSED [  8%]
+tests/test_palette_diff.py::TestAccentBlindness::test_accent_pixel_fraction_approximates_the_planted_area PASSED [ 10%]
+tests/test_palette_diff.py::TestIdentity::test_identical_images_report_zero_distance PASSED [ 13%]
+tests/test_palette_diff.py::TestDeterminism::test_repeated_runs_produce_byte_identical_json PASSED [ 16%]
+tests/test_palette_diff.py::TestNoAccentCase::test_image_with_no_vivid_pixels_is_flagged_not_crashed PASSED [ 18%]
+tests/test_palette_diff.py::TestSingleImageMode::test_one_argument_analyses_without_a_diff_block PASSED [ 21%]
+tests/test_palette_diff.py::TestHueFamilies::test_small_secondary_hue_survives_a_dominant_accent PASSED [ 24%]
+tests/test_palette_diff.py::TestHueFamilies::test_hue_family_shift_is_reported_in_the_diff PASSED [ 27%]
+tests/test_palette_diff.py::TestPartialHueShift::test_diminished_family_is_detected_without_full_removal PASSED [ 29%]
+tests/test_palette_diff.py::TestPartialHueShift::test_rescale_alone_does_not_trip_the_shift_detector PASSED [ 32%]
+tests/test_palette_diff.py::TestSyntheticReferenceRegressions::test_all_hue_families_are_enumerated PASSED [ 35%]
+tests/test_palette_diff.py::TestSyntheticReferenceRegressions::test_secondary_hues_are_absent_from_the_area_weighted_palettes PASSED [ 37%]
+tests/test_palette_diff.py::TestSyntheticReferenceRegressions::test_dropped_cyan_is_detected_between_two_variants PASSED [ 40%]
+tests/test_palette_diff.py::TestSyntheticReferenceRegressions::test_red_family_wrap_branch_is_counted_as_red PASSED [ 43%]
+tests/test_palette_diff.py::TestArgumentOrder::test_verdict_is_symmetric_but_direction_words_flip PASSED [ 45%]
+tests/test_palette_diff.py::TestArgumentOrder::test_deltas_negate_under_swap PASSED [ 48%]
+tests/test_palette_diff.py::TestArgumentOrder::test_palette_distances_are_order_independent PASSED [ 51%]
+tests/test_palette_diff.py::TestReferenceImageSanity::test_metrics_match_prototype_measurements PASSED [ 54%]
+tests/test_palette_diff.py::TestReferenceImageSanity::test_accent_mask_recovers_hues_the_global_palette_missed PASSED [ 56%]
+tests/test_palette_diff.py::TestReferenceImageSanity::test_real_cyan_to_red_recolour_is_detected PASSED [ 59%]
+tests/test_palette_diff.py::TestReferenceImageSanity::test_status_colour_language_is_fully_enumerated PASSED [ 62%]
+tests/test_structure_diff.py::TestScaleInvariance::test_resized_copy_remains_highly_similar PASSED [ 64%]
+tests/test_structure_diff.py::TestScaleInvariance::test_resized_copy_has_near_zero_hash_distance PASSED [ 67%]
+tests/test_structure_diff.py::TestAspectHonesty::test_mismatched_aspect_ratio_is_flagged PASSED [ 70%]
+tests/test_structure_diff.py::TestAspectHonesty::test_matching_aspect_ratio_is_not_flagged PASSED [ 72%]
+tests/test_structure_diff.py::TestChangedRegionLocalisation::test_bbox_localises_a_planted_edit PASSED [ 75%]
+tests/test_structure_diff.py::TestChangedRegionLocalisation::test_identical_images_report_no_changed_region PASSED [ 78%]
+tests/test_structure_diff.py::TestDissimilarity::test_unrelated_images_score_low PASSED [ 81%]
+tests/test_structure_diff.py::TestEdgeDensity::test_detailed_half_reads_denser_than_flat_half PASSED [ 83%]
+tests/test_structure_diff.py::TestDeterminism::test_repeated_runs_produce_byte_identical_json PASSED [ 86%]
+tests/test_structure_diff.py::TestSingleImageMode::test_one_argument_reports_cells_without_a_diff PASSED [ 89%]
+tests/test_structure_diff.py::TestSingleImageMode::test_grid_argument_controls_cell_count PASSED [ 91%]
+tests/test_structure_diff.py::TestScopeGuard::test_output_disclaims_geometry_inference PASSED [ 94%]
+tests/test_structure_diff.py::TestReferenceImageSanity::test_luminance_matches_prototype_measurement PASSED [ 97%]
+tests/test_structure_diff.py::TestReferenceImageSanity::test_image_is_asymmetric_left_to_right PASSED [100%]
+
+============================= 37 passed in 29.55s =============================

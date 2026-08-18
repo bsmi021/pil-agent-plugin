@@ -1,0 +1,481 @@
+{
+  "diff": {
+    "accent_fraction_delta": -1.1e-05,
+    "accent_hue_shift_detected": true,
+    "accent_palette_distance": 7.7232,
+    "base_palette_distance": 0.4985,
+    "entropy_delta": -0.0037,
+    "flags": [],
+    "hue_families_amplified": [],
+    "hue_families_diminished": [
+      "cyan"
+    ],
+    "hue_families_gained": [],
+    "hue_families_lost": [],
+    "hue_family_fraction_deltas": {
+      "blue": -0.003656,
+      "cyan": -0.060419,
+      "green": -0.00027,
+      "magenta": 9e-06,
+      "orange": -0.004405,
+      "purple": -0.000149,
+      "red": 0.071434,
+      "yellow": -0.002545
+    },
+    "luminance_mean_delta": -0.124,
+    "saturation_mean_delta": -0.014
+  },
+  "images": {
+    "a": {
+      "accent_palette": [
+        {
+          "coverage": 0.170219,
+          "hex": "#c22822",
+          "rgb": [
+            194,
+            40,
+            34
+          ]
+        },
+        {
+          "coverage": 0.151793,
+          "hex": "#38443d",
+          "rgb": [
+            56,
+            68,
+            61
+          ]
+        },
+        {
+          "coverage": 0.138861,
+          "hex": "#491412",
+          "rgb": [
+            73,
+            20,
+            18
+          ]
+        },
+        {
+          "coverage": 0.138028,
+          "hex": "#482b25",
+          "rgb": [
+            72,
+            43,
+            37
+          ]
+        },
+        {
+          "coverage": 0.123951,
+          "hex": "#76231b",
+          "rgb": [
+            118,
+            35,
+            27
+          ]
+        },
+        {
+          "coverage": 0.111886,
+          "hex": "#979775",
+          "rgb": [
+            151,
+            151,
+            117
+          ]
+        },
+        {
+          "coverage": 0.104751,
+          "hex": "#974637",
+          "rgb": [
+            151,
+            70,
+            55
+          ]
+        },
+        {
+          "coverage": 0.060512,
+          "hex": "#806351",
+          "rgb": [
+            128,
+            99,
+            81
+          ]
+        }
+      ],
+      "accent_pixel_fraction": 0.075541,
+      "aspect_ratio": 1.7768,
+      "base_palette": [
+        {
+          "coverage": 0.181551,
+          "hex": "#05080b",
+          "rgb": [
+            5,
+            8,
+            11
+          ]
+        },
+        {
+          "coverage": 0.152819,
+          "hex": "#090e11",
+          "rgb": [
+            9,
+            14,
+            17
+          ]
+        },
+        {
+          "coverage": 0.145673,
+          "hex": "#020305",
+          "rgb": [
+            2,
+            3,
+            5
+          ]
+        },
+        {
+          "coverage": 0.144837,
+          "hex": "#171112",
+          "rgb": [
+            23,
+            17,
+            18
+          ]
+        },
+        {
+          "coverage": 0.138699,
+          "hex": "#271d1b",
+          "rgb": [
+            39,
+            29,
+            27
+          ]
+        },
+        {
+          "coverage": 0.09683,
+          "hex": "#84766f",
+          "rgb": [
+            132,
+            118,
+            111
+          ]
+        },
+        {
+          "coverage": 0.089592,
+          "hex": "#050506",
+          "rgb": [
+            5,
+            5,
+            6
+          ]
+        },
+        {
+          "coverage": 0.049998,
+          "hex": "#0e090b",
+          "rgb": [
+            14,
+            9,
+            11
+          ]
+        }
+      ],
+      "entropy": 5.9751,
+      "flags": [],
+      "hue_families": {
+        "blue": {
+          "fraction_of_accents": 0.085189,
+          "fraction_of_frame": 0.006435,
+          "negligible": false,
+          "pixels": 10125
+        },
+        "cyan": {
+          "fraction_of_accents": 0.064231,
+          "fraction_of_frame": 0.004852,
+          "negligible": false,
+          "pixels": 7634
+        },
+        "green": {
+          "fraction_of_accents": 0.049683,
+          "fraction_of_frame": 0.003753,
+          "negligible": false,
+          "pixels": 5905
+        },
+        "magenta": {
+          "fraction_of_accents": 0.000151,
+          "fraction_of_frame": 1.1e-05,
+          "negligible": true,
+          "pixels": 18
+        },
+        "orange": {
+          "fraction_of_accents": 0.141957,
+          "fraction_of_frame": 0.010724,
+          "negligible": false,
+          "pixels": 16872
+        },
+        "purple": {
+          "fraction_of_accents": 0.018031,
+          "fraction_of_frame": 0.001362,
+          "negligible": false,
+          "pixels": 2143
+        },
+        "red": {
+          "fraction_of_accents": 0.606026,
+          "fraction_of_frame": 0.04578,
+          "negligible": false,
+          "pixels": 72028
+        },
+        "yellow": {
+          "fraction_of_accents": 0.034732,
+          "fraction_of_frame": 0.002624,
+          "negligible": false,
+          "pixels": 4128
+        }
+      },
+      "luminance": {
+        "mean": 28.93,
+        "std": 47.211
+      },
+      "mode": "RGB",
+      "path": "<reference-image>",
+      "saturation": {
+        "mean": 113.996,
+        "std": 61.854
+      },
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "b": {
+      "accent_palette": [
+        {
+          "coverage": 0.16639,
+          "hex": "#c02622",
+          "rgb": [
+            192,
+            38,
+            34
+          ]
+        },
+        {
+          "coverage": 0.149022,
+          "hex": "#443f38",
+          "rgb": [
+            68,
+            63,
+            56
+          ]
+        },
+        {
+          "coverage": 0.13937,
+          "hex": "#491412",
+          "rgb": [
+            73,
+            20,
+            18
+          ]
+        },
+        {
+          "coverage": 0.128346,
+          "hex": "#72211a",
+          "rgb": [
+            114,
+            33,
+            26
+          ]
+        },
+        {
+          "coverage": 0.125973,
+          "hex": "#492823",
+          "rgb": [
+            73,
+            40,
+            35
+          ]
+        },
+        {
+          "coverage": 0.120209,
+          "hex": "#a78c68",
+          "rgb": [
+            167,
+            140,
+            104
+          ]
+        },
+        {
+          "coverage": 0.087112,
+          "hex": "#964234",
+          "rgb": [
+            150,
+            66,
+            52
+          ]
+        },
+        {
+          "coverage": 0.083578,
+          "hex": "#875b4b",
+          "rgb": [
+            135,
+            91,
+            75
+          ]
+        }
+      ],
+      "accent_pixel_fraction": 0.07553,
+      "aspect_ratio": 1.7768,
+      "base_palette": [
+        {
+          "coverage": 0.181553,
+          "hex": "#05080b",
+          "rgb": [
+            5,
+            8,
+            11
+          ]
+        },
+        {
+          "coverage": 0.152816,
+          "hex": "#090e11",
+          "rgb": [
+            9,
+            14,
+            17
+          ]
+        },
+        {
+          "coverage": 0.148622,
+          "hex": "#171112",
+          "rgb": [
+            23,
+            17,
+            18
+          ]
+        },
+        {
+          "coverage": 0.145673,
+          "hex": "#020305",
+          "rgb": [
+            2,
+            3,
+            5
+          ]
+        },
+        {
+          "coverage": 0.136315,
+          "hex": "#281e1b",
+          "rgb": [
+            40,
+            30,
+            27
+          ]
+        },
+        {
+          "coverage": 0.095441,
+          "hex": "#87756f",
+          "rgb": [
+            135,
+            117,
+            111
+          ]
+        },
+        {
+          "coverage": 0.089592,
+          "hex": "#050506",
+          "rgb": [
+            5,
+            5,
+            6
+          ]
+        },
+        {
+          "coverage": 0.049989,
+          "hex": "#0e090b",
+          "rgb": [
+            14,
+            9,
+            11
+          ]
+        }
+      ],
+      "entropy": 5.9714,
+      "flags": [],
+      "hue_families": {
+        "blue": {
+          "fraction_of_accents": 0.081533,
+          "fraction_of_frame": 0.006158,
+          "negligible": false,
+          "pixels": 9689
+        },
+        "cyan": {
+          "fraction_of_accents": 0.003812,
+          "fraction_of_frame": 0.000288,
+          "negligible": true,
+          "pixels": 453
+        },
+        "green": {
+          "fraction_of_accents": 0.049413,
+          "fraction_of_frame": 0.003732,
+          "negligible": false,
+          "pixels": 5872
+        },
+        "magenta": {
+          "fraction_of_accents": 0.00016,
+          "fraction_of_frame": 1.2e-05,
+          "negligible": true,
+          "pixels": 19
+        },
+        "orange": {
+          "fraction_of_accents": 0.137552,
+          "fraction_of_frame": 0.010389,
+          "negligible": false,
+          "pixels": 16346
+        },
+        "purple": {
+          "fraction_of_accents": 0.017882,
+          "fraction_of_frame": 0.001351,
+          "negligible": false,
+          "pixels": 2125
+        },
+        "red": {
+          "fraction_of_accents": 0.67746,
+          "fraction_of_frame": 0.051168,
+          "negligible": false,
+          "pixels": 80506
+        },
+        "yellow": {
+          "fraction_of_accents": 0.032187,
+          "fraction_of_frame": 0.002431,
+          "negligible": false,
+          "pixels": 3825
+        }
+      },
+      "luminance": {
+        "mean": 28.806,
+        "std": 47.043
+      },
+      "mode": "RGB",
+      "path": "<variant-cyan-to-red.png>",
+      "saturation": {
+        "mean": 113.982,
+        "std": 61.851
+      },
+      "size": [
+        1672,
+        941
+      ]
+    }
+  },
+  "interpretation_limits": [
+    "Base-palette coverage is area-weighted: a visually dominant accent that occupies few pixels will rank low or be absent. Read accent_palette for perceptual identity, base_palette for bulk tone.",
+    "Palette distance is Euclidean in RGB, which is not perceptually uniform; treat it as a relative signal between comparable images, not an absolute perceptual delta.",
+    "Accent membership is a hard HSV threshold, echoed in accent_thresholds. Colours near the boundary may flip between the two palettes.",
+    "accent_palette is itself area-weighted, so a dominant accent hue can crowd out smaller ones. Use hue_families to establish which hues are present at all, and hue_families_lost/gained to detect a dropped accent -- a hue can matter semantically at well under 1% of the frame."
+  ],
+  "parameters": {
+    "accent_thresholds": {
+      "saturation_min": 100,
+      "value_min": 60
+    },
+    "colors": 8
+  },
+  "tool": "pil_palette_diff",
+  "version": "0.1.0"
+}
