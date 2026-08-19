@@ -1,6 +1,6 @@
 # pil-agent-plugin
 
-A [Claude Code](https://claude.com/claude-code) plugin that gives coding agents
+An agent plugin that gives coding agents
 **quantitative** image measurement — exact colour palettes, per-hue census, layout
 statistics, perceptual hashes, and changed-region localisation.
 
