@@ -28,6 +28,51 @@ scripting. The result was that **neither approach is a superset of the other**:
 So the tools here are shaped around that failure. Full write-up:
 [`docs/design-rationale.md`](docs/design-rationale.md).
 
+## Standards conformance
+
+This package conforms to **[Agent Plugins 1.0.0](https://agent-plugins.org/specification)**,
+the vendor-neutral standard for packaging reusable agent components, and ships the
+portable and Claude Code-native layouts side by side:
+
+| Path | Role | Read by |
+|---|---|---|
+| `plugin.json` | Portable manifest, `$schema` pinned to [`schemas/1.0.0/plugin.schema.json`](https://agent-plugins.org/schemas/1.0.0/plugin.schema.json) | Any Agent Plugins client |
+| `skills/image-measurement/SKILL.md` | Portable skill, per the [Agent Skills spec](https://agentskills.io/specification) | Any Agent Plugins client |
+| `.claude-plugin/plugin.json` | Claude Code's native manifest | Claude Code |
+| `agents/` | Claude Code subagent — no portable equivalent in 1.0.0 | Claude Code |
+| `.claude-plugin/marketplace.json` | Single-plugin marketplace, so the CLI can install this repo; declares Claude Code's own `$schema` | Claude Code |
+
+All three manifests describe the same package. `agents/` and `.claude-plugin/` are
+undefined top-level directories under Agent Plugins, which the specification
+requires clients to ignore rather than reject, so their presence does not affect
+portability. No `mcp.json` is shipped — this plugin exposes CLI tools and a skill,
+not an MCP server.
+
+Two honest limits on that claim:
+
+- **Claude Code does not itself parse the portable manifest.** It installs from
+  `.claude-plugin/plugin.json`. The root `plugin.json` exists so that Agent Plugins
+  clients and tooling can consume the same checkout; it is additive, and both
+  `claude plugin validate --strict` and schema validation of `plugin.json` pass.
+- **`${CLAUDE_PLUGIN_ROOT}` in the skill is client-specific.** Agent Plugins names
+  the equivalent variable `${PLUGIN_ROOT}`; `SKILL.md` states both.
+
+Conformance is enforced by [`tests/test_packaging_conformance.py`](tests/test_packaging_conformance.py),
+which checks the closed manifest schema, the name patterns, skill discovery at the
+fixed location, the Agent Skills frontmatter constraints, and that the three
+manifests have not drifted apart — version now lives in all of them, and
+`claude plugin tag` refuses a release when they disagree. To re-check the manifest against the published
+schema directly:
+
+```bash
+uv run --with jsonschema python -c "
+import json, urllib.request
+from jsonschema import Draft202012Validator
+schema = json.load(urllib.request.urlopen('https://agent-plugins.org/schemas/1.0.0/plugin.schema.json'))
+Draft202012Validator(schema).validate(json.load(open('plugin.json')))
+print('valid')"
+```
+
 ## Requirements
 
 - **Claude Code** (for plugin installation; the scripts also run standalone)
@@ -43,16 +88,32 @@ cd pil-agent-plugin
 uv sync                        # installs Pillow + numpy into a local venv
 ```
 
-Then install it as a plugin:
+Then install it as a plugin. The Claude Code CLI installs from *marketplaces*, not
+from a bare directory path, so the repository ships a single-plugin marketplace
+manifest and registers itself:
 
 ```bash
-claude plugin validate .                    # confirm it is well-formed
-claude plugin install . --scope project     # this project only
-# or: claude plugin install . --scope user  # all your projects
+claude plugin marketplace add ./                                 # register this repo
+claude plugin install pil-agent-plugin@pil-agent-plugin -s user  # all your projects
+# or: ... -s project   for this project only
 ```
 
-Verify the plugin loaded by running `/plugin` inside Claude Code — you should see
-`pil-agent-plugin` with one skill and one agent.
+Verify with `claude plugin list` (or `/plugin` inside Claude Code) — you should see
+`pil-agent-plugin` at scope `user`, enabled, with one skill and one agent.
+`claude plugin details pil-agent-plugin` prints the component inventory.
+
+Two things worth knowing:
+
+- **Installing takes a snapshot copy**, versioned under
+  `~/.claude/plugins/cache/`. Edits to your clone do not reach an installed
+  plugin until you run `claude plugin update pil-agent-plugin`. If `uv sync` has
+  already created `.venv/`, that is copied too — budget ~65 MB.
+- **`claude plugin validate .` now validates the *marketplace* manifest**, which
+  takes precedence at the repository root. To validate the plugin manifest, point
+  at it directly: `claude plugin validate .claude-plugin/plugin.json --strict`.
+- **Editing `marketplace.json` needs a refresh**: `claude plugin marketplace update
+  pil-agent-plugin`. Editing the plugin itself needs `claude plugin update
+  pil-agent-plugin`. They are separate caches.
 
 <details>
 <summary>Installing without <code>uv</code></summary>
@@ -61,10 +122,12 @@ The scripts only need Pillow and numpy, so any environment with those works:
 
 ```bash
 pip install "pillow>=10.0" "numpy>=1.26"
-claude plugin install . --scope project
+claude plugin marketplace add ./
+claude plugin install pil-agent-plugin@pil-agent-plugin -s user
 ```
 
 The bundled skill prefers `uv` and falls back to a plain `python` invocation.
+Skipping `uv sync` also keeps `.venv/` out of the installed snapshot.
 </details>
 
 ## Usage
@@ -209,11 +272,11 @@ uv sync
 uv run pytest -v
 ```
 
-**37 tests.** Fixtures are generated synthetically in-process, so no binary test
+**63 tests.** Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
 Six tests additionally confirm results against a real reference image and **skip
-when it is absent** — so a fresh clone reports `31 passed, 6 skipped`, which is
+when it is absent** — so a fresh clone reports `57 passed, 6 skipped`, which is
 expected. Their strongest assertions are duplicated unskipped against a synthetic
 stand-in, so a clean checkout still guards every known regression.
 
@@ -235,6 +298,17 @@ contains a 13-step RED→GREEN ledger, the raw JSON outputs, and a
 showing that **only 4 of 11 metrics** separate a genuine colour change from a
 no-op rescale — and that one metric answers the question backwards.
 
+The tools were then taken to a real production task — reviewing a Blender game
+character against its concept sheet — in
+[`runs/2026-08-18-skeleton-warrior-asset-review/`](runs/2026-08-18-skeleton-warrior-asset-review/README.md).
+That trial is the strongest evidence for the vision-first method in this repository:
+**four of the reviewing agent's own confident visual conclusions were wrong**, and
+measurement caught all four before they reached the defect list. Two would have sent
+an artist to fix work that was already correct. It also records `pil_structure_diff`
+correctly *refusing* the comparison via its own `aspect_ratio_mismatch` flag, and
+draws a hard line between what the plugin measured and what harness code around it
+measured.
+
 ## Documentation
 
 - [`docs/index.md`](docs/index.md) — documentation index and open items
@@ -246,7 +320,8 @@ no-op rescale — and that one metric answers the question backwards.
 ## Status
 
 Phase 1 complete: tools built and validated, plugin packaged,
-`claude plugin validate --strict` passing.
+`claude plugin validate --strict` passing, and the package audited against and
+conforming to [Agent Plugins 1.0.0](#standards-conformance).
 
 Known limitations, tracked in [`docs/index.md`](docs/index.md#open-items):
 

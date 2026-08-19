@@ -27,6 +27,10 @@ environment:
 python "${CLAUDE_PLUGIN_ROOT}/scripts/pil_palette_diff.py" "<image>"
 ```
 
+`${CLAUDE_PLUGIN_ROOT}` is Claude Code's name for the plugin root. Under the
+[Agent Plugins](https://agent-plugins.org/) standard the equivalent variable is
+`${PLUGIN_ROOT}`; substitute it if that is what the host provides.
+
 Always quote image paths: they frequently contain spaces or parentheses.
 
 ## Choosing the right tool and field

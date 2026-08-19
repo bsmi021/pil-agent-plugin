@@ -1,0 +1,18 @@
+Silhouette geometry -- computed by this harness in numpy, not by the plugin.
+The plugin has no silhouette, proportion or region-cutting capability.
+
+CONCEPT front view
+  figure height          : 535 px
+  head height (top->neck): 82 px
+  HEAD COUNT             : 6.52 heads tall
+  skull width            : 54 px
+  skull width / height   : 0.659
+  neck width / head h    : 0.268
+
+RENDER under review
+  figure height          : 1143 px
+  head height (top->neck): 180 px
+  HEAD COUNT             : 6.35 heads tall
+  skull width            : 142 px
+  skull width / height   : 0.789
+  neck width / head h    : 0.133

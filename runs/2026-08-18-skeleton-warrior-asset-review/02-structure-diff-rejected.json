@@ -1,0 +1,821 @@
+{
+  "diff": {
+    "ahash_distance": 15,
+    "changed_area_fraction": 0.667637,
+    "changed_region_bbox_fractional": [
+      0.0,
+      0.0469,
+      1.0,
+      1.0
+    ],
+    "dhash_distance": 28,
+    "entropy_delta": -2.9337,
+    "flags": [
+      "aspect_ratio_mismatch",
+      "resolution_mismatch"
+    ],
+    "luminance_mean_delta": 7.228,
+    "most_divergent_cells": [
+      {
+        "bounds_fractional": [
+          0.0,
+          0.3333,
+          0.25,
+          0.5
+        ],
+        "col": 0,
+        "divergence": 0.3141,
+        "row": 2
+      },
+      {
+        "bounds_fractional": [
+          0.0,
+          0.5,
+          0.25,
+          0.6667
+        ],
+        "col": 0,
+        "divergence": 0.2725,
+        "row": 3
+      },
+      {
+        "bounds_fractional": [
+          0.5,
+          0.8333,
+          0.75,
+          1.0
+        ],
+        "col": 2,
+        "divergence": 0.1934,
+        "row": 5
+      },
+      {
+        "bounds_fractional": [
+          0.25,
+          0.8333,
+          0.5,
+          1.0
+        ],
+        "col": 1,
+        "divergence": 0.1863,
+        "row": 5
+      },
+      {
+        "bounds_fractional": [
+          0.0,
+          0.6667,
+          0.25,
+          0.8333
+        ],
+        "col": 0,
+        "divergence": 0.1846,
+        "row": 4
+      }
+    ],
+    "structural_similarity": 0.856629
+  },
+  "images": {
+    "a": {
+      "aspect_ratio": 0.5959,
+      "cells": [
+        {
+          "bounds_fractional": [
+            0.0,
+            0.0,
+            0.25,
+            0.1667
+          ],
+          "col": 0,
+          "edge_mean": 0.576,
+          "entropy": 2.7583,
+          "luminance_mean": 152.713,
+          "luminance_std": 1.654,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.0,
+            0.5,
+            0.1667
+          ],
+          "col": 1,
+          "edge_mean": 6.605,
+          "entropy": 4.9707,
+          "luminance_mean": 149.65,
+          "luminance_std": 36.393,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.0,
+            0.75,
+            0.1667
+          ],
+          "col": 2,
+          "edge_mean": 1.751,
+          "entropy": 3.3041,
+          "luminance_mean": 153.561,
+          "luminance_std": 9.624,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.0,
+            1.0,
+            0.1667
+          ],
+          "col": 3,
+          "edge_mean": 0.62,
+          "entropy": 2.6885,
+          "luminance_mean": 154.429,
+          "luminance_std": 1.567,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.1667,
+            0.25,
+            0.3333
+          ],
+          "col": 0,
+          "edge_mean": 1.551,
+          "entropy": 2.7881,
+          "luminance_mean": 154.491,
+          "luminance_std": 15.207,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.1667,
+            0.5,
+            0.3333
+          ],
+          "col": 1,
+          "edge_mean": 8.205,
+          "entropy": 6.6735,
+          "luminance_mean": 78.868,
+          "luminance_std": 46.189,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.1667,
+            0.75,
+            0.3333
+          ],
+          "col": 2,
+          "edge_mean": 6.861,
+          "entropy": 5.8566,
+          "luminance_mean": 101.242,
+          "luminance_std": 57.475,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.1667,
+            1.0,
+            0.3333
+          ],
+          "col": 3,
+          "edge_mean": 0.558,
+          "entropy": 2.2618,
+          "luminance_mean": 157.486,
+          "luminance_std": 1.17,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.3333,
+            0.25,
+            0.5
+          ],
+          "col": 0,
+          "edge_mean": 7.58,
+          "entropy": 5.1696,
+          "luminance_mean": 125.865,
+          "luminance_std": 51.495,
+          "row": 2
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.3333,
+            0.5,
+            0.5
+          ],
+          "col": 1,
+          "edge_mean": 9.443,
+          "entropy": 6.5333,
+          "luminance_mean": 61.904,
+          "luminance_std": 48.434,
+          "row": 2
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.3333,
+            0.75,
+            0.5
+          ],
+          "col": 2,
+          "edge_mean": 12.014,
+          "entropy": 6.7301,
+          "luminance_mean": 77.47,
+          "luminance_std": 57.065,
+          "row": 2
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.3333,
+            1.0,
+            0.5
+          ],
+          "col": 3,
+          "edge_mean": 2.788,
+          "entropy": 3.3497,
+          "luminance_mean": 150.922,
+          "luminance_std": 29.762,
+          "row": 2
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.5,
+            0.25,
+            0.6667
+          ],
+          "col": 0,
+          "edge_mean": 7.133,
+          "entropy": 4.7459,
+          "luminance_mean": 139.945,
+          "luminance_std": 44.772,
+          "row": 3
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.5,
+            0.5,
+            0.6667
+          ],
+          "col": 1,
+          "edge_mean": 5.893,
+          "entropy": 5.9537,
+          "luminance_mean": 41.682,
+          "luminance_std": 23.282,
+          "row": 3
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.5,
+            0.75,
+            0.6667
+          ],
+          "col": 2,
+          "edge_mean": 7.034,
+          "entropy": 5.8847,
+          "luminance_mean": 64.644,
+          "luminance_std": 55.934,
+          "row": 3
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.5,
+            1.0,
+            0.6667
+          ],
+          "col": 3,
+          "edge_mean": 2.87,
+          "entropy": 3.258,
+          "luminance_mean": 153.9,
+          "luminance_std": 28.152,
+          "row": 3
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.6667,
+            0.25,
+            0.8333
+          ],
+          "col": 0,
+          "edge_mean": 3.155,
+          "entropy": 3.3698,
+          "luminance_mean": 152.163,
+          "luminance_std": 32.721,
+          "row": 4
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.6667,
+            0.5,
+            0.8333
+          ],
+          "col": 1,
+          "edge_mean": 8.575,
+          "entropy": 6.0478,
+          "luminance_mean": 96.222,
+          "luminance_std": 59.06,
+          "row": 4
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.6667,
+            0.75,
+            0.8333
+          ],
+          "col": 2,
+          "edge_mean": 9.742,
+          "entropy": 6.1049,
+          "luminance_mean": 94.737,
+          "luminance_std": 57.077,
+          "row": 4
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.6667,
+            1.0,
+            0.8333
+          ],
+          "col": 3,
+          "edge_mean": 0.854,
+          "entropy": 2.2281,
+          "luminance_mean": 162.03,
+          "luminance_std": 2.913,
+          "row": 4
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.8333,
+            0.25,
+            1.0
+          ],
+          "col": 0,
+          "edge_mean": 3.047,
+          "entropy": 3.8473,
+          "luminance_mean": 155.977,
+          "luminance_std": 19.746,
+          "row": 5
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.8333,
+            0.5,
+            1.0
+          ],
+          "col": 1,
+          "edge_mean": 5.897,
+          "entropy": 6.1132,
+          "luminance_mean": 131.011,
+          "luminance_std": 39.496,
+          "row": 5
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.8333,
+            0.75,
+            1.0
+          ],
+          "col": 2,
+          "edge_mean": 7.18,
+          "entropy": 6.2544,
+          "luminance_mean": 132.322,
+          "luminance_std": 38.644,
+          "row": 5
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.8333,
+            1.0,
+            1.0
+          ],
+          "col": 3,
+          "edge_mean": 0.816,
+          "entropy": 3.2314,
+          "luminance_mean": 159.587,
+          "luminance_std": 4.674,
+          "row": 5
+        }
+      ],
+      "entropy": 5.8911,
+      "grid": {
+        "cols": 4,
+        "rows": 6
+      },
+      "luminance": {
+        "mean": 125.307,
+        "std": 53.365
+      },
+      "path": "<concept:front-view>",
+      "size": [
+        351,
+        589
+      ],
+      "symmetry": {
+        "left_right_diff": 30.027,
+        "top_bottom_diff": 29.011
+      },
+      "working_size": [
+        153,
+        256
+      ]
+    },
+    "b": {
+      "aspect_ratio": 0.6452,
+      "cells": [
+        {
+          "bounds_fractional": [
+            0.0,
+            0.0,
+            0.25,
+            0.1667
+          ],
+          "col": 0,
+          "edge_mean": 0.0,
+          "entropy": -0.0,
+          "luminance_mean": 149.0,
+          "luminance_std": 0.0,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.0,
+            0.5,
+            0.1667
+          ],
+          "col": 1,
+          "edge_mean": 1.781,
+          "entropy": 1.46,
+          "luminance_mean": 153.127,
+          "luminance_std": 18.033,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.0,
+            0.75,
+            0.1667
+          ],
+          "col": 2,
+          "edge_mean": 1.945,
+          "entropy": 1.6019,
+          "luminance_mean": 152.474,
+          "luminance_std": 18.408,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.0,
+            1.0,
+            0.1667
+          ],
+          "col": 3,
+          "edge_mean": 0.0,
+          "entropy": -0.0,
+          "luminance_mean": 149.0,
+          "luminance_std": 0.0,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.1667,
+            0.25,
+            0.3333
+          ],
+          "col": 0,
+          "edge_mean": 4.771,
+          "entropy": 3.4344,
+          "luminance_mean": 127.498,
+          "luminance_std": 36.578,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.1667,
+            0.5,
+            0.3333
+          ],
+          "col": 1,
+          "edge_mean": 6.289,
+          "entropy": 5.0748,
+          "luminance_mean": 114.022,
+          "luminance_std": 41.919,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.1667,
+            0.75,
+            0.3333
+          ],
+          "col": 2,
+          "edge_mean": 5.851,
+          "entropy": 5.0577,
+          "luminance_mean": 112.082,
+          "luminance_std": 41.938,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.1667,
+            1.0,
+            0.3333
+          ],
+          "col": 3,
+          "edge_mean": 4.757,
+          "entropy": 3.4375,
+          "luminance_mean": 127.525,
+          "luminance_std": 36.528,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.3333,
+            0.25,
+            0.5
+          ],
+          "col": 0,
+          "edge_mean": 0.001,
+          "entropy": 0.0069,
+          "luminance_mean": 148.999,
+          "luminance_std": 0.024,
+          "row": 2
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.3333,
+            0.5,
+            0.5
+          ],
+          "col": 1,
+          "edge_mean": 4.873,
+          "entropy": 4.3833,
+          "luminance_mean": 111.569,
+          "luminance_std": 41.85,
+          "row": 2
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.3333,
+            0.75,
+            0.5
+          ],
+          "col": 2,
+          "edge_mean": 6.192,
+          "entropy": 5.5059,
+          "luminance_mean": 99.069,
+          "luminance_std": 42.605,
+          "row": 2
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.3333,
+            1.0,
+            0.5
+          ],
+          "col": 3,
+          "edge_mean": 0.0,
+          "entropy": -0.0,
+          "luminance_mean": 149.0,
+          "luminance_std": 0.0,
+          "row": 2
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.5,
+            0.25,
+            0.6667
+          ],
+          "col": 0,
+          "edge_mean": 0.0,
+          "entropy": -0.0,
+          "luminance_mean": 149.0,
+          "luminance_std": 0.0,
+          "row": 3
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.5,
+            0.5,
+            0.6667
+          ],
+          "col": 1,
+          "edge_mean": 4.145,
+          "entropy": 4.6406,
+          "luminance_mean": 95.217,
+          "luminance_std": 38.562,
+          "row": 3
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.5,
+            0.75,
+            0.6667
+          ],
+          "col": 2,
+          "edge_mean": 4.725,
+          "entropy": 5.3303,
+          "luminance_mean": 84.225,
+          "luminance_std": 35.213,
+          "row": 3
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.5,
+            1.0,
+            0.6667
+          ],
+          "col": 3,
+          "edge_mean": 0.001,
+          "entropy": 0.0069,
+          "luminance_mean": 148.999,
+          "luminance_std": 0.024,
+          "row": 3
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.6667,
+            0.25,
+            0.8333
+          ],
+          "col": 0,
+          "edge_mean": 0.0,
+          "entropy": -0.0,
+          "luminance_mean": 149.0,
+          "luminance_std": 0.0,
+          "row": 4
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.6667,
+            0.5,
+            0.8333
+          ],
+          "col": 1,
+          "edge_mean": 6.695,
+          "entropy": 4.2158,
+          "luminance_mean": 118.337,
+          "luminance_std": 42.136,
+          "row": 4
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.6667,
+            0.75,
+            0.8333
+          ],
+          "col": 2,
+          "edge_mean": 7.574,
+          "entropy": 4.5546,
+          "luminance_mean": 115.049,
+          "luminance_std": 43.303,
+          "row": 4
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.6667,
+            1.0,
+            0.8333
+          ],
+          "col": 3,
+          "edge_mean": 0.0,
+          "entropy": -0.0,
+          "luminance_mean": 149.0,
+          "luminance_std": 0.0,
+          "row": 4
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.8333,
+            0.25,
+            1.0
+          ],
+          "col": 0,
+          "edge_mean": 0.0,
+          "entropy": -0.0,
+          "luminance_mean": 149.0,
+          "luminance_std": 0.0,
+          "row": 5
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.8333,
+            0.5,
+            1.0
+          ],
+          "col": 1,
+          "edge_mean": 2.222,
+          "entropy": 1.9754,
+          "luminance_mean": 141.071,
+          "luminance_std": 22.695,
+          "row": 5
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.8333,
+            0.75,
+            1.0
+          ],
+          "col": 2,
+          "edge_mean": 2.227,
+          "entropy": 1.9576,
+          "luminance_mean": 141.084,
+          "luminance_std": 22.662,
+          "row": 5
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.8333,
+            1.0,
+            1.0
+          ],
+          "col": 3,
+          "edge_mean": 0.0,
+          "entropy": -0.0,
+          "luminance_mean": 149.0,
+          "luminance_std": 0.0,
+          "row": 5
+        }
+      ],
+      "entropy": 2.9574,
+      "grid": {
+        "cols": 4,
+        "rows": 6
+      },
+      "luminance": {
+        "mean": 132.535,
+        "std": 34.389
+      },
+      "path": "<render:full>",
+      "size": [
+        900,
+        1395
+      ],
+      "symmetry": {
+        "left_right_diff": 3.483,
+        "top_bottom_diff": 16.368
+      },
+      "working_size": [
+        165,
+        256
+      ]
+    }
+  },
+  "interpretation_limits": [
+    "edge_mean and entropy are 2D image-complexity proxies, NOT geometry: they do not measure polygon count, mesh density or topology. Shading, normal maps, lighting and camera angle all move these numbers independently of the underlying model. For polygon or topology questions, query the 3D scene's mesh statistics directly instead of analysing a render.",
+    "The grid is rectangular and ignores real object boundaries, so a cell may mix unrelated content; per-cell numbers describe pixel neighbourhoods, not semantic regions.",
+    "structural_similarity is a normalised mean absolute difference over cell statistics. It is sensitive to global lighting and exposure shifts, which can lower the score even when layout is unchanged.",
+    "Perceptual hash distance detects near-duplicates and survives rescaling, but is weak at distinguishing images that differ only in fine detail."
+  ],
+  "parameters": {
+    "change_threshold": 10,
+    "grid": {
+      "cols": 4,
+      "rows": 6
+    },
+    "working_long_edge": 256
+  },
+  "tool": "pil_structure_diff",
+  "version": "0.1.0"
+}

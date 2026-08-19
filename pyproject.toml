@@ -11,6 +11,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "pyyaml>=6.0",
 ]
 
 [tool.pytest.ini_options]
