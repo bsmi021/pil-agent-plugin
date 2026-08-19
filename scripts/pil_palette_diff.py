@@ -13,6 +13,10 @@ change".
 Usage:
     python pil_palette_diff.py "ref.png"
     python pil_palette_diff.py "ref.png" "render.png" --colors 8
+    python pil_palette_diff.py "view_a.png" "view_b.png" --foreground
+
+Use --foreground for object renders on a shared preview background: full-frame
+statistics on such frames mostly describe the background.
 """
 
 from __future__ import annotations
@@ -25,19 +29,29 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from pil_common import (  # noqa: E402
+    ACCENT_AREA_SMALL_FRACTION,
+    ALPHA_FOREGROUND_MIN,
+    BACKGROUND_DOMINANT_MAX,
     DEFAULT_ACCENT_SAT_MIN,
     DEFAULT_ACCENT_VAL_MIN,
+    DEFAULT_BACKGROUND_DELTA,
+    FOREGROUND_MIN_FRACTION,
+    HUE_PRESENCE_MIN_FRACTION,
+    HUE_PRESENCE_MIN_PIXELS,
     accent_subset,
     entropy_of,
+    foreground_estimate,
+    foreground_mask,
     hue_families,
-    load_rgb,
+    load_rgb_alpha,
     luminance_stats,
+    masked_strip,
     palette_distance,
     quantize_palette,
     saturation_stats,
 )
 
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.2.0"
 
 # A hue family counts as shifted only when its share of accent pixels moves by
 # both an absolute and a relative margin, which keeps resampling noise from
@@ -58,37 +72,108 @@ INTERPRETATION_LIMITS = [
     "out smaller ones. Use hue_families to establish which hues are present at "
     "all, and hue_families_lost/gained to detect a dropped accent -- a hue can "
     "matter semantically at well under 1% of the frame.",
+    "In full-frame mode every statistic includes the background. When "
+    "background_dominant or accent_support_low is flagged, hue and palette "
+    "numbers mostly describe background and noise; re-run with --foreground "
+    "before letting them influence a verdict or a ranking.",
+    "In --foreground mode all fractions (accent_pixel_fraction, hue_families "
+    "fraction_of_frame) are shares of the foreground, not of the frame. The "
+    "foreground block records how the mask was derived.",
 ]
 
 
-def analyse(path, n_colors, sat_min, val_min):
-    img = load_rgb(path)
-    flags = []
+def _foreground_analysis(rgb, alpha, background_delta, flags):
+    """Derive the foreground mask and its reporting block; returns (mask, block).
 
-    base_palette = quantize_palette(img, n_colors)
-    accent_img, accent_fraction = accent_subset(img, sat_min, val_min)
+    mask is None when it could not be derived (empty), in which case analysis
+    falls back to full-frame with a flag rather than crashing or emitting
+    statistics over nothing.
+    """
+    mask, source, background_hex = foreground_mask(rgb, alpha, background_delta)
+    fraction = float(mask.mean())
+    block = {
+        "applied": bool(mask.any()),
+        "source": source,
+        "fraction_of_frame": round(fraction, 6),
+        "background_estimate": background_hex,
+    }
+    if not mask.any():
+        flags.append("foreground_mask_empty")
+        return None, block
+    if fraction < FOREGROUND_MIN_FRACTION:
+        flags.append("foreground_too_small")
+    return mask, block
+
+
+def analyse(path, n_colors, sat_min, val_min, foreground, background_delta):
+    rgb, alpha = load_rgb_alpha(path)
+    flags = []
+    within = None
+
+    if foreground:
+        within, foreground_block = _foreground_analysis(
+            rgb, alpha, background_delta, flags
+        )
+    else:
+        fraction, source, background_hex = foreground_estimate(
+            rgb, alpha, background_delta
+        )
+        foreground_block = {
+            "applied": False,
+            "source": source,
+            "fraction_of_frame": fraction,
+            "background_estimate": background_hex,
+        }
+        if fraction < BACKGROUND_DOMINANT_MAX:
+            # The frame is mostly background: full-frame colour statistics
+            # describe the backdrop, not the subject.
+            flags.append("background_dominant")
+
+    if within is None:
+        base_palette = quantize_palette(rgb, n_colors)
+    else:
+        base_palette = quantize_palette(masked_strip(rgb, within), n_colors)
+
+    accent_img, accent_fraction = accent_subset(rgb, sat_min, val_min, within=within)
 
     if accent_img is None:
         accent_palette = []
         flags.append("no_accent_pixels")
     else:
         accent_palette = quantize_palette(accent_img, n_colors)
-        if accent_fraction < 0.005:
+        if accent_fraction < ACCENT_AREA_SMALL_FRACTION:
             flags.append("accent_area_very_small")
 
     return {
         "path": str(path),
-        "size": list(img.size),
-        "mode": img.mode,
-        "aspect_ratio": round(img.width / img.height, 4),
+        "size": list(rgb.size),
+        "mode": rgb.mode,
+        "aspect_ratio": round(rgb.width / rgb.height, 4),
         "base_palette": base_palette,
         "accent_palette": accent_palette,
-        "hue_families": hue_families(img, sat_min, val_min),
+        "hue_families": hue_families(rgb, sat_min, val_min, within=within),
         "accent_pixel_fraction": round(accent_fraction, 6),
-        "luminance": luminance_stats(img),
-        "saturation": saturation_stats(img),
-        "entropy": entropy_of(img),
+        "luminance": luminance_stats(rgb, mask=within),
+        "saturation": saturation_stats(rgb, mask=within),
+        "entropy": entropy_of(rgb, mask=within),
+        "foreground": foreground_block,
         "flags": flags,
+    }
+
+
+def _supported_families(families):
+    """Hue families with enough pixels to participate in the verdict.
+
+    Bare presence (pixels > 0) is not evidence: a single anti-aliased edge pixel
+    lands in some hue family on almost every render, and letting it into the
+    lost/gained sets flips accent_hue_shift_detected on noise. The census still
+    reports unsupported families -- only the verdict ignores them.
+    """
+    return {
+        name
+        for name, v in families.items()
+        if v["pixels"] >= HUE_PRESENCE_MIN_PIXELS
+        and v["fraction_of_frame"] >= HUE_PRESENCE_MIN_FRACTION
     }
 
 
@@ -101,9 +186,22 @@ def build_diff(a, b):
         flags.append("accent_comparison_unavailable")
     if abs(a["aspect_ratio"] - b["aspect_ratio"]) > 0.01:
         flags.append("aspect_ratio_mismatch")
+    if a["foreground"]["applied"] != b["foreground"]["applied"]:
+        # One side's mask fell back to full-frame: its fractions are
+        # frame-relative while the other side's are foreground-relative, so the
+        # deltas below compare incommensurable quantities.
+        flags.append("foreground_mask_mismatch")
+    if (
+        a["accent_pixel_fraction"] < ACCENT_AREA_SMALL_FRACTION
+        or b["accent_pixel_fraction"] < ACCENT_AREA_SMALL_FRACTION
+    ):
+        # Too few vivid pixels on at least one side for hue statistics to rank
+        # anything. The verdict below is still emitted, but a caller feeding it
+        # into a ranking must treat this flag as disqualifying.
+        flags.append("accent_support_low")
 
-    present_a = {k for k, v in a["hue_families"].items() if v["pixels"] > 0}
-    present_b = {k for k, v in b["hue_families"].items() if v["pixels"] > 0}
+    present_a = _supported_families(a["hue_families"])
+    present_b = _supported_families(b["hue_families"])
 
     deltas = {
         name: round(
@@ -117,8 +215,13 @@ def build_diff(a, b):
     # Magnitude-based detection. Presence/absence alone is brittle: a recolour
     # leaves residue pixels near the saturation threshold, so a family that has
     # effectively vanished still reports pixels > 0 and never registers as lost.
+    # A family unsupported on both sides is skipped outright -- with a tiny
+    # accent area the fraction denominators are so small that these ratios are
+    # pure noise.
     diminished, amplified = [], []
     for name, delta in deltas.items():
+        if name not in present_a and name not in present_b:
+            continue
         before = a["hue_families"][name]["fraction_of_accents"]
         after = b["hue_families"][name]["fraction_of_accents"]
         if abs(delta) < HUE_SHIFT_MIN_ABSOLUTE:
@@ -133,8 +236,10 @@ def build_diff(a, b):
     return {
         "base_palette_distance": base,
         "accent_palette_distance": accent,
-        # A hue family present in the reference but absent from the comparison is
-        # a colour-scheme regression even when it is area-negligible.
+        # A hue family with supported presence in the reference but not in the
+        # comparison is a colour-scheme regression even when it is
+        # area-negligible. "Supported" is the operative word: presence below the
+        # support floor never enters these sets (see _supported_families).
         "hue_families_lost": sorted(present_a - present_b),
         "hue_families_gained": sorted(present_b - present_a),
         "hue_families_diminished": sorted(diminished),
@@ -184,19 +289,39 @@ def main(argv=None):
         default=DEFAULT_ACCENT_VAL_MIN,
         help=f"minimum HSV value for accent pixels (default {DEFAULT_ACCENT_VAL_MIN})",
     )
+    parser.add_argument(
+        "--foreground",
+        action="store_true",
+        help="mask the background out (alpha when present, else border-median "
+        "colour) and measure the foreground only -- required for meaningful "
+        "numbers on object renders over a shared preview background",
+    )
+    parser.add_argument(
+        "--background-delta",
+        type=float,
+        default=DEFAULT_BACKGROUND_DELTA,
+        help="OKLab distance from the border-median colour within which an "
+        f"opaque pixel counts as background (default {DEFAULT_BACKGROUND_DELTA})",
+    )
     args = parser.parse_args(argv)
 
     if args.colors < 2:
         parser.error("--colors must be >= 2")
 
-    images = {
-        "a": analyse(args.image_a, args.colors, args.accent_sat, args.accent_val)
-    }
+    def run(path):
+        return analyse(
+            path,
+            args.colors,
+            args.accent_sat,
+            args.accent_val,
+            args.foreground,
+            args.background_delta,
+        )
+
+    images = {"a": run(args.image_a)}
     diff = None
     if args.image_b:
-        images["b"] = analyse(
-            args.image_b, args.colors, args.accent_sat, args.accent_val
-        )
+        images["b"] = run(args.image_b)
         diff = build_diff(images["a"], images["b"])
 
     payload = {
@@ -207,6 +332,13 @@ def main(argv=None):
             "accent_thresholds": {
                 "saturation_min": args.accent_sat,
                 "value_min": args.accent_val,
+            },
+            "foreground": args.foreground,
+            "background_delta": args.background_delta,
+            "alpha_foreground_min": ALPHA_FOREGROUND_MIN,
+            "hue_presence_min": {
+                "fraction": HUE_PRESENCE_MIN_FRACTION,
+                "pixels": HUE_PRESENCE_MIN_PIXELS,
             },
         },
         "images": images,

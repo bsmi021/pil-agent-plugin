@@ -29,16 +29,37 @@ source alone would have missed a real change.
 
 1. **Look first.** Read both images and form your own description of each: layout,
    subject, text, colour impression, style. Commit to this *before* measuring, so
-   the numbers cannot anchor your perception.
+   the numbers cannot anchor your perception. Note specifically whether each
+   image is an **object on a backdrop** (an asset render, a product shot, a
+   sprite on a preview background) or **full-frame content** (a screenshot, a
+   painting, a UI).
 2. **Measure.** Invoke the `image-measurement` skill's tools on both images —
    both `pil_palette_diff` and `pil_structure_diff`. Run them on the pair, not
-   just individually.
-3. **Reconcile.** Compare your visual read against the numbers. Where they
+   just individually. If step 1 identified an object on a backdrop, run both
+   tools **with `--foreground`** as well; the full-frame run then tells you
+   about the frames, the foreground run about the objects.
+3. **Check the flags before reading any score.** Every payload carries `flags`,
+   and they exist because the headline numbers lie in specific, known ways:
+   - `background_dominant` — the frame is mostly background, so
+     `structural_similarity` and the palettes describe the *backdrop*. Two
+     different objects on the same backdrop measured 0.991 this way. Do not
+     report full-frame similarity as object similarity; use the `--foreground`
+     run.
+   - `accent_support_low` / `accent_area_very_small` — too few vivid pixels for
+     `accent_hue_shift_detected` to mean anything. Say so instead of citing it.
+   - `foreground_too_small`, `foreground_mask_empty`, `aspect_ratio_mismatch`,
+     `foreground_aspect_mismatch` — each names a specific way the numbers next
+     to it are weakened. Read them as part of the measurement, not as
+     footnotes.
+   A high similarity **plus** a tiny `changed_area_fraction` means the shared
+   background matched — it is evidence about the backdrop, not the subject.
+4. **Reconcile.** Compare your visual read against the numbers. Where they
    conflict, say so explicitly and reason about which is more trustworthy for that
    specific question. Do not silently defer to the numbers; measurement artefacts
    are common and documented in each payload's `interpretation_limits`.
-4. **Report.** Separate findings by confidence, and cite the specific field or
-   observation supporting each.
+5. **Report.** Separate findings by confidence, and cite the specific field or
+   observation supporting each. When you cite a score, cite the flags that came
+   with it.
 
 ## Reporting format
 

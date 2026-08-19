@@ -169,3 +169,47 @@ def detailed_vs_flat(size=(400, 300)):
     for x in range(0, size[0] // 2, 3):
         draw.line([x, 0, x, size[1]], fill=(230, 230, 230))
     return img
+
+
+PREVIEW_BG = (24, 26, 30)
+SWORD_BLADE = (168, 172, 180)
+SWORD_GRIP = (90, 60, 25)
+
+
+def preview_render(
+    accent=(30, 200, 200),
+    bg=PREVIEW_BG,
+    size=(400, 300),
+    offset=(0, 0),
+    mirrored=False,
+):
+    """A thin diagonal 'sword' on a flat preview background.
+
+    Reproduces the production failure the foreground work exists to fix: an
+    asset occupying ~2-3% of the frame over a background shared between
+    renders, where full-frame similarity is arithmetically dominated by the
+    background and full-frame accent fractions are minuscule. The object is
+    drawn at fixed pixel coordinates, so a larger `size` shrinks its share of
+    the frame without changing the object itself.
+    """
+    img = Image.new("RGB", size, bg)
+    draw = ImageDraw.Draw(img)
+    ox, oy = offset
+    if mirrored:
+        draw.line([330 + ox, 270 + oy, 30 + ox, 40 + oy], fill=SWORD_BLADE, width=5)
+    else:
+        draw.line([30 + ox, 270 + oy, 330 + ox, 40 + oy], fill=SWORD_BLADE, width=5)
+    draw.rectangle([20 + ox, 262 + oy, 48 + ox, 285 + oy], fill=SWORD_GRIP)
+    draw.rectangle([44 + ox, 250 + oy, 56 + ox, 262 + oy], fill=accent)
+    return img
+
+
+def preview_render_rgba(accent=(30, 200, 200), size=(400, 300)):
+    """The same sword on a fully transparent background, as a render with real
+    alpha would deliver it."""
+    img = Image.new("RGBA", size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    draw.line([30, 270, 330, 40], fill=SWORD_BLADE + (255,), width=5)
+    draw.rectangle([20, 262, 48, 285], fill=SWORD_GRIP + (255,))
+    draw.rectangle([44, 250, 56, 262], fill=accent + (255,))
+    return img
