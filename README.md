@@ -168,9 +168,22 @@ byte-identical, so output can be committed and diffed), and accept one image
 uv run python scripts/pil_palette_diff.py   "reference.png"
 uv run python scripts/pil_palette_diff.py   "reference.png" "render.png"
 uv run python scripts/pil_structure_diff.py "reference.png" "render.png" --grid 4x3
+uv run python scripts/pil_structure_diff.py "view_a.png" "view_b.png" --foreground
 ```
 
 Always quote paths — image filenames routinely contain spaces and parentheses.
+
+**Use `--foreground` (both tools) when comparing object renders** — a model on a
+preview backdrop, a product shot, a sprite. Full-frame metrics include the
+background, and a shared backdrop can be ~98% of both frames: two *different*
+swords measured 0.991 full-frame structural similarity because the background was
+doing the scoring. Foreground mode masks the background out (alpha when the file
+carries real transparency, border-median OKLab colour otherwise — the same
+visible-pixel definition as the Synty asset index), crops to the object's
+bounding box so position in frame stops mattering, and scores only grid cells
+with real foreground support. When you *don't* pass it, the tools estimate
+foreground coverage anyway and flag `background_dominant` on mostly-background
+frames — treat that flag as "these scores describe the backdrop".
 
 ## Worked example
 
@@ -220,9 +233,16 @@ A caller reading only a similarity score or a hash would have concluded "identic
 | Did the colour scheme change? | palette | `accent_hue_shift_detected`, `hue_family_fraction_deltas` |
 | What exact colours are used? | palette | `base_palette`, `accent_palette`, `hue_families` |
 | More / less detailed? | structure | per-cell `edge_mean` (see caveat below) |
+| Same **object**, ignoring the backdrop? | both, `--foreground` | same fields, foreground-masked |
 
 **Consult both tools for any "do these match?" question.** They are blind to
-different things.
+different things. And **read `flags` before any score**: `background_dominant`,
+`accent_support_low`, `foreground_too_small` and friends each name a specific
+way the numbers beside them are weakened. `accent_hue_shift_detected` is
+support-gated — a hue family needs both a minimum pixel count and a minimum
+frame fraction before its appearance or disappearance can flip the verdict, so
+a stray anti-aliased pixel cannot — but with `accent_support_low` flagged, even
+the gated verdict should not influence a decision.
 
 ### Colour is reported three ways, deliberately
 
@@ -272,11 +292,11 @@ uv sync
 uv run pytest -v
 ```
 
-**63 tests.** Fixtures are generated synthetically in-process, so no binary test
+**86 tests.** Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
 Six tests additionally confirm results against a real reference image and **skip
-when it is absent** — so a fresh clone reports `57 passed, 6 skipped`, which is
+when it is absent** — so a fresh clone reports `80 passed, 6 skipped`, which is
 expected. Their strongest assertions are duplicated unskipped against a synthetic
 stand-in, so a clean checkout still guards every known regression.
 
@@ -322,6 +342,14 @@ measured.
 Phase 1 complete: tools built and validated, plugin packaged,
 `claude plugin validate --strict` passing, and the package audited against and
 conforming to [Agent Plugins 1.0.0](#standards-conformance).
+
+0.2.0 adds foreground separation, driven by a production failure: run over two
+asset renders sharing a preview background, full-frame similarity scored two
+different objects 0.991. Both tools now estimate foreground coverage and flag
+`background_dominant`, accept `--foreground` for masked, bbox-registered
+measurement (alpha-derived or border-median OKLab, matching the Synty asset
+index's visible-pixel definition), and support-gate the hue-shift verdict so a
+handful of anti-aliased pixels cannot flip it.
 
 Known limitations, tracked in [`docs/index.md`](docs/index.md#open-items):
 

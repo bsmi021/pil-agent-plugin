@@ -61,6 +61,10 @@ Tracked in detail in [phase2-scope.md](phase2-scope.md); summarised here.
   Both were written as throwaway harness code to review a game asset, both were
   load-bearing, and one of them changed a headline conclusion. Rationale in the
   [trial bundle](../runs/2026-08-18-skeleton-warrior-asset-review/README.md#what-this-exercise-wants-from-phase-2).
+  **Landed in 0.2.0** as `--foreground` on both tools: alpha- or
+  border-median-OKLab masking, bbox registration, support-gated cell scoring,
+  and the `background_dominant` / `accent_support_low` flag family — prompted
+  by a second production miss (two different swords scoring 0.991 full-frame).
 - **Geometry questions remain unanswerable from pixels.** Agreed to add an
   optional Blender mesh-statistics tool in phase 3; until then `geometry.*`
   predicates must return `UNMEASURABLE` rather than approximate.

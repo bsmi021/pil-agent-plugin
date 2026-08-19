@@ -43,16 +43,52 @@ Always quote image paths: they frequently contain spaces or parentheses.
 | Did the colour scheme change? | palette | `accent_hue_shift_detected`, `hue_family_fraction_deltas` |
 | What exact colours are used? | palette | `base_palette`, `accent_palette`, `hue_families` |
 | Did it get more/less detailed? | structure | per-cell `edge_mean` (read the caveat below) |
+| Same **object**, ignoring the backdrop? | both, with `--foreground` | same fields, foreground-masked |
 
 **Consult both tools for any "do these match?" question.** They are blind to
 different things. A measured cyan→red recolour scored 0.9990 structural similarity
 and 0 hash distance, versus 0.9996 and 0 for a mere rescale — structure and hashes
 cannot see hue at all.
 
+## Foreground mode — required for object renders
+
+Full-frame metrics include the background. On an asset render (a model on a
+preview backdrop), the shared background can be ~98% of both frames, so two
+**different** objects score near-identical: a measured sword pair read 0.991
+structural similarity while the sword itself occupied 1.5% of the frame. The
+flags tell you when this is happening — **check `flags` before trusting any
+score**:
+
+- `background_dominant` — the frame is mostly background (estimated foreground
+  under 10%). Full-frame similarity and palettes describe the backdrop. Re-run
+  both tools with `--foreground`.
+- `foreground_too_small` — foreground mode is on, but the object covers under
+  2% of the frame; regional and hue statistics carry few pixels.
+- `accent_support_low` / `accent_area_very_small` — too few vivid pixels for
+  the hue-shift verdict to rank anything. Do not let
+  `accent_hue_shift_detected` influence a decision while these are present.
+- `foreground_mask_empty` — no foreground found; the tool fell back to
+  full-frame analysis.
+
+`--foreground` masks the background out: from the **alpha channel** when the
+file carries real transparency, otherwise by removing pixels near the
+**border-median colour** in OKLab (`--background-delta`, default 0.035 — the
+same definition of a visible pixel as the Synty asset index). The structure
+tool additionally crops to the foreground bounding box, so the comparison is
+position-independent, and only grid cells with real foreground support are
+scored (`cells_compared` / `cells_skipped_low_support` report the split). In
+this mode every fraction (accent share, hue `fraction_of_frame`) is relative to
+the **foreground**, and the `foreground` block in each image's output records
+how the mask was derived.
+
+One caveat: thin objects lose edge fidelity across resolutions (most of their
+pixels are edge-blended), so compare like-resolution renders where possible and
+rely on relative ranking otherwise.
+
 ## `pil_palette_diff.py`
 
 ```bash
-... pil_palette_diff.py "<reference>" ["<candidate>"] [--colors 8] [--accent-sat 100] [--accent-val 60]
+... pil_palette_diff.py "<reference>" ["<candidate>"] [--colors 8] [--accent-sat 100] [--accent-val 60] [--foreground] [--background-delta 0.035]
 ```
 
 Reports colour three ways, because no single view suffices:
@@ -81,7 +117,7 @@ and both palette distances are symmetric under swapping them.
 ## `pil_structure_diff.py`
 
 ```bash
-... pil_structure_diff.py "<reference>" ["<candidate>"] [--grid 4x3]
+... pil_structure_diff.py "<reference>" ["<candidate>"] [--grid 4x3] [--foreground] [--background-delta 0.035]
 ```
 
 Statistics run on a fixed-size working copy over a grid defined as *fractions* of

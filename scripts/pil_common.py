@@ -11,6 +11,13 @@ Design constraints, all of them load-bearing:
     whole colour budget on near-black tones and never reports the vivid accents
     that carry the image's perceptual identity. Palettes are therefore always
     extracted twice: once over all pixels, once over a chroma-masked subset.
+*   **Foreground honesty.** On an asset render, a shared preview background can
+    be ~98% of both frames, so full-frame metrics score two different objects
+    as near-identical. Every metric therefore accepts an optional foreground
+    mask, derived from alpha when the file carries real transparency and from a
+    border-median background colour in OKLab otherwise -- the same definition of
+    "visible pixel" as the synty_asset_index descriptor, so the two codebases
+    never disagree about what the foreground is.
 """
 
 from __future__ import annotations
@@ -36,16 +43,183 @@ DEFAULT_ACCENT_VAL_MIN = 60
 # Per-pixel luminance delta above which a pixel counts as "changed".
 CHANGE_THRESHOLD = 10
 
+# Accent coverage below this fraction is flagged as very small: too few vivid
+# pixels for hue statistics to be trustworthy on their own.
+ACCENT_AREA_SMALL_FRACTION = 0.005
 
-def load_rgb(path):
-    """Open an image and force RGB, dropping any alpha onto black."""
+# --- Foreground separation ---------------------------------------------------
+# Constants deliberately mirror tools/synty_asset_index/palette.py so both
+# codebases share one definition of "foreground".
+
+# Pixels with alpha below this are background when the file carries real
+# transparency (any alpha < 255).
+ALPHA_FOREGROUND_MIN = 8
+
+# OKLab distance from the border-median colour within which an opaque pixel
+# counts as background.
+DEFAULT_BACKGROUND_DELTA = 0.035
+
+# Foreground below this fraction of the frame earns foreground_too_small: thin
+# assets leave so few pixels that regional and hue statistics are noisy.
+FOREGROUND_MIN_FRACTION = 0.02
+
+# Estimated foreground below this fraction earns background_dominant in default
+# (full-frame) mode: the frame's metrics mostly describe the background.
+BACKGROUND_DOMINANT_MAX = 0.10
+
+# Minimum support for a hue family to count as *present* in the lost/gained
+# verdict logic. Both bounds must hold: the fraction keeps the gate scale
+# invariant, the absolute pixel floor keeps a handful of anti-aliased edge
+# pixels from flipping the verdict on small foregrounds. The census itself is
+# never gated -- these bound only verdict participation.
+HUE_PRESENCE_MIN_FRACTION = 0.0002
+HUE_PRESENCE_MIN_PIXELS = 10
+
+# Minimum foreground pixels for a grid cell to participate in the structural
+# similarity score (counted on the fixed-size working copy, so resolution does
+# not move it).
+CELL_MIN_SUPPORT_PIXELS = 16
+
+
+def load_rgb_alpha(path):
+    """Open an image; return (rgb, alpha).
+
+    rgb is alpha-flattened onto black, byte-identical to what load_rgb returns,
+    so full-frame metrics are unchanged by this loader. alpha is a uint8 HxW
+    array, or None when the file is fully opaque -- a file that carries an alpha
+    channel but uses no transparency provides no foreground information.
+    """
     img = Image.open(path)
     if img.mode in ("RGBA", "LA", "P"):
         img = img.convert("RGBA")
+        alpha = np.asarray(img.getchannel("A"), dtype=np.uint8)
         flat = Image.new("RGBA", img.size, (0, 0, 0, 255))
         flat.alpha_composite(img)
-        return flat.convert("RGB")
-    return img.convert("RGB")
+        if not bool((alpha < 255).any()):
+            alpha = None
+        return flat.convert("RGB"), alpha
+    return img.convert("RGB"), None
+
+
+def load_rgb(path):
+    """Open an image and force RGB, dropping any alpha onto black."""
+    return load_rgb_alpha(path)[0]
+
+
+def _srgb_to_linear(channel):
+    return np.where(
+        channel <= 0.04045, channel / 12.92, ((channel + 0.055) / 1.055) ** 2.4
+    )
+
+
+def rgb_to_oklab_array(rgb_array):
+    """Vectorised sRGB (0-255) -> OKLab over a trailing axis of 3.
+
+    The coefficients match synty_asset_index's rgb_to_oklab exactly, so "near
+    the background colour" means the same thing to both tools.
+    """
+    lin = _srgb_to_linear(np.asarray(rgb_array, dtype=np.float64) / 255.0)
+    r, g, b = lin[..., 0], lin[..., 1], lin[..., 2]
+    l_val = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
+    m_val = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b
+    s_val = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b
+    l_root, m_root, s_root = np.cbrt(l_val), np.cbrt(m_val), np.cbrt(s_val)
+    return np.stack(
+        [
+            0.2104542553 * l_root + 0.7936177850 * m_root - 0.0040720468 * s_root,
+            1.9779984951 * l_root - 2.4285922050 * m_root + 0.4505937099 * s_root,
+            0.0259040371 * l_root + 0.7827717662 * m_root - 0.8086757660 * s_root,
+        ],
+        axis=-1,
+    )
+
+
+def _border_samples(rgb):
+    """The 8 border sample points (corners + edge midpoints) as an Nx3 array."""
+    arr = np.asarray(rgb, dtype=np.uint8)
+    h, w = arr.shape[:2]
+    coords = sorted(
+        {
+            (0, 0),
+            (w - 1, 0),
+            (0, h - 1),
+            (w - 1, h - 1),
+            (w // 2, 0),
+            (w // 2, h - 1),
+            (0, h // 2),
+            (w - 1, h // 2),
+        }
+    )
+    return np.array([arr[y, x] for x, y in coords], dtype=np.float64)
+
+
+def estimate_background(rgb):
+    """(OKLab, hex) of the median border colour, per synty_asset_index."""
+    samples = _border_samples(rgb)
+    lab = np.median(rgb_to_oklab_array(samples), axis=0)
+    rgb_median = np.median(samples, axis=0)
+    return lab, to_hex(tuple(int(round(v)) for v in rgb_median))
+
+
+def foreground_mask(rgb, alpha, background_delta):
+    """Boolean HxW foreground mask, plus provenance.
+
+    Returns (mask, source, background_hex). Real transparency is authoritative
+    when present; otherwise opaque pixels within background_delta (OKLab) of the
+    border-median colour are background. background_hex is None on the alpha
+    path, where no colour estimate is involved.
+    """
+    if alpha is not None:
+        return alpha >= ALPHA_FOREGROUND_MIN, "alpha", None
+    lab = rgb_to_oklab_array(np.asarray(rgb, dtype=np.float64))
+    background_lab, background_hex = estimate_background(rgb)
+    distance = np.sqrt(((lab - background_lab) ** 2).sum(axis=-1))
+    return distance > background_delta, "background_estimate", background_hex
+
+
+def foreground_estimate(rgb, alpha, background_delta):
+    """Cheap foreground-fraction hint: (fraction, source, background_hex).
+
+    The alpha path is exact. The colour path runs on the working-size copy --
+    good enough for a dominance flag without a full-resolution OKLab pass.
+    """
+    if alpha is not None:
+        mask = alpha >= ALPHA_FOREGROUND_MIN
+        return round(float(mask.mean()), 6), "alpha", None
+    mask, source, background_hex = foreground_mask(
+        to_working(rgb), None, background_delta
+    )
+    return round(float(mask.mean()), 6), source, background_hex
+
+
+def mask_bbox(mask):
+    """Tight (left, top, right, bottom) around True pixels, or None if empty."""
+    rows, cols = np.nonzero(mask)
+    if rows.size == 0:
+        return None
+    return int(cols.min()), int(rows.min()), int(cols.max()) + 1, int(rows.max()) + 1
+
+
+def masked_strip(img, mask):
+    """Masked pixels as a 1xN image so the quantiser can run over a subset."""
+    selected = np.asarray(img)[mask]
+    if selected.size == 0:
+        return None
+    return Image.fromarray(selected.reshape(1, -1, 3).astype(np.uint8), "RGB")
+
+
+def apply_mask(img, mask):
+    """Copy of img with background pixels forced to black, so hashes and pixel
+    diffs reflect the foreground alone."""
+    arr = np.asarray(img).copy()
+    arr[~mask] = 0
+    return Image.fromarray(arr, "RGB")
+
+
+def resize_mask(mask, size):
+    """Resize a boolean mask to (width, height) without inventing new values."""
+    strip = Image.fromarray(mask.astype(np.uint8) * 255, "L")
+    return np.asarray(strip.resize(size, Image.NEAREST)) >= 128
 
 
 def to_working(img):
@@ -68,19 +242,33 @@ def luminance_array(img):
     return np.asarray(img.convert("L"), dtype=np.float64)
 
 
-def luminance_stats(img):
+def luminance_stats(img, mask=None):
     lum = luminance_array(img)
+    if mask is not None:
+        lum = lum[mask]
+        if lum.size == 0:
+            return {"mean": None, "std": None}
     return {"mean": round(float(lum.mean()), 3), "std": round(float(lum.std()), 3)}
 
 
-def saturation_stats(img):
+def saturation_stats(img, mask=None):
     sat = np.asarray(img.convert("HSV"), dtype=np.float64)[:, :, 1]
+    if mask is not None:
+        sat = sat[mask]
+        if sat.size == 0:
+            return {"mean": None, "std": None}
     return {"mean": round(float(sat.mean()), 3), "std": round(float(sat.std()), 3)}
 
 
-def entropy_of(img):
+def entropy_of(img, mask=None):
     """Shannon entropy in bits of the 256-bin luminance histogram."""
-    hist = np.asarray(img.convert("L").histogram(), dtype=np.float64)
+    if mask is None:
+        hist = np.asarray(img.convert("L").histogram(), dtype=np.float64)
+    else:
+        lum = np.asarray(img.convert("L"), dtype=np.float64)[mask]
+        if lum.size == 0:
+            return 0.0
+        hist = np.histogram(lum, bins=256, range=(0, 256))[0].astype(np.float64)
     total = hist.sum()
     if total <= 0:
         return 0.0
@@ -136,16 +324,23 @@ def quantize_palette(img, n_colors):
     return entries
 
 
-def accent_subset(img, sat_min, val_min):
-    """Return (accent-pixels-as-image, fraction-of-frame) for vivid pixels.
+def accent_subset(img, sat_min, val_min, within=None):
+    """Return (accent-pixels-as-image, fraction) for vivid pixels.
 
     The returned image is a 1xN strip containing only the masked pixels, which
-    lets the same quantiser run over the accent subset alone.
+    lets the same quantiser run over the accent subset alone. With a `within`
+    foreground mask, only foreground pixels are considered and the fraction is
+    a share of foreground rather than of the frame.
     """
     hsv = np.asarray(img.convert("HSV"))
     rgb = np.asarray(img)
     mask = (hsv[:, :, 1] > sat_min) & (hsv[:, :, 2] > val_min)
-    fraction = float(mask.mean())
+    if within is not None:
+        mask &= within
+        denominator = float(within.sum())
+        fraction = (float(mask.sum()) / denominator) if denominator else 0.0
+    else:
+        fraction = float(mask.mean())
     selected = rgb[mask]
     if selected.size == 0:
         return None, 0.0
@@ -173,19 +368,26 @@ HUE_FAMILIES = (
 HUE_FAMILY_NEGLIGIBLE = 0.01
 
 
-def hue_families(img, sat_min, val_min):
+def hue_families(img, sat_min, val_min, within=None):
     """Per-hue-family census of the chroma-masked pixels.
 
     Complements the palettes: quantisation reports *which* colours dominate by
     area, this reports *which hues are present at all*. Both are needed -- an
     accent hue vanishing between two renders is a colour-scheme change even when
     it occupies a fraction of a percent of the frame.
+
+    With a `within` foreground mask, only foreground pixels are considered and
+    fraction_of_frame becomes a fraction of the foreground.
     """
     hsv = np.asarray(img.convert("HSV"))
     hue = hsv[:, :, 0].astype(np.int16)
     mask = (hsv[:, :, 1] > sat_min) & (hsv[:, :, 2] > val_min)
 
-    total_px = float(hue.size)
+    if within is not None:
+        mask &= within
+        total_px = float(within.sum())
+    else:
+        total_px = float(hue.size)
     accent_px = float(mask.sum())
     masked_hue = hue[mask]
 
@@ -198,7 +400,7 @@ def hue_families(img, sat_min, val_min):
         out[name] = {
             "pixels": count,
             "fraction_of_accents": round(frac_accents, 6),
-            "fraction_of_frame": round(count / total_px, 6),
+            "fraction_of_frame": round(count / total_px, 6) if total_px else 0.0,
             "negligible": bool(0.0 < frac_accents < HUE_FAMILY_NEGLIGIBLE),
         }
     return out
@@ -282,11 +484,17 @@ def parse_grid(spec):
     return cols, rows
 
 
-def fractional_cells(img, cols, rows):
+def fractional_cells(img, cols, rows, mask=None):
     """Per-cell statistics over a fractional grid.
 
     The grid is defined as fractions of the image's own dimensions, so two
     images of different pixel sizes still yield corresponding cells.
+
+    With a foreground mask, statistics run over each cell's foreground pixels
+    only and every cell carries its `foreground_pixels` support count; a cell
+    with no foreground reports null statistics rather than fabricating numbers
+    from pure background. Gradients are still taken on the unmasked image, so
+    silhouette edges -- real object structure -- survive.
     """
     lum = luminance_array(img)
     edges = edge_magnitude(img)
@@ -301,22 +509,41 @@ def fractional_cells(img, cols, rows):
             edge_cell = edges[y0:y1, x0:x1]
             if lum_cell.size == 0:
                 continue
-            cells.append(
-                {
-                    "row": row,
-                    "col": col,
-                    "bounds_fractional": [
-                        round(col / cols, 4),
-                        round(row / rows, 4),
-                        round((col + 1) / cols, 4),
-                        round((row + 1) / rows, 4),
-                    ],
-                    "luminance_mean": round(float(lum_cell.mean()), 3),
-                    "luminance_std": round(float(lum_cell.std()), 3),
-                    "edge_mean": round(float(edge_cell.mean()), 3),
-                    "entropy": _cell_entropy(lum_cell),
-                }
+            cell = {
+                "row": row,
+                "col": col,
+                "bounds_fractional": [
+                    round(col / cols, 4),
+                    round(row / rows, 4),
+                    round((col + 1) / cols, 4),
+                    round((row + 1) / rows, 4),
+                ],
+            }
+            if mask is not None:
+                cell_mask = mask[y0:y1, x0:x1]
+                support = int(cell_mask.sum())
+                cell["foreground_pixels"] = support
+                cell["foreground_fraction"] = round(support / lum_cell.size, 6)
+                if support == 0:
+                    # No foreground here: emit nulls, never NaN (which json.dump
+                    # would happily serialise as invalid JSON).
+                    cell.update(
+                        luminance_mean=None,
+                        luminance_std=None,
+                        edge_mean=None,
+                        entropy=None,
+                    )
+                    cells.append(cell)
+                    continue
+                lum_cell = lum_cell[cell_mask]
+                edge_cell = edge_cell[cell_mask]
+            cell.update(
+                luminance_mean=round(float(lum_cell.mean()), 3),
+                luminance_std=round(float(lum_cell.std()), 3),
+                edge_mean=round(float(edge_cell.mean()), 3),
+                entropy=_cell_entropy(lum_cell),
             )
+            cells.append(cell)
     return cells
 
 
