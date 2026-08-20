@@ -1,0 +1,310 @@
+{
+  "interpretation_limits": [
+    "Counts are read from Blender's scene data (`Mesh.polygons`/`vertices`/`edges`, `Object.material_slots`) as declared on the base mesh -- unapplied modifiers (Subdivision, Mirror, Solidify, ...) mean the render-visible density can differ from these counts. Apply the modifiers in Blender first if that difference matters, or compare two scenes whose modifier states you know match.",
+    "`bounding_dimensions_world` is an axis-aligned box over every mesh object's world-space bound_box corners; it reflects Blender scene units without unit conversion (a scene authored in metres reports metres).",
+    "`mesh_objects` is keyed by Blender object name, not by mesh datablock. Two objects that instance one mesh appear as two entries reporting the same counts.",
+    "This tool measures the .blend file's scene; it does not render or otherwise consult pixels. A geometry answer this tool cannot produce -- Blender absent, .blend unreadable, probe failed -- is a clean UNMEASURABLE at the contract layer, never a pixel-derived approximation."
+  ],
+  "parameters": {
+    "blend": "C:\\Projects\\tms-heim\\art\\skeleton-crusaders\\swordsman\\source\\SM_Chr_Skeleton_BlackOrderSwordsman_01.blend",
+    "blender_executable": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+    "blender_version": "5.1.2",
+    "timeout_seconds": 300
+  },
+  "scene": {
+    "bounding_dimensions_world": {
+      "dimensions": [
+        203.899841,
+        161.376649,
+        29.782574
+      ],
+      "max": [
+        101.949921,
+        160.914505,
+        13.906791
+      ],
+      "min": [
+        -101.949921,
+        -0.462144,
+        -15.875783
+      ]
+    },
+    "mesh_objects": {
+      "SKS_Armor_BracerHand_L_01": {
+        "dimensions": [
+          0.147104,
+          0.166823,
+          0.409715
+        ],
+        "edges": 522,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 302,
+        "verts": 240
+      },
+      "SKS_Armor_BracerHand_R_01": {
+        "dimensions": [
+          0.144235,
+          0.307337,
+          0.37012
+        ],
+        "edges": 522,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 302,
+        "verts": 240
+      },
+      "SKS_Armor_Greave_L_01": {
+        "dimensions": [
+          0.148268,
+          0.191449,
+          0.38763
+        ],
+        "edges": 814,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 385,
+        "verts": 414
+      },
+      "SKS_Armor_Greave_R_01": {
+        "dimensions": [
+          0.147886,
+          0.348745,
+          0.328882
+        ],
+        "edges": 814,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 385,
+        "verts": 414
+      },
+      "SKS_Armor_MailCollar_01": {
+        "dimensions": [
+          0.34255,
+          0.247514,
+          0.126971
+        ],
+        "edges": 1772,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 972,
+        "verts": 936
+      },
+      "SKS_Armor_MailSleeve_L_01": {
+        "dimensions": [
+          0.200985,
+          0.344299,
+          0.445231
+        ],
+        "edges": 2438,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 1400,
+        "verts": 1284
+      },
+      "SKS_Armor_MailSleeve_R_01": {
+        "dimensions": [
+          0.230055,
+          0.193407,
+          0.493852
+        ],
+        "edges": 2438,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 1400,
+        "verts": 1284
+      },
+      "SKS_Body_Foot_L_01": {
+        "dimensions": [
+          0.098886,
+          0.227384,
+          0.116366
+        ],
+        "edges": 211,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 138,
+        "verts": 75
+      },
+      "SKS_Body_Foot_R_01": {
+        "dimensions": [
+          0.096532,
+          0.177312,
+          0.192887
+        ],
+        "edges": 211,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 138,
+        "verts": 75
+      },
+      "SKS_Body_Leg_L_01": {
+        "dimensions": [
+          0.081666,
+          0.228461,
+          0.522854
+        ],
+        "edges": 544,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 280,
+        "verts": 272
+      },
+      "SKS_Body_Leg_R_01": {
+        "dimensions": [
+          0.081644,
+          0.338534,
+          0.451951
+        ],
+        "edges": 544,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 280,
+        "verts": 272
+      },
+      "SKS_Body_Neck_01": {
+        "dimensions": [
+          0.068338,
+          0.062494,
+          0.1551
+        ],
+        "edges": 830,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 426,
+        "verts": 416
+      },
+      "SKS_Donor_BodyBelowChin_01": {
+        "dimensions": [
+          203.899841,
+          161.207291,
+          29.782574
+        ],
+        "edges": 3855,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 2243,
+        "verts": 1668
+      },
+      "SKS_Garment_Tabard_01": {
+        "dimensions": [
+          0.549443,
+          0.444575,
+          0.985075
+        ],
+        "edges": 1142,
+        "material_slot_count": 1,
+        "materials": [
+          "SKS_Tabard_01"
+        ],
+        "polys": 546,
+        "verts": 624
+      },
+      "SKS_Garment_UnderMailSkirt_01": {
+        "dimensions": [
+          0.307324,
+          0.256152,
+          0.453353
+        ],
+        "edges": 744,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 362,
+        "verts": 384
+      },
+      "SKS_Head_Skull_01": {
+        "dimensions": [
+          0.224164,
+          0.283883,
+          0.258329
+        ],
+        "edges": 425,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 236,
+        "verts": 198
+      },
+      "SKS_Utility_Belt_01": {
+        "dimensions": [
+          0.384796,
+          0.268529,
+          0.189763
+        ],
+        "edges": 936,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 436,
+        "verts": 556
+      },
+      "SKS_Utility_Scabbard_01": {
+        "dimensions": [
+          0.142613,
+          0.307132,
+          0.65559
+        ],
+        "edges": 76,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 38,
+        "verts": 44
+      },
+      "SKS_Weapon_Sword_01": {
+        "dimensions": [
+          0.217878,
+          0.383551,
+          0.837012
+        ],
+        "edges": 210,
+        "material_slot_count": 1,
+        "materials": [
+          "CharactersOnly_Gothic"
+        ],
+        "polys": 102,
+        "verts": 116
+      }
+    },
+    "path": "C:\\Projects\\tms-heim\\art\\skeleton-crusaders\\swordsman\\source\\SM_Chr_Skeleton_BlackOrderSwordsman_01.blend",
+    "totals": {
+      "edges": 19048,
+      "mesh_object_count": 19,
+      "polys": 10371,
+      "verts": 9512
+    }
+  },
+  "tool": "pil_blender_mesh",
+  "version": "0.4.0"
+}
