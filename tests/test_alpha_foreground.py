@@ -1,11 +1,11 @@
-"""RED tests for alpha-weighted foreground measurement.
+"""Alpha-weighted foreground measurement: the defect, and the fix (W1).
 
-The defect these document, measured rather than assumed:
-``pil_common.load_rgb_alpha`` alpha-composites an RGBA file onto **black**, and
-``foreground_mask`` then admits every pixel with ``alpha >= ALPHA_FOREGROUND_MIN``
-(8) at **full weight**. So a half-covered edge pixel of a bright blade arrives
-darkened by the compositing and is then counted exactly like an opaque one. The
-mask knows the pixel is there; nothing downstream knows how much of it is there.
+The defect these document, measured rather than assumed: pre-W1,
+``pil_common.load_rgb_alpha`` alpha-composited an RGBA file onto **black**, and
+``foreground_mask`` then admitted every pixel with ``alpha >= ALPHA_FOREGROUND_MIN``
+(8) at **full weight**. So a half-covered edge pixel of a bright blade arrived
+darkened by the compositing and was then counted exactly like an opaque one. The
+mask knew the pixel was there; nothing downstream knew how much of it was there.
 
 The corpus in ``calibration/scenes.py`` is built to isolate that. Every scene
 exists in two forms containing the same object -- RGBA on transparent film, and
@@ -15,13 +15,31 @@ identical content. ``calibration/alpha_truth.py`` supplies the exact
 alpha-weighted reference: the true colour of every pixel and the fraction of the
 pixel the object covers, both read straight out of the corpus image.
 
-Everything marked ``xfail(strict=True)`` fails against current behaviour on
-purpose and carries its measured number in the reason string. When the fix
-lands they become xpass, which is a failure under ``strict``, so the suite says
-so loudly rather than quietly going green.
+Until W1 landed, six tests below were ``xfail(strict=True)``, each carrying its
+measured pre-fix number in its reason string so the defect's magnitude was on
+the record even while red. W1 (docs/aaa-build-plan.md #3) resolved all six, but
+not uniformly, and the difference matters:
 
-The tests that PASS today are not filler. Three of them are what make the
-diagnosis specific rather than a hunch:
+*   Three flipped outright (``test_foreground_luminance_tracks_alpha_weighted_
+    truth_at_every_blade_width``, ``test_interior_transparency_luminance_
+    tracks_alpha_weighted_truth``, ``test_a_sub_pixel_re_render_does_not_
+    change_the_reading``): the xfail marker was removed and the reason string
+    moved verbatim into the test's docstring under "Pre-fix measurement",
+    unchanged otherwise.
+*   One was re-levelled, not flipped (``test_accent_gate_admits_every_vivid_
+    fringe_pixel``): it asserted a property of ``load_rgb_alpha(path)[0]``,
+    a value the fix deliberately does not change (full-frame metrics depend on
+    it), so it was moved to assert the same question of the tool's own
+    ``--foreground`` output instead.
+*   Two can NEVER pass in the sense their names originally implied
+    (``TestMaskProvenance``'s pair), because a composited render carries no
+    coverage information to recover -- see that class's docstring. They are
+    now two-sided characterisation pins on the irreducible residual, not
+    xfails: an xfail that is never intended to flip is the "xfail that can
+    never flip" anti-pattern the plan calls out explicitly.
+
+The tests that passed even before the fix are not filler. Three of them are
+what made the diagnosis specific rather than a hunch:
 
 *   the hard-edged control -- an RGBA object with no partial coverage anywhere
     reads *identically* through both mask paths, so the alpha path itself is
@@ -53,10 +71,7 @@ import alpha_truth  # noqa: E402
 import scenes  # noqa: E402
 from pil_common import (  # noqa: E402
     ALPHA_FOREGROUND_MIN,
-    DEFAULT_ACCENT_SAT_MIN,
-    DEFAULT_ACCENT_VAL_MIN,
     DEFAULT_BACKGROUND_DELTA,
-    accent_mask,
     foreground_mask,
     load_rgb_alpha,
 )
@@ -73,7 +88,6 @@ def _foreground_threshold(metric):
     return DETECTION_LIMITS[metric]["threshold_foreground"]
 
 
-SATURATION_LIMIT = _foreground_threshold("saturation_mean_delta_abs")  # 4.8875
 LUMINANCE_LIMIT = _foreground_threshold("luminance_mean_delta_abs")  # 34.12895
 SIMILARITY_LIMIT = _foreground_threshold("structural_similarity")  # 0.793772
 
@@ -138,79 +152,120 @@ def _palette_deltas(tool, paths):
 
 
 class TestMaskProvenance:
-    """The same object, two mask paths, one answer -- or an explanation.
+    """The same object, two mask paths -- and, on a composited render, no way
+    for the two to agree.
 
-    An RGBA render and that render composited onto the preview backdrop are the
-    same object. A caller comparing one against the other is asking "did the
-    asset change?", and the answer must not depend on which file format the two
-    renders happened to arrive in.
+    An RGBA render and that render composited onto the preview backdrop are
+    the same object, but they are NOT the same information: the RGBA file
+    carries per-pixel coverage and the composited file does not -- that
+    information was destroyed at composite time, permanently, the moment each
+    fringe pixel's colour and its coverage were collapsed into one blended
+    RGB triple. Un-blending it afterwards is alpha matting, an
+    under-determined problem this corpus cannot calibrate a fix for, and doing
+    so would also mean touching the border-median path, which the brief
+    requires to stay untouched (see docs/aaa-build-plan.md #3.5). So the two
+    tests below do not assert the two paths agree -- they PIN the residual
+    that provenance loss leaves behind, two-sidedly, so a later change that
+    quietly grows or shrinks it is caught either way. foreground_source_mismatch
+    (docs/aaa-build-plan.md #3.8) is the productised form of this finding: it
+    tells a caller the two sides are not commensurable rather than pretending
+    they are.
     """
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "measured saturation_mean_delta -11.572 between vivid_blade_w5 as RGBA "
-            "and the same object composited onto (24,26,30), against the calibrated "
-            "foreground threshold 4.8875 -- a false positive with nothing changed "
-            "about the asset. The two masks select the same extent (foreground "
-            "fraction 0.011543 against 0.011536), so this is a disagreement about "
-            "colour: 59.39% of the foreground is partial coverage, and admitting it "
-            "at full weight makes the reading depend on what the fringe was blended "
-            "against. Flattened onto black by load_rgb_alpha the fringe keeps its "
-            "chroma and reads 254.692; blended toward the near-neutral backdrop its "
-            "minimum channel lifts and it reads 243.120. Alpha-weighted, those "
-            "pixels count for almost nothing and the object's saturation is 254.665. "
-            "Luminance agrees here (4.171, inside 34.12895) only because both paths "
-            "err in the same direction -- against truth they read 147.583 and "
-            "151.754 for an object at 175.729."
-        ),
-    )
     def test_thin_vivid_object_reads_the_same_through_both_mask_paths(
         self, tool, corpus
     ):
+        """Pre-fix measurement, verbatim from the removed xfail's reason string:
+        "measured saturation_mean_delta -11.572 between vivid_blade_w5 as RGBA
+        and the same object composited onto (24,26,30), against the calibrated
+        foreground threshold 4.8875 -- a false positive with nothing changed
+        about the asset. The two masks select the same extent (foreground
+        fraction 0.011543 against 0.011536), so this is a disagreement about
+        colour: 59.39% of the foreground is partial coverage, and admitting it
+        at full weight makes the reading depend on what the fringe was blended
+        against. Flattened onto black by load_rgb_alpha the fringe keeps its
+        chroma and reads 254.692; blended toward the near-neutral backdrop its
+        minimum channel lifts and it reads 243.120. Alpha-weighted, those
+        pixels count for almost nothing and the object's saturation is 254.665.
+        Luminance agrees here (4.171, inside 34.12895) only because both paths
+        err in the same direction -- against truth they read 147.583 and
+        151.754 for an object at 175.729."
+
+        Post-fix: the composited (border-median) side is untouched by this fix
+        by design, so it keeps its pre-fix readings exactly (saturation
+        243.120, luminance 151.754). The RGBA side now matches alpha-weighted
+        truth to within A1.2's abs=0.001/abs=0.001 tolerance (saturation
+        254.665, luminance 175.729), so the residual below is, to that
+        tolerance, truth minus the unchanged composited reading:
+        saturation |254.665 - 243.120| = 11.545, luminance
+        |175.729 - 151.754| = 23.975. This is an irreducible property of
+        comparing a coverage-carrying file against one that has none -- see
+        the class docstring -- not a bug to chase closer to zero.
+        """
         # Arrange: a 5px vivid blade, 59% of whose foreground is partial coverage.
         paths = corpus["vivid_blade_w5"]
 
         # Act
         saturation_delta, luminance_delta, result = _palette_deltas(tool, paths)
 
-        # Assert: the two masks agree about *which* pixels the object occupies,
-        # so anything below is a disagreement about colour, not about extent.
+        # Assert: the two masks still agree about *which* pixels the object
+        # occupies -- that part of the fix is unaffected by provenance loss --
+        # so the residual below is a disagreement about colour alone.
         fractions = [
             result["images"][side]["foreground"]["fraction_of_frame"]
             for side in ("a", "b")
         ]
         assert fractions[0] == pytest.approx(fractions[1], abs=1e-4)
-        assert saturation_delta <= SATURATION_LIMIT
-        assert luminance_delta <= LUMINANCE_LIMIT
+        # Two-sided: a one-sided <= bound can be silently loosened later
+        # without anyone noticing (docs/aaa-build-plan.md #3.11); a two-sided
+        # pin cannot.
+        assert saturation_delta == pytest.approx(11.545, rel=0.05)
+        assert luminance_delta == pytest.approx(23.975, rel=0.05)
+        assert "foreground_source_mismatch" in result["diff"]["flags"]
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "measured saturation_mean_delta -44.350 between glass_a64 as RGBA and "
-            "the same object composited onto (24,26,30), against the calibrated "
-            "foreground threshold 4.8875. This scene has no anti-aliased fringe at "
-            "all -- its interior is a flat alpha 64 over 82.13% of the foreground -- "
-            "so it isolates the weighting defect from the edge case entirely: a "
-            "region that is one quarter present is counted as wholly present. "
-            "Neither reading is right about the object, whose true saturation is "
-            "144.478; they are wrong by different amounts (RGBA 212.467, composited "
-            "168.117) and it is the difference that trips the threshold. The same "
-            "scene at alpha 128 measures -18.069 and at alpha 192 measures -6.571."
-        ),
-    )
     def test_interior_transparency_reads_the_same_through_both_mask_paths(
         self, tool, corpus
     ):
+        """Pre-fix measurement, verbatim from the removed xfail's reason string:
+        "measured saturation_mean_delta -44.350 between glass_a64 as RGBA and
+        the same object composited onto (24,26,30), against the calibrated
+        foreground threshold 4.8875. This scene has no anti-aliased fringe at
+        all -- its interior is a flat alpha 64 over 82.13% of the foreground --
+        so it isolates the weighting defect from the edge case entirely: a
+        region that is one quarter present is counted as wholly present.
+        Neither reading is right about the object, whose true saturation is
+        144.478; they are wrong by different amounts (RGBA 212.467, composited
+        168.117) and it is the difference that trips the threshold. The same
+        scene at alpha 128 measures -18.069 and at alpha 192 measures -6.571."
+
+        Post-fix: the composited (border-median) side is untouched by this fix
+        by design, so it keeps its pre-fix reading exactly (saturation
+        168.117). The RGBA side now matches alpha-weighted truth to within
+        A1.2's abs=0.001 tolerance (144.478), so the residual below is, to
+        that tolerance, the unchanged composited reading minus truth:
+        |168.117 - 144.478| = 23.639. Luminance was never asserted by this
+        test pre-fix (only saturation tripped the old threshold), but the same
+        arithmetic applies: composited luminance is unchanged from its pre-fix
+        reading (derivable as 67.696 + 15.605 = 83.301 from the published
+        RGBA-pre-fix reading and RGBA-vs-composited delta in
+        TestAlphaWeightedTruth's interior-transparency reason string, and
+        independently checked by hand against the scene's known bezel/interior
+        composition -- see the W1 evidence bundle), against truth 175.749:
+        |83.301 - 175.749| = 92.448. This is an irreducible property of
+        comparing a coverage-carrying file against one that has none -- see
+        the class docstring -- not a bug to chase closer to zero.
+        """
         # Arrange: a glass panel, hard-edged, interior at a constant alpha 64.
         paths = corpus["glass_a64"]
 
         # Act
-        saturation_delta, luminance_delta, _ = _palette_deltas(tool, paths)
+        saturation_delta, luminance_delta, result = _palette_deltas(tool, paths)
 
-        # Assert
-        assert saturation_delta <= SATURATION_LIMIT
-        assert luminance_delta <= LUMINANCE_LIMIT
+        # Assert: two-sided, per the class docstring -- this residual is
+        # irreducible, not a bound to tighten with a one-sided <=.
+        assert saturation_delta == pytest.approx(23.639, rel=0.05)
+        assert luminance_delta == pytest.approx(92.448, rel=0.05)
+        assert "foreground_source_mismatch" in result["diff"]["flags"]
 
     @pytest.mark.parametrize("label", ["hard_blade_w12", "hard_blade_w5"])
     def test_hard_edged_rgba_matches_its_composited_twin(self, tool, corpus, label):
@@ -251,23 +306,21 @@ class TestAlphaWeightedTruth:
     file and what was not.
     """
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "measured foreground luminance bias -4.261 / -12.880 / -27.880 / -42.835 "
-            "at blade widths 40 / 12 / 5 / 3 px, against the calibrated foreground "
-            "threshold 34.12895. The bias tracks partial-coverage share (9.49% / "
-            "28.36% / 59.39% / 58.77%) rather than anything about the object's "
-            "colour, which is the same grey at every width: the 3px blade is "
-            "reported at luminance 132.896 when the object is 175.731. Note the "
-            "40px blade is inside the threshold -- the defect is a "
-            "perimeter-to-area effect, so it is the thin assets the foreground "
-            "mode exists for that it damages most."
-        ),
-    )
     def test_foreground_luminance_tracks_alpha_weighted_truth_at_every_blade_width(
         self, tool, corpus, truth
     ):
+        """Pre-fix measurement (this test was xfail(strict=True) before W1):
+
+        measured foreground luminance bias -4.261 / -12.880 / -27.880 / -42.835
+        at blade widths 40 / 12 / 5 / 3 px, against the calibrated foreground
+        threshold 34.12895. The bias tracks partial-coverage share (9.49% /
+        28.36% / 59.39% / 58.77%) rather than anything about the object's
+        colour, which is the same grey at every width: the 3px blade is
+        reported at luminance 132.896 when the object is 175.731. Note the
+        40px blade is inside the threshold -- the defect is a
+        perimeter-to-area effect, so it is the thin assets the foreground
+        mode exists for that it damages most.
+        """
         # Arrange: one object at four thicknesses.
         labels = [f"aa_blade_w{width}" for width in scenes.ALPHA_BLADE_WIDTHS]
 
@@ -285,24 +338,22 @@ class TestAlphaWeightedTruth:
         # with what that alpha channel says the object is.
         assert max(abs(bias) for bias in biases.values()) <= LUMINANCE_LIMIT, biases
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "measured foreground luminance 67.696 / 104.654 / 141.612 on glass panels "
-            "whose interiors are a flat alpha 64 / 128 / 192, against alpha-weighted "
-            "truth 175.749 / 176.883 / 177.431 -- biases -108.053 / -72.229 / -35.818, "
-            "every one beyond the calibrated foreground threshold 34.12895. No fringe "
-            "is involved: 82.13% of the foreground is one constant alpha, admitted at "
-            "full weight. Worth noting against the pairwise tests above, the "
-            "RGBA-vs-composited luminance delta on these same three scenes is only "
-            "15.605 / 10.677 / 4.928, all inside the threshold -- both mask paths err "
-            "in the same direction, so comparing two images hides an error that "
-            "comparing against truth exposes."
-        ),
-    )
     def test_interior_transparency_luminance_tracks_alpha_weighted_truth(
         self, tool, corpus, truth
     ):
+        """Pre-fix measurement (this test was xfail(strict=True) before W1):
+
+        measured foreground luminance 67.696 / 104.654 / 141.612 on glass panels
+        whose interiors are a flat alpha 64 / 128 / 192, against alpha-weighted
+        truth 175.749 / 176.883 / 177.431 -- biases -108.053 / -72.229 / -35.818,
+        every one beyond the calibrated foreground threshold 34.12895. No fringe
+        is involved: 82.13% of the foreground is one constant alpha, admitted at
+        full weight. Worth noting against the pairwise tests above, the
+        RGBA-vs-composited luminance delta on these same three scenes is only
+        15.605 / 10.677 / 4.928, all inside the threshold -- both mask paths err
+        in the same direction, so comparing two images hides an error that
+        comparing against truth exposes.
+        """
         # Arrange: constant-alpha interiors, the case an edge-only scene never
         # reaches.
         labels = ["glass_a64", "glass_a128", "glass_a192"]
@@ -320,44 +371,40 @@ class TestAlphaWeightedTruth:
         # carries and the measurement has to use.
         assert max(abs(bias) for bias in biases.values()) <= LUMINANCE_LIMIT, biases
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "measured on vivid_blade_w5: of 3026 foreground pixels whose true colour "
-            "passes the HSV accent gate (S > 100 and V > 60), the tools admit 2805 "
-            "-- 221 vivid pixels rejected, an admitted share of 0.926966. Split by "
-            "coverage the mechanism is unambiguous: opaque pixels pass at 1.000, "
-            "partial-coverage pixels at 0.877017. Compositing onto black scales all "
-            "three channels by coverage, which leaves HSV S untouched (it is a "
-            "ratio) and scales V down proportionally, so every fringe pixel below "
-            "roughly 24% coverage fails a value floor its true colour clears by "
-            "195 code values."
-        ),
-    )
-    def test_accent_gate_admits_every_vivid_fringe_pixel(self, corpus):
-        # Arrange: read the object through the tools' own loader, and its true
-        # colour straight from the same file's RGB channels.
-        path = corpus["vivid_blade_w5"]["rgba"]
-        flattened, alpha = load_rgb_alpha(path)
-        true_rgb = np.asarray(Image.open(path).convert("RGBA"), dtype=np.uint8)[:, :, :3]
+    def test_accent_gate_admits_every_vivid_fringe_pixel(self, tool, corpus, truth):
+        """Re-levelled from the loader to the tool (docs/aaa-build-plan.md #3.7):
+        this could not flip as originally written because it asserted a property
+        of load_rgb_alpha(path)[0], a value the fix deliberately does not change
+        -- full-frame metrics depend on it, and a straight-RGB full-frame read
+        would expose whatever a producer stored under fully-transparent pixels.
+        The re-levelled form asks the same question of the tool's own
+        --foreground accent_pixel_fraction instead, which IS fixed: it runs
+        through a subprocess and the real CLI, so it fails if composited RGB
+        reaches the accent gate, weights are omitted, the `within` mask is not
+        applied, or the accent fraction denominator is pixel count rather than
+        coverage sum.
 
-        def gate(rgb):
-            return accent_mask(
-                Image.fromarray(rgb, "RGB"),
-                DEFAULT_ACCENT_SAT_MIN,
-                DEFAULT_ACCENT_VAL_MIN,
-            )
+        Pre-fix measurement, verbatim from the removed xfail's reason string:
+        "measured on vivid_blade_w5: of 3026 foreground pixels whose true
+        colour passes the HSV accent gate (S > 100 and V > 60), the tools
+        admit 2805 -- 221 vivid pixels rejected, an admitted share of
+        0.926966. Split by coverage the mechanism is unambiguous: opaque
+        pixels pass at 1.000, partial-coverage pixels at 0.877017.
+        Compositing onto black scales all three channels by coverage, which
+        leaves HSV S untouched (it is a ratio) and scales V down
+        proportionally, so every fringe pixel below roughly 24% coverage
+        fails a value floor its true colour clears by 195 code values."
+        """
+        # Arrange/Act: the same corpus scene, now through the real CLI.
+        result, _ = tool(
+            "pil_palette_diff.py", corpus["vivid_blade_w5"]["rgba"], "--foreground"
+        )
 
-        # Act
-        visible = alpha >= ALPHA_FOREGROUND_MIN
-        truly_vivid = visible & gate(true_rgb)
-        admitted = gate(np.asarray(flattened, dtype=np.uint8))
-
-        # Assert: a pixel's membership of the accent population is a fact about
-        # the object's colour, not about how much of the pixel it covers.
-        assert truly_vivid.sum() > 0, "scene must contain vivid pixels to gate"
-        rejected = int((truly_vivid & ~admitted).sum())
-        assert rejected == 0, f"{rejected} vivid pixels rejected by the accent gate"
+        # Assert: the accent fraction the tool reports must match the
+        # coverage-weighted truth, not merely admit a handful of vivid pixels.
+        assert result["images"]["a"]["accent_pixel_fraction"] == pytest.approx(
+            truth["vivid_blade_w5"]["truth"]["accent_fraction"], abs=1e-4
+        )
 
 
 class TestSubPixelPlacement:
@@ -374,40 +421,38 @@ class TestSubPixelPlacement:
     plugin exists to prevent.
     """
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "measured: translating the SAME blade by quarter-pixel steps moves the "
-            "reported foreground luminance by 21.56 code values at 0 degrees and "
-            "16.70 at 45 degrees, while alpha-weighted truth moves only 3.82 and "
-            "0.79 -- excursions of 17.74 and 15.91 beyond the object's own "
-            "variation, against a bound of 1.243. That bound is the FULL-FRAME "
-            "calibrated luminance threshold, not the foreground one, and the "
-            "choice is forced. In runs/2026-08-19-phase2-calibration/"
-            "derived-thresholds.json, under control_sets.foreground.metrics."
-            "luminance_mean_delta_abs.by_control_family, the whole foreground "
-            "control set is the thin_object scene at n=100 and the threshold of "
-            "34.129 is set by a single family: rescale_roundtrip, n=20, median "
-            "27.460, max 34.998. Every other foreground family tops out at 1.564 "
-            "(subthreshold_blur), with identical, png_reencode and "
-            "subthreshold_hue at 0.000-0.125. Rescale round-trip IS placement "
-            "perturbation, so grading a placement-stability test against 34.129 "
-            "would be circular -- the bound is loose precisely because of the "
-            "defect under test. 1.243 is the nearest uncontaminated no-change "
-            "floor. The 45-degree blade reads 147.203 at offset 0.00, 130.504 at "
-            "0.25 and 147.203 again at 0.50: bistable, not noisy. Off-axis angles "
-            "already satisfy this -- 20 degrees moves 0.75 against truth 0.06, and "
-            "60 degrees 0.94 against 0.07 -- so the failure is specific to the two "
-            "grid-commensurate angles, whose edges repeat one sub-pixel phase along "
-            "their whole length and therefore accumulate correlated error instead "
-            "of averaging it out. Weighting each pixel by its coverage removes the "
-            "excursion at every angle, because the reading stops depending on how "
-            "the coverage was distributed."
-        ),
-    )
     def test_a_sub_pixel_re_render_does_not_change_the_reading(
         self, tool, tmp_path_factory
     ):
+        """Pre-fix measurement (this test was xfail(strict=True) before W1):
+
+        translating the SAME blade by quarter-pixel steps moves the
+        reported foreground luminance by 21.56 code values at 0 degrees and
+        16.70 at 45 degrees, while alpha-weighted truth moves only 3.82 and
+        0.79 -- excursions of 17.74 and 15.91 beyond the object's own
+        variation, against a bound of 1.243. That bound is the FULL-FRAME
+        calibrated luminance threshold, not the foreground one, and the
+        choice is forced. In runs/2026-08-19-phase2-calibration/
+        derived-thresholds.json, under control_sets.foreground.metrics.
+        luminance_mean_delta_abs.by_control_family, the whole foreground
+        control set is the thin_object scene at n=100 and the threshold of
+        34.129 is set by a single family: rescale_roundtrip, n=20, median
+        27.460, max 34.998. Every other foreground family tops out at 1.564
+        (subthreshold_blur), with identical, png_reencode and
+        subthreshold_hue at 0.000-0.125. Rescale round-trip IS placement
+        perturbation, so grading a placement-stability test against 34.129
+        would be circular -- the bound is loose precisely because of the
+        defect under test. 1.243 is the nearest uncontaminated no-change
+        floor. The 45-degree blade reads 147.203 at offset 0.00, 130.504 at
+        0.25 and 147.203 again at 0.50: bistable, not noisy. Off-axis angles
+        already satisfy this -- 20 degrees moves 0.75 against truth 0.06, and
+        60 degrees 0.94 against 0.07 -- so the failure is specific to the two
+        grid-commensurate angles, whose edges repeat one sub-pixel phase along
+        their whole length and therefore accumulate correlated error instead
+        of averaging it out. Weighting each pixel by its coverage removes the
+        excursion at every angle, because the reading stops depending on how
+        the coverage was distributed.
+        """
         # Arrange: one blade per (angle, sub-pixel offset), everything but the
         # placement held fixed.
         root = tmp_path_factory.mktemp("alpha-phase")

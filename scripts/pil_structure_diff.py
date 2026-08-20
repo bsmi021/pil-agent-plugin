@@ -50,7 +50,7 @@ from pil_common import (  # noqa: E402
     foreground_mask,
     fractional_cells,
     hamming,
-    load_rgb_alpha,
+    load_rgba_straight,
     luminance_array,
     luminance_stats,
     mask_bbox,
@@ -58,6 +58,7 @@ from pil_common import (  # noqa: E402
     resize_mask,
     symmetry_scores,
     to_working,
+    working_straight_and_weights,
 )
 
 TOOL_VERSION = "0.3.0"
@@ -106,16 +107,77 @@ INTERPRETATION_LIMITS = [
     "kept for continuity; do not let it decide anything.",
 ]
 
+# Index of the "Foreground statistics of a THIN object..." entry above, so the
+# alpha-path payload can swap it for the corrected wording rather than delete
+# it -- it is still true on the border-median path (most production input).
+_THIN_OBJECT_CAVEAT_INDEX = 6
+
+_ALPHA_THIN_OBJECT_CAVEAT = (
+    "Foreground statistics of a THIN object degrade across resolutions ON THE "
+    "BORDER-MEDIAN PATH (opaque input, no real alpha channel): most of its "
+    "pixels are edge-blended with the background, so a rescaled copy reads "
+    "moderately different even though dhash still reports the same layout. "
+    "On the alpha path (real transparency, coverage_weighted is true) this is "
+    "NO LONGER TRUE: every working-resolution pixel's colour is "
+    "un-premultiplied before it is read and "
+    "weighted by its own coverage, so its influence on the mean is exactly its "
+    "coverage share rather than a full vote diluted by a fringe blend. The "
+    "sub-pixel placement stability this buys is measured, not assumed -- see "
+    "the W1 evidence bundle's sub-pixel excursion table. A small residual "
+    "remains from resampling arithmetic (compositing rounds colour*coverage to "
+    "a byte before the working copy is built), bounded at roughly 0.5/mean-"
+    "coverage code values per cell -- see UNPREMULTIPLY_COVERAGE_MIN's comment "
+    "in pil_common.py."
+)
+
+# Appended to INTERPRETATION_LIMITS only when at least one analysed image
+# actually took the alpha-weighted code path (coverage_weighted True on some
+# image). interpretation_limits is a static top-level payload field included
+# in every invocation; full-frame runs and --foreground runs on opaque input
+# must stay byte-identical to the pre-0.4.0 tree (docs/aaa-build-plan.md
+# A1.1), so these entries -- and the caveat rewrite above -- cannot be
+# unconditional.
+ALPHA_INTERPRETATION_LIMITS = [
+    "coverage_weighted (in the foreground block) is true when this image's "
+    "luminance/entropy per cell and at full resolution are alpha/255 "
+    "coverage-weighted over an un-premultiplied (straight) colour read, rather "
+    "than an unweighted mean over the composited-onto-black colour. "
+    "edge_mean is NEVER coverage-weighted -- gradients are read from the "
+    "still-composited image on purpose, because a silhouette edge is real "
+    "object structure and damping it by coverage would make a thin object "
+    "read as progressively less edgy the thinner it gets. dhash, ahash, "
+    "symmetry and changed_region_bbox_fractional are computed on "
+    "apply_mask(working, working_mask), the composited-on-black working copy, "
+    "unconditionally and unchanged -- compositing onto black IS "
+    "premultiplication by coverage, which is exactly right for a pixel-domain "
+    "appearance metric.",
+    "foreground_coverage_fraction (per cell) is Sum(alpha/255) over the cell "
+    "divided by the cell's pixel count; it replaces foreground_fraction as the "
+    "occupancy feature in structural_similarity when present, because total "
+    "coverage is conserved under a sub-pixel translation while pixel COUNT is "
+    "not -- foreground_fraction stays available and unchanged in meaning.",
+    "foreground_source_mismatch fires when the two images' foreground.source "
+    "differ (one alpha, one border-median) -- distinct from "
+    "foreground_mask_mismatch, which fires when one side's mask fell back to "
+    "full-frame. A source mismatch means one side's colours are coverage-"
+    "weighted true object colour and the other side's are blended toward its "
+    "own backdrop; the two are not commensurable, and a composited render's "
+    "coverage information was destroyed at composite time -- there is no "
+    "un-blending it.",
+]
+
 
 def analyse(path, cols, rows, foreground=False, background_delta=DEFAULT_BACKGROUND_DELTA):
-    rgb, alpha = load_rgb_alpha(path)
+    composited_rgb, straight_rgb, alpha = load_rgba_straight(path)
     flags = []
-    subject = rgb
+    subject = composited_rgb
+    subject_straight = composited_rgb
     subject_mask = None
+    subject_alpha = None
 
     if foreground:
         full_mask, source, background_hex = foreground_mask(
-            rgb, alpha, background_delta
+            composited_rgb, alpha, background_delta
         )
         fraction = float(full_mask.mean())
         bbox = mask_bbox(full_mask)
@@ -133,24 +195,42 @@ def analyse(path, cols, rows, foreground=False, background_delta=DEFAULT_BACKGRO
             if fraction < FOREGROUND_MIN_FRACTION:
                 flags.append("foreground_too_small")
             left, top, right, bottom = bbox
-            subject = rgb.crop(bbox)
+            subject = composited_rgb.crop(bbox)
             subject_mask = full_mask[top:bottom, left:right]
             foreground_block = {
                 "applied": True,
                 "source": source,
                 "fraction_of_frame": round(fraction, 6),
                 "bbox_fractional": [
-                    round(left / rgb.width, 4),
-                    round(top / rgb.height, 4),
-                    round(right / rgb.width, 4),
-                    round(bottom / rgb.height, 4),
+                    round(left / composited_rgb.width, 4),
+                    round(top / composited_rgb.height, 4),
+                    round(right / composited_rgb.width, 4),
+                    round(bottom / composited_rgb.height, 4),
                 ],
                 "bbox_aspect_ratio": round((right - left) / (bottom - top), 4),
                 "background_estimate": background_hex,
             }
+            if alpha is not None:
+                # coverage_weighted etc. added ONLY here -- foreground
+                # requested, mask non-empty, real alpha present -- so
+                # full-frame output and opaque (border-median) --foreground
+                # output never gain these keys and stay byte-identical to the
+                # pre-0.4.0 tree (docs/aaa-build-plan.md A1.1).
+                full_weights_frame = np.asarray(alpha, dtype=np.float64) / 255.0
+                partial = full_mask & (alpha < 255)
+                foreground_block["coverage_weighted"] = True
+                foreground_block["coverage_fraction_of_frame"] = round(
+                    float(full_weights_frame[full_mask].sum()) / float(full_mask.size),
+                    6,
+                )
+                foreground_block["partial_coverage_share"] = round(
+                    float(partial.sum()) / float(full_mask.sum()), 6
+                )
+                subject_straight = straight_rgb.crop(bbox)
+                subject_alpha = alpha[top:bottom, left:right]
     else:
         fraction, source, background_hex = foreground_estimate(
-            rgb, alpha, background_delta
+            composited_rgb, alpha, background_delta
         )
         if fraction < BACKGROUND_DOMINANT_MAX:
             # The frame is mostly background; full-frame similarity will mostly
@@ -163,6 +243,12 @@ def analyse(path, cols, rows, foreground=False, background_delta=DEFAULT_BACKGRO
             "background_estimate": background_hex,
         }
 
+    # working is the composited working-resolution copy, computed exactly as
+    # before -- dhash/ahash/symmetry/changed_region_bbox_fractional all read
+    # from it (via working_pixels) unconditionally, because compositing onto
+    # black IS premultiplication by coverage, which is the right thing for a
+    # pixel-domain appearance metric (see the alpha interpretation_limits
+    # entry above).
     working = to_working(subject)
     if subject_mask is not None:
         working_mask = resize_mask(subject_mask, working.size)
@@ -173,20 +259,44 @@ def analyse(path, cols, rows, foreground=False, background_delta=DEFAULT_BACKGRO
         working_mask = None
         working_pixels = working
 
+    if subject_alpha is not None:
+        # The alpha path only: recover the working-resolution straight colour
+        # and its continuous coverage weight by inverting the same LANCZOS
+        # kernel that produced `working` (see working_straight_and_weights).
+        working_straight, working_weights = working_straight_and_weights(
+            subject, subject_alpha, working.size
+        )
+        full_weights = np.asarray(subject_alpha, dtype=np.float64) / 255.0
+        colour_subject = subject_straight
+    else:
+        working_straight = None
+        working_weights = None
+        full_weights = None
+        colour_subject = subject
+
     return {
         "path": str(path),
-        "size": list(rgb.size),
+        "size": list(composited_rgb.size),
         "working_size": list(working.size),
-        "aspect_ratio": round(rgb.width / rgb.height, 4),
+        "aspect_ratio": round(composited_rgb.width / composited_rgb.height, 4),
         # Full-resolution statistics: these describe the actual asset (the
-        # foreground crop, in foreground mode).
-        "luminance": luminance_stats(subject, mask=subject_mask),
-        "entropy": entropy_of(subject, mask=subject_mask),
+        # foreground crop, in foreground mode). Coverage-weighted over the
+        # straight (un-premultiplied) colour when the alpha path is active;
+        # otherwise byte-identical to the pre-0.4.0 reading.
+        "luminance": luminance_stats(colour_subject, mask=subject_mask, weights=full_weights),
+        "entropy": entropy_of(colour_subject, mask=subject_mask, weights=full_weights),
         # Structural statistics: computed on the fixed-size working copy so that
         # a rescaled duplicate produces the same numbers.
         "symmetry": symmetry_scores(working_pixels),
         "grid": {"cols": cols, "rows": rows},
-        "cells": fractional_cells(working, cols, rows, mask=working_mask),
+        "cells": fractional_cells(
+            working,
+            cols,
+            rows,
+            mask=working_mask,
+            weights=working_weights,
+            colour_img=working_straight,
+        ),
         "foreground": foreground_block,
         "flags": flags,
     }, working_pixels
@@ -231,8 +341,18 @@ def cell_similarity(cells_a, cells_b):
             if not ok_a and not ok_b:
                 skipped += 1
                 continue
-            occ_a = cell["foreground_fraction"]
-            occ_b = other["foreground_fraction"]
+            # Coverage form when both sides carry it (the alpha path): total
+            # coverage is conserved under a sub-pixel translation while pixel
+            # COUNT is not, so the coverage form is what makes cell occupancy
+            # placement-stable. Falls back to the count form otherwise -- on
+            # the border-median path the two are identical by construction, so
+            # this never changes that path's output.
+            if "foreground_coverage_fraction" in cell and "foreground_coverage_fraction" in other:
+                occ_a = cell["foreground_coverage_fraction"]
+                occ_b = other["foreground_coverage_fraction"]
+            else:
+                occ_a = cell["foreground_fraction"]
+                occ_b = other["foreground_fraction"]
             reference = max(occ_a, occ_b)
             occupancy_div = (abs(occ_a - occ_b) / reference) if reference else 0.0
             if ok_a and ok_b:
@@ -302,7 +422,7 @@ def changed_area_fraction(working_a, working_b):
     return round(float((delta > CHANGE_THRESHOLD).mean()), 6)
 
 
-def build_diff(a, b, working_a, working_b):
+def build_diff(a, b, working_a, working_b, foreground=False):
     similarity, per_cell, compared, skipped = cell_similarity(a["cells"], b["cells"])
 
     flags = []
@@ -323,6 +443,17 @@ def build_diff(a, b, working_a, working_b):
         # One side's mask came up empty and fell back to full-frame: the two
         # analyses no longer measure comparable things.
         flags.append("foreground_mask_mismatch")
+    if foreground and fg_a["source"] != fg_b["source"]:
+        # Distinct from foreground_mask_mismatch above: one side's colours are
+        # coverage-weighted true object colour (source "alpha"), the other's
+        # are blended toward its own backdrop (source "background_estimate") --
+        # not commensurable, and the composited side's coverage information
+        # was destroyed at composite time. Gated to --foreground mode (per
+        # docs/aaa-build-plan.md #3.8): in full-frame mode this same source
+        # disagreement is normal and already unflagged pre-0.4.0, so flagging
+        # it there would change the byte-identical full-frame output A1.1
+        # holds every fixture to.
+        flags.append("foreground_source_mismatch")
     if fg_a["applied"] and fg_b["applied"]:
         ratio_a = fg_a["bbox_aspect_ratio"]
         ratio_b = fg_b["bbox_aspect_ratio"]
@@ -389,7 +520,23 @@ def main(argv=None):
             args.image_b, cols, rows, args.foreground, args.background_delta
         )
         images["b"] = analysis_b
-        diff = build_diff(analysis_a, analysis_b, working_a, working_b)
+        diff = build_diff(
+            analysis_a, analysis_b, working_a, working_b, foreground=args.foreground
+        )
+
+    # interpretation_limits is a static payload field on every other run, but
+    # the alpha-related entries (and the thin-object caveat rewrite) only
+    # apply -- and must only appear -- when the alpha-weighted path was
+    # actually exercised for at least one image, so full-frame and
+    # opaque-input --foreground output stay byte-identical to the pre-0.4.0
+    # tree (docs/aaa-build-plan.md A1.1).
+    alpha_path_used = any(
+        img["foreground"].get("coverage_weighted") for img in images.values()
+    )
+    interpretation_limits = list(INTERPRETATION_LIMITS)
+    if alpha_path_used:
+        interpretation_limits[_THIN_OBJECT_CAVEAT_INDEX] = _ALPHA_THIN_OBJECT_CAVEAT
+        interpretation_limits += ALPHA_INTERPRETATION_LIMITS
 
     payload = {
         "tool": "pil_structure_diff",
@@ -405,7 +552,7 @@ def main(argv=None):
         },
         "images": images,
         "diff": diff,
-        "interpretation_limits": INTERPRETATION_LIMITS,
+        "interpretation_limits": interpretation_limits,
     }
 
     json.dump(payload, sys.stdout, indent=2, sort_keys=True)

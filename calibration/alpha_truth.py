@@ -47,10 +47,19 @@ WHAT EACH RECORD CONTAINS
 For every scene, three readings of the same pixels:
 
 *   ``truth``     -- the true colour, coverage-weighted, over the visible mask.
-*   ``tool_path`` -- what the bundled tools compute: the colour after
+*   ``tool_path`` -- the PRE-0.4.0 unweighted reading: the colour after
     pil_common.load_rgb_alpha flattens onto black, averaged with every masked
-    pixel at equal weight.
-*   ``bias``      -- tool_path minus truth, per statistic.
+    pixel at equal weight. Since 0.4.0 (the W1 alpha/coverage fix,
+    docs/aaa-build-plan.md #3) this is no longer what the bundled tools
+    compute on the alpha path -- they now read the straight (un-premultiplied)
+    colour and weight it by coverage, which is exactly ``truth`` below to
+    within the tolerance tests/test_alpha_weighting.py holds it to. This field
+    is retained, unrenamed, as the fixed reference point for what the fix
+    removed; every ``bias`` entry it feeds is now a historical measurement of
+    the pre-fix defect, not a live reading of the tools.
+*   ``bias``      -- tool_path minus truth, per statistic. Pre-0.4.0 this was
+    the defect's magnitude; post-0.4.0 it is the pre-fix defect's magnitude,
+    unchanged, since neither operand it is computed from has moved.
 
 PIL's own conversions do the colour maths on both sides (``convert("L")`` for
 luminance, ``convert("HSV")`` for saturation, pil_common.accent_mask for the
@@ -195,7 +204,11 @@ def weighted_stats(rgb_u8, alpha, alpha_min=ALPHA_FOREGROUND_MIN):
 
 
 def unweighted_stats(rgb_u8, alpha, alpha_min=ALPHA_FOREGROUND_MIN):
-    """The tools' reading: every masked pixel at equal weight.
+    """The PRE-0.4.0 tools' reading: every masked pixel at equal weight.
+
+    Since the W1 alpha/coverage fix (docs/aaa-build-plan.md #3) this is no
+    longer what the bundled tools compute on the alpha path -- see tool_path's
+    docstring in scene_truth. Kept, unrenamed, as the fixed pre-fix reference.
 
     Same mask, same colour maths, same statistics as weighted_stats -- only the
     weights differ, and the RGB handed in is the flattened one. That is the

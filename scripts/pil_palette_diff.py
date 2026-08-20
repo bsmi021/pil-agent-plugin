@@ -33,6 +33,8 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from pil_color import LAB_REFERENCE  # noqa: E402
@@ -55,7 +57,7 @@ from pil_common import (  # noqa: E402
     foreground_estimate,
     foreground_mask,
     hue_families,
-    load_rgb_alpha,
+    load_rgba_straight,
     luminance_stats,
     masked_strip,
     palette_distance,
@@ -71,6 +73,45 @@ TOOL_VERSION = "0.3.0"
 # tripping the detector while still catching a real recolour.
 HUE_SHIFT_MIN_ABSOLUTE = 0.02
 HUE_SHIFT_MIN_RELATIVE = 0.30
+
+# Appended to INTERPRETATION_LIMITS only when at least one analysed image
+# actually took the alpha-weighted code path (coverage_weighted True on some
+# image). Full-frame runs and --foreground runs on opaque (border-median)
+# input must stay byte-identical to the pre-0.4.0 tree (see docs/aaa-build-
+# plan.md A1.1), and interpretation_limits is a static top-level payload field
+# included in every invocation -- so these entries cannot be unconditional
+# additions to the base list without breaking that byte-identity gate on every
+# fixture, alpha-bearing or not. Gating on the code path actually exercised
+# turns interpretation_limits into the payload's one dynamic field, deliberately.
+ALPHA_INTERPRETATION_LIMITS = [
+    "coverage_weighted (in the foreground block) is true when this image's "
+    "colour statistics -- luminance, saturation, entropy, accent_pixel_fraction, "
+    "base_palette/accent_palette coverage, hue_families coverage -- are "
+    "alpha/255 coverage-weighted rather than counted at equal weight per masked "
+    "pixel. base_palette/accent_palette cluster CENTRES remain chosen from an "
+    "unweighted MEDIANCUT quantisation of the straight-RGB pixels; only each "
+    "entry's reported coverage is reweighted afterwards. hue_families.pixels "
+    "and fractional_cells.foreground_pixels stay integer counts throughout, "
+    "because the gates built on them (HUE_PRESENCE_MIN_PIXELS, "
+    "CELL_MIN_SUPPORT_PIXELS) are sampling-adequacy questions, not colour "
+    "questions.",
+    "partial_coverage_share is the fraction of this image's masked pixels with "
+    "alpha < 255. It carries NO flag and NO threshold: an uncalibrated flag "
+    "threshold is exactly what this repository refuses to ship. Read it "
+    "yourself when deciding how much to trust a colour statistic on a "
+    "partially-transparent object.",
+    "foreground_source_mismatch fires when the two images' foreground.source "
+    "differ (one alpha, one border-median) -- distinct from "
+    "foreground_mask_mismatch, which fires when one side's mask fell back to "
+    "full-frame. A source mismatch means one side's colours are coverage-"
+    "weighted true object colour and the other side's are blended toward its "
+    "own backdrop; the two are not commensurable, and a composited render's "
+    "coverage information was destroyed at composite time -- there is no "
+    "un-blending it. Measured on this repository's own calibration corpus, "
+    "this residual reaches double digits in luminance and saturation code "
+    "values on thin or highly transparent objects (see the W1 evidence "
+    "bundle); it is not a rounding error.",
+]
 
 INTERPRETATION_LIMITS = [
     "Base-palette coverage is area-weighted: a visually dominant accent that "
@@ -112,11 +153,20 @@ INTERPRETATION_LIMITS = [
 
 
 def _foreground_analysis(rgb, alpha, background_delta, flags):
-    """Derive the foreground mask and its reporting block; returns (mask, block).
+    """Derive the foreground mask and its reporting block.
 
-    mask is None when it could not be derived (empty), in which case analysis
-    falls back to full-frame with a flag rather than crashing or emitting
-    statistics over nothing.
+    Returns (mask, block, weights). mask is None when it could not be derived
+    (empty), in which case analysis falls back to full-frame with a flag
+    rather than crashing or emitting statistics over nothing. weights is the
+    coverage-weight array (alpha/255, full-frame shape) when this image
+    carries real alpha and the mask is non-empty, else None -- the single
+    switch every downstream weighted call is gated on.
+
+    coverage_weighted, coverage_fraction_of_frame and partial_coverage_share
+    are added to the block ONLY when weights is returned non-None: adding them
+    unconditionally would change the JSON shape of every --foreground
+    invocation, including on opaque (border-median) input, which breaks the
+    byte-identity gate that path is held to (docs/aaa-build-plan.md A1.1).
     """
     mask, source, background_hex = foreground_mask(rgb, alpha, background_delta)
     fraction = float(mask.mean())
@@ -126,12 +176,23 @@ def _foreground_analysis(rgb, alpha, background_delta, flags):
         "fraction_of_frame": round(fraction, 6),
         "background_estimate": background_hex,
     }
+    weights = None
+    if alpha is not None and mask.any():
+        weights = np.asarray(alpha, dtype=np.float64) / 255.0
+        partial = mask & (alpha < 255)
+        block["coverage_weighted"] = True
+        block["coverage_fraction_of_frame"] = round(
+            float(weights[mask].sum()) / float(mask.size), 6
+        )
+        block["partial_coverage_share"] = round(
+            float(partial.sum()) / float(mask.sum()), 6
+        )
     if not mask.any():
         flags.append("foreground_mask_empty")
-        return None, block
+        return None, block, None
     if fraction < FOREGROUND_MIN_FRACTION:
         flags.append("foreground_too_small")
-    return mask, block
+    return mask, block, weights
 
 
 def analyse(
@@ -143,17 +204,18 @@ def analyse(
     background_delta,
     accent_space=DEFAULT_ACCENT_SPACE,
 ):
-    rgb, alpha = load_rgb_alpha(path)
+    composited_rgb, straight_rgb, alpha = load_rgba_straight(path)
     flags = []
     within = None
+    weights = None
 
     if foreground:
-        within, foreground_block = _foreground_analysis(
-            rgb, alpha, background_delta, flags
+        within, foreground_block, weights = _foreground_analysis(
+            composited_rgb, alpha, background_delta, flags
         )
     else:
         fraction, source, background_hex = foreground_estimate(
-            rgb, alpha, background_delta
+            composited_rgb, alpha, background_delta
         )
         foreground_block = {
             "applied": False,
@@ -166,37 +228,47 @@ def analyse(
             # describe the backdrop, not the subject.
             flags.append("background_dominant")
 
-    if within is None:
-        base_palette = quantize_palette(rgb, n_colors)
-    else:
-        base_palette = quantize_palette(masked_strip(rgb, within), n_colors)
+    # colour_rgb is the straight (un-composited) image only when the alpha
+    # path was actually exercised for THIS image (foreground requested, mask
+    # non-empty, alpha present); every other case -- full-frame, opaque
+    # foreground, empty-mask fallback -- keeps the composited image exactly as
+    # before, so those paths stay byte-identical (docs/aaa-build-plan.md A1.1).
+    colour_rgb = straight_rgb if weights is not None else composited_rgb
 
-    accent_img, accent_fraction = accent_subset(
-        rgb, sat_min, val_min, within=within, space=accent_space
+    if within is None:
+        base_palette = quantize_palette(colour_rgb, n_colors)
+    else:
+        strip_weights = weights[within] if weights is not None else None
+        base_palette = quantize_palette(
+            masked_strip(colour_rgb, within), n_colors, weights=strip_weights
+        )
+
+    accent_img, accent_fraction, accent_weights = accent_subset(
+        colour_rgb, sat_min, val_min, within=within, weights=weights, space=accent_space
     )
 
     if accent_img is None:
         accent_palette = []
         flags.append("no_accent_pixels")
     else:
-        accent_palette = quantize_palette(accent_img, n_colors)
+        accent_palette = quantize_palette(accent_img, n_colors, weights=accent_weights)
         if accent_fraction < ACCENT_AREA_SMALL_FRACTION:
             flags.append("accent_area_very_small")
 
     return {
         "path": str(path),
-        "size": list(rgb.size),
-        "mode": rgb.mode,
-        "aspect_ratio": round(rgb.width / rgb.height, 4),
+        "size": list(composited_rgb.size),
+        "mode": composited_rgb.mode,
+        "aspect_ratio": round(composited_rgb.width / composited_rgb.height, 4),
         "base_palette": base_palette,
         "accent_palette": accent_palette,
         "hue_families": hue_families(
-            rgb, sat_min, val_min, within=within, space=accent_space
+            colour_rgb, sat_min, val_min, within=within, weights=weights, space=accent_space
         ),
         "accent_pixel_fraction": round(accent_fraction, 6),
-        "luminance": luminance_stats(rgb, mask=within),
-        "saturation": saturation_stats(rgb, mask=within),
-        "entropy": entropy_of(rgb, mask=within),
+        "luminance": luminance_stats(colour_rgb, mask=within, weights=weights),
+        "saturation": saturation_stats(colour_rgb, mask=within, weights=weights),
+        "entropy": entropy_of(colour_rgb, mask=within, weights=weights),
         "foreground": foreground_block,
         "flags": flags,
     }
@@ -218,7 +290,7 @@ def _supported_families(families):
     }
 
 
-def build_diff(a, b):
+def build_diff(a, b, foreground=False):
     base = palette_distance(a["base_palette"], b["base_palette"])
     accent = palette_distance(a["accent_palette"], b["accent_palette"])
     base_de2000 = palette_distance_de2000(a["base_palette"], b["base_palette"])
@@ -236,6 +308,18 @@ def build_diff(a, b):
         # frame-relative while the other side's are foreground-relative, so the
         # deltas below compare incommensurable quantities.
         flags.append("foreground_mask_mismatch")
+    if foreground and a["foreground"]["source"] != b["foreground"]["source"]:
+        # Distinct from foreground_mask_mismatch above: both masks may have
+        # applied fine, but one side's colours are coverage-weighted true
+        # object colour (source "alpha") and the other's are blended toward
+        # its own backdrop (source "background_estimate") -- not commensurable.
+        # The composited side's coverage information was destroyed at
+        # composite time, so this is not recoverable by re-reading either file.
+        # Gated to --foreground mode only (per docs/aaa-build-plan.md #3.8):
+        # in full-frame mode this same source disagreement is normal and
+        # already unflagged pre-0.4.0, and flagging it there would change the
+        # byte-identical full-frame output A1.1 holds every fixture to.
+        flags.append("foreground_source_mismatch")
     if (
         a["accent_pixel_fraction"] < ACCENT_AREA_SMALL_FRACTION
         or b["accent_pixel_fraction"] < ACCENT_AREA_SMALL_FRACTION
@@ -385,7 +469,19 @@ def main(argv=None):
     diff = None
     if args.image_b:
         images["b"] = run(args.image_b)
-        diff = build_diff(images["a"], images["b"])
+        diff = build_diff(images["a"], images["b"], foreground=args.foreground)
+
+    # interpretation_limits is a static payload field on every other run, but
+    # the alpha-related entries only apply -- and must only appear -- when the
+    # alpha-weighted path was actually exercised for at least one image, so
+    # full-frame and opaque-input --foreground output stay byte-identical to
+    # the pre-0.4.0 tree (docs/aaa-build-plan.md A1.1).
+    alpha_path_used = any(
+        img["foreground"].get("coverage_weighted") for img in images.values()
+    )
+    interpretation_limits = list(INTERPRETATION_LIMITS)
+    if alpha_path_used:
+        interpretation_limits += ALPHA_INTERPRETATION_LIMITS
 
     payload = {
         "tool": "pil_palette_diff",
@@ -416,7 +512,7 @@ def main(argv=None):
         },
         "images": images,
         "diff": diff,
-        "interpretation_limits": INTERPRETATION_LIMITS,
+        "interpretation_limits": interpretation_limits,
     }
 
     json.dump(payload, sys.stdout, indent=2, sort_keys=True)
