@@ -66,6 +66,50 @@ def main():
             },
         }
 
+    # Derived aliases for the names pil_contract_verdict actually queries.
+    #
+    # structural_similarity: the calibration measured structural_DISsimilarity
+    # (their sum is 1 by construction), so the similarity floor is one minus
+    # the dissimilarity ceiling and the detection limits carry over unchanged.
+    if "structural_dissimilarity" in metrics:
+        dissim = metrics["structural_dissimilarity"]
+        metrics["structural_similarity"] = {
+            "threshold": round(1.0 - dissim["threshold"], 6),
+            "threshold_foreground": (
+                round(1.0 - dissim["threshold_foreground"], 6)
+                if dissim["threshold_foreground"] is not None
+                else None
+            ),
+            "n": dissim["n"],
+            "alpha": dissim["alpha"],
+            "detection_limits": dict(dissim["detection_limits"]),
+        }
+
+    # entropy_delta: the bundle's name carries the _abs suffix.
+    if "entropy_delta_abs" in metrics:
+        metrics["entropy_delta"] = dict(metrics["entropy_delta_abs"])
+
+    # accent_hue_shift_detected: a compound boolean rule, so it has no scalar
+    # threshold -- but the calibration measured its detection limits directly
+    # (hue_rule.gate_choice), and those are what a null verdict must cite.
+    hue_rule = bundle.get("hue_rule") or {}
+    detection = (hue_rule.get("gate_choice") or {}).get("detection") or {}
+    if detection:
+        metrics["accent_hue_shift_detected"] = {
+            "threshold": None,
+            "threshold_foreground": None,
+            "n": hue_rule.get("n"),
+            "alpha": hue_rule.get("alpha"),
+            "detection_limits": {
+                f"hue_rotation@{extent}": (
+                    f"{entry['detection_limit_degrees']:g} degrees"
+                    if entry.get("detection_limit_degrees") is not None
+                    else "not resolved at any tested magnitude"
+                )
+                for extent, entry in sorted(detection.items())
+            },
+        }
+
     OUT.write_text(
         json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )

@@ -20,6 +20,17 @@
     "threshold": 0.016402,
     "threshold_foreground": 0.08922175
   },
+  "accent_hue_shift_detected": {
+    "alpha": 0.01,
+    "detection_limits": {
+      "hue_rotation@extent=0.05": "60 degrees",
+      "hue_rotation@extent=0.25": "15 degrees",
+      "hue_rotation@extent=1": "15 degrees"
+    },
+    "n": 400,
+    "threshold": null,
+    "threshold_foreground": null
+  },
   "accent_palette_distance": {
     "alpha": 0.01,
     "detection_limits": {
@@ -167,6 +178,27 @@
     "threshold": 5.0,
     "threshold_foreground": 1.0
   },
+  "entropy_delta": {
+    "alpha": 0.01,
+    "detection_limits": {
+      "additive_noise@extent=1": "16 sigma code values",
+      "exposure_down@extent=1": "not resolved at any tested magnitude",
+      "exposure_up@extent=1": "not resolved at any tested magnitude",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "not resolved at any tested magnitude",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "n": 400,
+    "threshold": 2.3772,
+    "threshold_foreground": 5.284525
+  },
   "entropy_delta_abs": {
     "alpha": 0.01,
     "detection_limits": {
@@ -292,5 +324,26 @@
     "n": 400,
     "threshold": 0.037263,
     "threshold_foreground": 0.20622785
+  },
+  "structural_similarity": {
+    "alpha": 0.01,
+    "detection_limits": {
+      "additive_noise@extent=1": "4 sigma code values",
+      "exposure_down@extent=1": "64 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "8 radius px",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "0.92 downscale loss (1 - factor)",
+      "saturation_down@extent=1": "0.75 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "n": 400,
+    "threshold": 0.962737,
+    "threshold_foreground": 0.793772
   }
 }

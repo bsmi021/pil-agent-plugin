@@ -37,7 +37,12 @@ source alone would have missed a real change.
    both `pil_palette_diff` and `pil_structure_diff`. Run them on the pair, not
    just individually. If step 1 identified an object on a backdrop, run both
    tools **with `--foreground`** as well; the full-frame run then tells you
-   about the frames, the foreground run about the objects.
+   about the frames, the foreground run about the objects. For colour distance
+   read the `*_de2000` fields, not the RGB ones. When the user stated an
+   *intent* ("make it warmer, keep the layout"), also run
+   `pil_contract_verdict` with that intent as a contract — its per-predicate
+   verdicts carry detection limits that bound what any "no change" claim can
+   actually promise.
 3. **Check the flags before reading any score.** Every payload carries `flags`,
    and they exist because the headline numbers lie in specific, known ways:
    - `background_dominant` — the frame is mostly background, so

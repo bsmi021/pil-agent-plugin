@@ -64,7 +64,7 @@ from pil_common import (  # noqa: E402
     saturation_stats,
 )
 
-TOOL_VERSION = "0.2.0"
+TOOL_VERSION = "0.3.0"
 
 # A hue family counts as shifted only when its share of accent pixels moves by
 # both an absolute and a relative margin, which keeps resampling noise from

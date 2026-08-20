@@ -44,6 +44,8 @@ Always quote image paths: they frequently contain spaces or parentheses.
 | What exact colours are used? | palette | `base_palette`, `accent_palette`, `hue_families` |
 | Did it get more/less detailed? | structure | per-cell `edge_mean` (read the caveat below) |
 | Same **object**, ignoring the backdrop? | both, with `--foreground` | same fields, foreground-masked |
+| Did my *intended* change land, and did anything else drift? | contract | per-predicate `verdict` + `detection_limit` |
+| Did the colour change *perceptually*? | palette | `base_palette_distance_de2000`, `accent_palette_distance_de2000` |
 
 **Consult both tools for any "do these match?" question.** They are blind to
 different things. A measured cyan→red recolour scored 0.9990 structural similarity
@@ -106,9 +108,14 @@ only in the hue census. Semantic importance and pixel area are uncorrelated.
 
 For a colour-scheme verdict, read `accent_hue_shift_detected` first, then
 `hue_families_diminished` / `_amplified` / `_lost` / `_gained` and
-`hue_family_fraction_deltas` for detail. Do **not** rely on
-`base_palette_distance`: measured against a real recolour it scored the changed
-image as *more* similar than an unchanged rescale.
+`hue_family_fraction_deltas` for detail. For colour *distance*, read the
+`*_de2000` fields (CIEDE2000 over D65 CIELAB — raw values, never a percentage,
+no verbal bands). Do **not** rely on the RGB `base_palette_distance`: measured
+against a real recolour it scored the changed image as *more* similar than an
+unchanged rescale; it is kept only for continuity. `--accent-space lch` swaps
+the accent gate to perceptual chroma/lightness floors (HSV remains the default;
+calibration measured what each gate admits but cannot rank them without accent
+ground truth).
 
 Direction words (`lost`, `gained`, `diminished`, `amplified`, and the deltas)
 describe what the **second** image did relative to the first. The overall verdict
@@ -128,6 +135,33 @@ since the grids no longer correspond.
 
 `changed_region_bbox_fractional` is usually the most actionable output in a
 revision loop: it answers *where* something changed, not merely how much.
+
+## `pil_contract_verdict.py`
+
+```bash
+... pil_contract_verdict.py "<before>" "<after>" --contract contract.json [--foreground] [--pairs manifest.json]
+```
+
+Answers the question a caller actually has — *"did my requested change land, and
+did anything else drift?"* — instead of a bare similarity number. The contract
+declares intent:
+
+```json
+{"expect_change": ["palette.warmer"], "invariant": ["layout.composition_preserved", "identity.silhouette_preserved"]}
+```
+
+and every predicate returns `SATISFIED`, `VIOLATED`, or `UNMEASURABLE`, citing
+the deciding fields. Three rules make the output trustworthy:
+
+- **Every null result carries its detection limit.** "Invariant satisfied" only
+  means "no change bigger than X detected" — X comes from the WP2 calibration
+  bundle (`scripts/detection_limits.json`, regenerable via
+  `calibration/distill_detection_limits.py`).
+- **`UNMEASURABLE` is never approximated.** `geometry.*` (needs scene mesh
+  statistics), `style.*` and `identity.same_character` (not reducible to pixel
+  statistics) always refuse rather than guess.
+- **Multi-pair aggregation is worst-case.** With `--pairs`, one diverging view
+  fails the item; it cannot be averaged away.
 
 ## These tools do not measure geometry
 
@@ -150,6 +184,10 @@ Every `pil_structure_diff` payload repeats this under `interpretation_limits`.
   as a relative signal between comparable images, not an absolute perceptual delta.
 - Accent membership is a hard HSV threshold, echoed in the output as
   `accent_thresholds`. Colours near the boundary can flip between palettes.
-- Hue-shift margins were calibrated against one image and two derived variants.
-  On unusual inputs, check `hue_family_fraction_deltas` directly rather than
-  relying only on the boolean verdict.
+- Thresholds are calibrated against synthetic perturbations with exact ground
+  truth (`runs/2026-08-19-phase2-calibration/`), Neyman–Pearson with recorded
+  n and α, and every metric's detection limit is published there. Synthetic
+  controls underestimate real-revision difficulty, so treat detection limits
+  as best-case bounds.
+- `entropy_delta` is demoted: calibration found it unable to resolve 24 of 26
+  perturbation families. Do not let it decide anything.

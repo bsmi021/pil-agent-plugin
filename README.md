@@ -234,6 +234,8 @@ A caller reading only a similarity score or a hash would have concluded "identic
 | What exact colours are used? | palette | `base_palette`, `accent_palette`, `hue_families` |
 | More / less detailed? | structure | per-cell `edge_mean` (see caveat below) |
 | Same **object**, ignoring the backdrop? | both, `--foreground` | same fields, foreground-masked |
+| Did the colour change *perceptually*? | palette | `base_palette_distance_de2000`, `accent_palette_distance_de2000` |
+| Did my *intended* change land, and nothing else? | contract | per-predicate `verdict` + `detection_limit` |
 
 **Consult both tools for any "do these match?" question.** They are blind to
 different things. And **read `flags` before any score**: `background_dominant`,
@@ -292,11 +294,11 @@ uv sync
 uv run pytest -v
 ```
 
-**86 tests.** Fixtures are generated synthetically in-process, so no binary test
+**211 tests.** Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
 Six tests additionally confirm results against a real reference image and **skip
-when it is absent** — so a fresh clone reports `80 passed, 6 skipped`, which is
+when it is absent** — so a fresh clone reports `205 passed, 6 skipped`, which is
 expected. Their strongest assertions are duplicated unskipped against a synthetic
 stand-in, so a clean checkout still guards every known regression.
 
@@ -350,6 +352,19 @@ different objects 0.991. Both tools now estimate foreground coverage and flag
 measurement (alpha-derived or border-median OKLab, matching the Synty asset
 index's visible-pixel definition), and support-gate the hue-shift verdict so a
 handful of anti-aliased pixels cannot flip it.
+
+0.3.0 implements [phase 2](docs/phase2-scope.md) in full: CIEDE2000 colour
+distance hand-rolled in numpy and verified against all 34 published Sharma
+reference values (`base/accent_palette_distance_de2000` are now the primary
+colour signal); Neyman–Pearson threshold calibration over synthetic ground
+truth with published per-metric detection limits (the
+[calibration bundle](runs/2026-08-19-phase2-calibration/README.md) records
+every derived constant with its n, α and CI — including one derivation that was
+*rejected*, with the reason in `scripts/pil_common.py`); an opt-in LCh accent
+gate (`--accent-space lch`); and `pil_contract_verdict.py` — declared-intent
+verdicts where every null result carries its detection limit, `geometry.*` and
+`style.*` refuse rather than approximate, and multi-pair aggregation is
+worst-case so one broken view cannot be averaged away.
 
 Known limitations, tracked in [`docs/index.md`](docs/index.md#open-items):
 

@@ -320,10 +320,14 @@ class TestLayout:
         item = item_for(result, "layout.composition_preserved")
 
         # Assert: SATISFIED is not a guarantee, and the payload says what it
-        # actually rules out -- here, nothing, because nothing is calibrated.
+        # actually rules out. scripts/detection_limits.json ships (distilled
+        # from the WP2 bundle, structural_similarity derived from
+        # structural_dissimilarity), so the limit is a real calibrated bound.
         assert item["verdict"] == "SATISFIED"
         assert item["evidence"]["structural_similarity"] == 1.0
-        assert item["detection_limit"] == UNCALIBRATED
+        assert item["detection_limit"]
+        assert "uncalibrated" not in item["detection_limit"]
+        assert "structural_similarity" in item["detection_limit"]
 
     def test_composition_preserved_fails_on_a_mirrored_object(
         self, tool, tmp_path, tmp_img

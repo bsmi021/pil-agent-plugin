@@ -60,7 +60,7 @@ from pil_common import (  # noqa: E402
     to_working,
 )
 
-TOOL_VERSION = "0.2.0"
+TOOL_VERSION = "0.3.0"
 
 # Feature scales used to normalise each per-cell statistic into roughly 0..1
 # before differencing, so no single feature dominates the similarity score.
