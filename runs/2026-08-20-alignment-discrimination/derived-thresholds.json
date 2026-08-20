@@ -1,0 +1,421 @@
+{
+  "bootstrap": {
+    "alpha": 0.05,
+    "ci_level": 0.95,
+    "ci_lower": 4.0,
+    "ci_method": "percentile bootstrap, two-sided",
+    "ci_upper": 64.05,
+    "degenerate": false,
+    "n": 160,
+    "observed_max": 68.0,
+    "point_estimate": 61.1,
+    "quantile": 0.95,
+    "quantile_method": "numpy linear interpolation",
+    "resamples": 2000,
+    "threshold": 64.05
+  },
+  "demoted": true,
+  "demotion_reason": "derived noise-floor tolerance (65px) exceeds the useful ceiling (8px). A UI-alignment tool must resolve differences smaller than one line of body text; a wider floor swallows the signal the tool exists to report.",
+  "distribution_summary": {
+    "max": 68.0,
+    "mean": 4.50625,
+    "median": 0.0,
+    "min": 0.0,
+    "n": 160
+  },
+  "gate": "alignment",
+  "method": {
+    "demotion_ceiling_px": 8,
+    "excluded_from_control_set": [
+      "translate (ground-truth delta is nonzero; pooling with no-op values would inflate the noise floor by the signal)"
+    ],
+    "no_op_perturbations": [
+      {
+        "op": "rescale_roundtrip",
+        "params": {
+          "factor": 0.5
+        }
+      },
+      {
+        "op": "rescale_roundtrip",
+        "params": {
+          "factor": 0.35
+        }
+      },
+      {
+        "op": "jpeg_reencode",
+        "params": {
+          "quality": 95
+        }
+      },
+      {
+        "op": "jpeg_reencode",
+        "params": {
+          "quality": 85
+        }
+      },
+      {
+        "op": "gaussian_blur",
+        "params": {
+          "radius": 0.5
+        }
+      },
+      {
+        "op": "gaussian_blur",
+        "params": {
+          "radius": 1.0
+        }
+      },
+      {
+        "op": "add_noise",
+        "params": {
+          "sigma": 2
+        }
+      },
+      {
+        "op": "add_noise",
+        "params": {
+          "sigma": 4
+        }
+      }
+    ],
+    "profile_threshold": 0.05,
+    "rule": "Neyman-Pearson noise-floor derivation: run tool on each (scene, seed, no-op perturbation) pair; record the peak absolute margin delta per pair; take the bootstrap-CI upper bound on Q(1-alpha) of that distribution as the sub-pixel jitter tolerance.",
+    "scenes": [
+      "structured",
+      "thin_object",
+      "busy",
+      "dark_accent"
+    ],
+    "seeds": [
+      101,
+      211,
+      337,
+      449,
+      563
+    ]
+  },
+  "shipped_default_tolerance_px": 65,
+  "translation_accuracy": [
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 1,
+      "fraction": 0.0026041666666666665,
+      "kind": "translation",
+      "observed_max_delta_px": 1,
+      "profile_empty": false,
+      "scene": "structured",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 2,
+      "fraction": 0.005208333333333333,
+      "kind": "translation",
+      "observed_max_delta_px": 2,
+      "profile_empty": false,
+      "scene": "structured",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 4,
+      "fraction": 0.010416666666666666,
+      "kind": "translation",
+      "observed_max_delta_px": 4,
+      "profile_empty": false,
+      "scene": "structured",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 8,
+      "fraction": 0.020833333333333332,
+      "kind": "translation",
+      "observed_max_delta_px": 8,
+      "profile_empty": false,
+      "scene": "structured",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 1,
+      "fraction": 0.0026041666666666665,
+      "kind": "translation",
+      "observed_max_delta_px": 1,
+      "profile_empty": false,
+      "scene": "structured",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 2,
+      "fraction": 0.005208333333333333,
+      "kind": "translation",
+      "observed_max_delta_px": 2,
+      "profile_empty": false,
+      "scene": "structured",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 4,
+      "fraction": 0.010416666666666666,
+      "kind": "translation",
+      "observed_max_delta_px": 4,
+      "profile_empty": false,
+      "scene": "structured",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 8,
+      "fraction": 0.020833333333333332,
+      "kind": "translation",
+      "observed_max_delta_px": 8,
+      "profile_empty": false,
+      "scene": "structured",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 1,
+      "fraction": 0.0026041666666666665,
+      "kind": "translation",
+      "observed_max_delta_px": 1,
+      "profile_empty": false,
+      "scene": "thin_object",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 2,
+      "fraction": 0.005208333333333333,
+      "kind": "translation",
+      "observed_max_delta_px": 2,
+      "profile_empty": false,
+      "scene": "thin_object",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 4,
+      "fraction": 0.010416666666666666,
+      "kind": "translation",
+      "observed_max_delta_px": 4,
+      "profile_empty": false,
+      "scene": "thin_object",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 8,
+      "fraction": 0.020833333333333332,
+      "kind": "translation",
+      "observed_max_delta_px": 8,
+      "profile_empty": false,
+      "scene": "thin_object",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 1,
+      "fraction": 0.0026041666666666665,
+      "kind": "translation",
+      "observed_max_delta_px": 1,
+      "profile_empty": false,
+      "scene": "thin_object",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 2,
+      "fraction": 0.005208333333333333,
+      "kind": "translation",
+      "observed_max_delta_px": 2,
+      "profile_empty": false,
+      "scene": "thin_object",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 4,
+      "fraction": 0.010416666666666666,
+      "kind": "translation",
+      "observed_max_delta_px": 4,
+      "profile_empty": false,
+      "scene": "thin_object",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 0,
+      "expected_delta_px": 8,
+      "fraction": 0.020833333333333332,
+      "kind": "translation",
+      "observed_max_delta_px": 8,
+      "profile_empty": false,
+      "scene": "thin_object",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 1,
+      "expected_delta_px": 1,
+      "fraction": 0.0026041666666666665,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "busy",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 2,
+      "expected_delta_px": 2,
+      "fraction": 0.005208333333333333,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "busy",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 4,
+      "expected_delta_px": 4,
+      "fraction": 0.010416666666666666,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "busy",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 8,
+      "expected_delta_px": 8,
+      "fraction": 0.020833333333333332,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "busy",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 1,
+      "expected_delta_px": 1,
+      "fraction": 0.0026041666666666665,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "busy",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 2,
+      "expected_delta_px": 2,
+      "fraction": 0.005208333333333333,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "busy",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 4,
+      "expected_delta_px": 4,
+      "fraction": 0.010416666666666666,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "busy",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 8,
+      "expected_delta_px": 8,
+      "fraction": 0.020833333333333332,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "busy",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 1,
+      "expected_delta_px": 1,
+      "fraction": 0.0026041666666666665,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "dark_accent",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 2,
+      "expected_delta_px": 2,
+      "fraction": 0.005208333333333333,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "dark_accent",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 4,
+      "expected_delta_px": 4,
+      "fraction": 0.010416666666666666,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "dark_accent",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 8,
+      "expected_delta_px": 8,
+      "fraction": 0.020833333333333332,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "dark_accent",
+      "seed": 101
+    },
+    {
+      "accuracy_error_px": 1,
+      "expected_delta_px": 1,
+      "fraction": 0.0026041666666666665,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "dark_accent",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 2,
+      "expected_delta_px": 2,
+      "fraction": 0.005208333333333333,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "dark_accent",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 4,
+      "expected_delta_px": 4,
+      "fraction": 0.010416666666666666,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "dark_accent",
+      "seed": 211
+    },
+    {
+      "accuracy_error_px": 8,
+      "expected_delta_px": 8,
+      "fraction": 0.020833333333333332,
+      "kind": "translation",
+      "observed_max_delta_px": 0,
+      "profile_empty": false,
+      "scene": "dark_accent",
+      "seed": 211
+    }
+  ]
+}
