@@ -1,0 +1,207 @@
+{
+  "flags": [],
+  "grid": {
+    "cols": 4,
+    "lines_drawn": 5,
+    "rows": 3
+  },
+  "interpretation_limits": [
+    "The overlay is drawn on a copy. The source file is not modified; its sha256 is recorded here so you can verify that.",
+    "Never measure an annotated image. The boxes, grid and numerals are pixels: feeding this output to pil_palette_diff or pil_structure_diff measures the annotation as well as the content.",
+    "Box numbers are geometric glyphs from a table defined in this file, not rendered text, so the output is byte-identical on every machine and every Pillow version. Only digits exist; your labels appear in legend, never in the image.",
+    "Numbering is by position (top, then left), not by the order you passed the boxes. requested_index maps each drawn number back to your input. It is unique only within a source: --box numbers its own arguments from 0, and each --from-json region list numbers its own entries from 0, so read (source, requested_index) as the pair that identifies an input.",
+    "The boxes are the caller's. This tool asserts nothing about what is inside them."
+  ],
+  "legend": [
+    {
+      "fractional": [
+        0.03,
+        0.05,
+        0.97,
+        0.19
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        21,
+        3,
+        36,
+        24
+      ],
+      "label": null,
+      "number": 1,
+      "pixel_rect": [
+        21,
+        25,
+        679,
+        95
+      ],
+      "requested_index": 0,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.03,
+        0.24,
+        0.47,
+        0.6
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        21,
+        98,
+        36,
+        119
+      ],
+      "label": null,
+      "number": 2,
+      "pixel_rect": [
+        21,
+        120,
+        329,
+        300
+      ],
+      "requested_index": 1,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.51,
+        0.24,
+        0.97,
+        0.6
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        357,
+        98,
+        372,
+        119
+      ],
+      "label": null,
+      "number": 3,
+      "pixel_rect": [
+        357,
+        120,
+        679,
+        300
+      ],
+      "requested_index": 2,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.6,
+        0.3,
+        0.8,
+        0.54
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        420,
+        128,
+        435,
+        149
+      ],
+      "label": null,
+      "number": 4,
+      "pixel_rect": [
+        420,
+        150,
+        560,
+        270
+      ],
+      "requested_index": 3,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.03,
+        0.66,
+        0.97,
+        0.94
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        21,
+        308,
+        36,
+        329
+      ],
+      "label": null,
+      "number": 5,
+      "pixel_rect": [
+        21,
+        330,
+        679,
+        470
+      ],
+      "requested_index": 4,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.07,
+        0.75,
+        0.17,
+        0.9
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        49,
+        353,
+        64,
+        374
+      ],
+      "label": null,
+      "number": 6,
+      "pixel_rect": [
+        49,
+        375,
+        119,
+        450
+      ],
+      "requested_index": 5,
+      "source": "--box"
+    }
+  ],
+  "output": {
+    "path": "runs\\2026-08-20-annotate-readback\\annotated\\light_ui.png",
+    "sha256": "7e9275f26e0ce1fa6c53995c30802c38aa973e014204d6e1de246bedac04f545",
+    "size": [
+      700,
+      500
+    ]
+  },
+  "parameters": {
+    "from_json": null,
+    "grid": {
+      "cols": 4,
+      "rows": 3
+    },
+    "label_scale": 3,
+    "overwrite": true,
+    "thickness": 2
+  },
+  "source": {
+    "path": "runs\\2026-08-20-annotate-readback\\sources\\light_ui.png",
+    "sha256": "3820e54e4367feba424ece4f47b2540478ddef6f95779d0fb27c2a5e10d8fb86",
+    "size": [
+      700,
+      500
+    ]
+  },
+  "tool": "pil_annotate",
+  "version": "0.4.0"
+}

@@ -1,0 +1,369 @@
+{
+  "flags": [],
+  "grid": {
+    "cols": 4,
+    "lines_drawn": 5,
+    "rows": 3
+  },
+  "interpretation_limits": [
+    "The overlay is drawn on a copy. The source file is not modified; its sha256 is recorded here so you can verify that.",
+    "Never measure an annotated image. The boxes, grid and numerals are pixels: feeding this output to pil_palette_diff or pil_structure_diff measures the annotation as well as the content.",
+    "Box numbers are geometric glyphs from a table defined in this file, not rendered text, so the output is byte-identical on every machine and every Pillow version. Only digits exist; your labels appear in legend, never in the image.",
+    "Numbering is by position (top, then left), not by the order you passed the boxes. requested_index maps each drawn number back to your input. It is unique only within a source: --box numbers its own arguments from 0, and each --from-json region list numbers its own entries from 0, so read (source, requested_index) as the pair that identifies an input.",
+    "The boxes are the caller's. This tool asserts nothing about what is inside them."
+  ],
+  "legend": [
+    {
+      "fractional": [
+        0.417,
+        0.075,
+        0.6,
+        0.208
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        375,
+        83,
+        390,
+        104
+      ],
+      "label": null,
+      "number": 1,
+      "pixel_rect": [
+        375,
+        105,
+        540,
+        290
+      ],
+      "requested_index": 0,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.411,
+        0.215,
+        0.606,
+        0.287
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_bottom_left",
+      "glyph_rect": [
+        370,
+        401,
+        385,
+        422
+      ],
+      "label": null,
+      "number": 2,
+      "pixel_rect": [
+        370,
+        300,
+        545,
+        400
+      ],
+      "requested_index": 1,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.0,
+        0.251,
+        0.222,
+        0.315
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_right",
+      "glyph_rect": [
+        185,
+        328,
+        200,
+        349
+      ],
+      "label": null,
+      "number": 3,
+      "pixel_rect": [
+        0,
+        350,
+        200,
+        439
+      ],
+      "requested_index": 2,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.778,
+        0.251,
+        1.0,
+        0.315
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        700,
+        328,
+        715,
+        349
+      ],
+      "label": null,
+      "number": 4,
+      "pixel_rect": [
+        700,
+        350,
+        900,
+        439
+      ],
+      "requested_index": 3,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.45,
+        0.319,
+        0.556,
+        0.373
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        405,
+        423,
+        420,
+        444
+      ],
+      "label": null,
+      "number": 5,
+      "pixel_rect": [
+        405,
+        445,
+        500,
+        520
+      ],
+      "requested_index": 4,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.6,
+        0.323,
+        0.65,
+        0.373
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        540,
+        429,
+        555,
+        450
+      ],
+      "label": null,
+      "number": 6,
+      "pixel_rect": [
+        540,
+        451,
+        585,
+        520
+      ],
+      "requested_index": 5,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.483,
+        0.391,
+        0.533,
+        0.416
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        435,
+        523,
+        450,
+        544
+      ],
+      "label": null,
+      "number": 7,
+      "pixel_rect": [
+        435,
+        545,
+        480,
+        580
+      ],
+      "requested_index": 6,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.361,
+        0.401,
+        0.456,
+        0.459
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        325,
+        537,
+        340,
+        558
+      ],
+      "label": null,
+      "number": 8,
+      "pixel_rect": [
+        325,
+        559,
+        410,
+        640
+      ],
+      "requested_index": 7,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.65,
+        0.573,
+        0.733,
+        0.724
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        585,
+        777,
+        600,
+        798
+      ],
+      "label": null,
+      "number": 9,
+      "pixel_rect": [
+        585,
+        799,
+        660,
+        1010
+      ],
+      "requested_index": 8,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.311,
+        0.631,
+        0.689,
+        0.681
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        280,
+        858,
+        313,
+        879
+      ],
+      "label": null,
+      "number": 10,
+      "pixel_rect": [
+        280,
+        880,
+        620,
+        950
+      ],
+      "requested_index": 9,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.367,
+        0.695,
+        0.622,
+        0.846
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "inside_top_left",
+      "glyph_rect": [
+        332,
+        972,
+        365,
+        993
+      ],
+      "label": null,
+      "number": 11,
+      "pixel_rect": [
+        330,
+        970,
+        560,
+        1180
+      ],
+      "requested_index": 10,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.356,
+        0.86,
+        0.633,
+        0.925
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_bottom_left",
+      "glyph_rect": [
+        320,
+        1291,
+        353,
+        1312
+      ],
+      "label": null,
+      "number": 12,
+      "pixel_rect": [
+        320,
+        1200,
+        570,
+        1290
+      ],
+      "requested_index": 11,
+      "source": "--box"
+    }
+  ],
+  "output": {
+    "path": "runs\\2026-08-20-annotate-readback\\annotated\\busy_model.png",
+    "sha256": "533fc67691f0dc30b723f7706262dd1426782c58b36248d479c81bc2f055797d",
+    "size": [
+      900,
+      1395
+    ]
+  },
+  "parameters": {
+    "from_json": null,
+    "grid": {
+      "cols": 4,
+      "rows": 3
+    },
+    "label_scale": 3,
+    "overwrite": true,
+    "thickness": 2
+  },
+  "source": {
+    "path": "runs\\2026-08-18-skeleton-warrior-asset-review\\_regions\\model_full.png",
+    "sha256": "6bc7ac68ec7063e91dd09167dbaf46d4e49a96c3779a244aba8466344db46df6",
+    "size": [
+      900,
+      1395
+    ]
+  },
+  "tool": "pil_annotate",
+  "version": "0.4.0"
+}

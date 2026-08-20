@@ -36,7 +36,7 @@ Last updated: 2026-08-19
 
 ## Summary
 
-Three Pillow-backed CLI tools give a coding agent quantitative, diffable
+Six Pillow-backed CLI tools give a coding agent quantitative, diffable
 measurements of an image, complementing rather than replacing native multimodal
 vision:
 
@@ -45,6 +45,15 @@ vision:
 - `pil_structure_diff` — grid statistics, perceptual hashes, changed-region boxes
 - `pil_contract_verdict` — declared-intent verdicts (SATISFIED / VIOLATED /
   UNMEASURABLE) with detection limits, aggregated worst-case across view pairs
+- `pil_crop` — native-resolution crop of a fractional region; integer upscale
+  only, so it magnifies without inventing detail
+- `pil_annotate` — numbered boxes and gridlines on a copy, so a model can point
+  at a region precisely; legibility verified by read-back, not by assertion
+- `pil_image_info` — the file facts an image never carries into a vision
+  encoder: true dimensions, alpha presence *and* use, EXIF, ICC, DPI, frames
+
+Both diff tools also accept `--region` to scope every metric to a fractional
+box, byte-equal to pre-cropping with `pil_crop`.
 
 All are deterministic and emit JSON.
 
@@ -60,19 +69,48 @@ reference values; thresholds calibrated by Neyman–Pearson over synthetic groun
 truth with published detection limits; contract-driven verdicts with a refuse
 list that never approximates; worst-case multi-pair aggregation. Thresholds
 were then [validated against a real production corpus](../runs/2026-08-20-phase2-real-validation/README.md)
-— zero full-frame false alarms, detection limits shown to transfer. One gate
-stays open: the alpha foreground path is uncalibrated.
+— zero full-frame false alarms, detection limits shown to transfer.
 
-Phase 3 scoped and awaiting sign-off.
+**0.4.0** — the alpha/coverage fix, phase 3 Track A, and foreground
+recalibration, built to [`aaa-build-plan.md`](aaa-build-plan.md):
+
+- Foreground statistics on an alpha-derived mask are **coverage-weighted**.
+  Error against alpha-weighted truth fell from −4.3…−42.8 to **±0.0004**, and
+  the placement instability — a quarter-pixel re-render of an unchanged object
+  moving the reading by up to 21.6 code values — is **gone** (±0.0006). Full
+  frame is byte-identical.
+- **Phase 2's last open gate is closed.** The alpha path now has calibrated
+  thresholds of its own (luminance **0.997**, n=380, α=0.01 over 19 RGBA
+  scenes), and foreground thresholds are [split by mask source](../runs/2026-08-20-foreground-recalibration/README.md).
+  The estimate path also moved from n=100/α=0.05 on one scene to n=400/α=0.01
+  over four.
+- Three new tools (`pil_crop`, `pil_annotate`, `pil_image_info`) and `--region`
+  on both diff tools. Every one of them failed its first critic on something its
+  own green suite did not test; the findings and fixes are in the commit log.
+
+Phase 3 Track A landed; Track B (Blender mesh statistics, matched-view
+rendering) remains scoped and unstarted.
 
 ## Open items
 
-- **The alpha foreground path is uncalibrated** — every calibration scene and
-  every validation render is opaque; only the border-median colour path is
-  measured. The one phase 2 gate still open.
+- ~~**The alpha foreground path is uncalibrated.**~~ **Closed in 0.4.0.** An
+  RGBA control family over the 19-scene `ALPHA_CORPUS` gives the alpha path its
+  own thresholds (n=380, α=0.01); `jpeg_reencode` is skipped by design and the
+  skip is recorded, `rescale_roundtrip` resamples premultiplied, and the
+  RGB-only recipes assert alpha is byte-identical so a geometry perturbation
+  cannot masquerade as a colour one. See the
+  [recalibration bundle](../runs/2026-08-20-foreground-recalibration/README.md).
 - **Validation covers one asset from one pipeline.** The thresholds transferred
   to real production renders, but a second corpus from a different renderer
-  would be needed to claim generalisation.
+  would be needed to claim generalisation. **This still stands, and now also
+  applies to the alpha path**, whose controls are synthetic corpus scenes rather
+  than production RGBA renders.
+- **The foreground *estimate* path is still placement-dominated**, just less so.
+  Widening the control scenes cut `rescale_roundtrip`'s median-to-next dominance
+  from 18.9× to ~3×, confirming its grip was about thin objects specifically —
+  but its threshold (34.166 for luminance) remains far above the non-placement
+  floor (1.452). Read `threshold_foreground_estimate_no_placement` when the
+  change you care about does not move the object on the pixel grid.
 - **Two foreground-mode accent metrics sit closest to their budget**
   (`accent_palette_distance` and its ΔE2000 form, ~0.08–0.09 exceedance against
   a 0.10 limit). Widen these first if a future corpus pushes them over.

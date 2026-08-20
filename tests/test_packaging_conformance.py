@@ -220,3 +220,83 @@ def test_marketplace_declares_its_schema(listing):
     way plugin.json carries the Agent Plugins one."""
     market = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
     assert market["$schema"] == "https://anthropic.com/claude-code/marketplace.schema.json"
+
+
+# --- Tool versions must agree with the manifests -----------------------------
+#
+# Added for the 0.4.0 release. The version string lives in ELEVEN places: five
+# across the manifests and pyproject.toml (marketplace.json carries it twice),
+# and one TOOL_VERSION per shipped CLI. The manifest trio was already guarded
+# above; TOOL_VERSION was guarded nowhere, so a tool could ship announcing a
+# version the package had never released and nothing would notice.
+#
+# The discovery is GLOB-DRIVEN on purpose. Listing the tools by hand would mean
+# a future tool is unguarded by default -- the same "half-done" gap this test
+# closes. A new scripts/pil_*.py that declares TOOL_VERSION is covered the
+# moment it lands; one that declares none is ignored, since shared modules like
+# pil_common and pil_region legitimately have no version of their own.
+
+TOOL_VERSION_RE = re.compile(r'^TOOL_VERSION\s*=\s*"([^"]+)"', re.MULTILINE)
+
+
+def _declared_tool_versions():
+    """{filename: version} for every shipped CLI that declares one."""
+    found = {}
+    for path in sorted((REPO_ROOT / "scripts").glob("pil_*.py")):
+        match = TOOL_VERSION_RE.search(path.read_text(encoding="utf-8"))
+        if match:
+            found[path.name] = match.group(1)
+    return found
+
+
+def test_every_shipped_tool_declares_the_manifest_version(portable):
+    """A tool announcing a version the package never released is a lie in the
+    payload, and every tool stamps its version into the JSON it emits.
+
+    Glob-driven so a tool added later cannot quietly escape the check.
+    """
+    # Arrange
+    expected = portable["version"]
+    declared = _declared_tool_versions()
+
+    # Act / Assert
+    assert declared, "expected at least one scripts/pil_*.py to declare TOOL_VERSION"
+    mismatched = {name: got for name, got in declared.items() if got != expected}
+    assert not mismatched, (
+        f"TOOL_VERSION disagrees with plugin.json {expected!r}: {mismatched}"
+    )
+
+
+def test_the_version_check_actually_fails_when_a_version_is_reverted(tmp_path):
+    """The guard above is only worth having if it can go red.
+
+    D10 asks for the check to be *demonstrated* failing, not merely present, so
+    this reproduces the exact drift it exists to catch -- one tool left behind
+    at the previous version -- against a copy of the tree.
+    """
+    # Arrange: a scripts/ copy in which one tool is reverted to 0.3.0.
+    scripts_copy = tmp_path / "scripts"
+    scripts_copy.mkdir()
+    reverted = None
+    for path in sorted((REPO_ROOT / "scripts").glob("pil_*.py")):
+        text = path.read_text(encoding="utf-8")
+        if reverted is None and TOOL_VERSION_RE.search(text):
+            text = TOOL_VERSION_RE.sub('TOOL_VERSION = "0.3.0"', text, count=1)
+            reverted = path.name
+        (scripts_copy / path.name).write_text(text, encoding="utf-8")
+    assert reverted, "no tool declared TOOL_VERSION to revert"
+
+    # Act: run the same discovery against the mutated copy.
+    found = {}
+    for path in sorted(scripts_copy.glob("pil_*.py")):
+        match = TOOL_VERSION_RE.search(path.read_text(encoding="utf-8"))
+        if match:
+            found[path.name] = match.group(1)
+
+    # Assert: the reverted tool is detected, so the guard is not vacuous.
+    assert found[reverted] == "0.3.0"
+    expected = json.loads(PORTABLE_MANIFEST.read_text(encoding="utf-8"))["version"]
+    mismatched = {n: v for n, v in found.items() if v != expected}
+    assert reverted in mismatched, (
+        "the version guard failed to notice a reverted tool -- it is vacuous"
+    )

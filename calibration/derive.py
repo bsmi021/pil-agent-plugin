@@ -222,7 +222,7 @@ def control_thresholds(records):
     0.05%-of-frame accent -- and folding them in would raise every threshold to
     cover cases the flags already refuse to answer.
     """
-    controls = [r for r in records if r["kind"] == "control"]
+    controls = [r for r in records if r["kind"] in ("control", "alpha_control")]
     out = {}
     for mode in sorted({r["mode"] for r in controls}):
         subset = [r for r in controls if r["mode"] == mode]
@@ -238,18 +238,43 @@ def control_thresholds(records):
                 )
                 for family in sorted({r["family"] for r in subset})
             }
+            if mode in ("foreground", "foreground_alpha"):
+                no_placement = [
+                    r for r in subset if r["family"] != "rescale_roundtrip"
+                ]
+                no_placement_values = [r["metrics"].get(metric) for r in no_placement]
+                no_placement_derived = bootstrap_quantile(
+                    no_placement_values,
+                    alpha_for(len(_clean(no_placement_values))),
+                    f"{mode}|{metric}|no_placement",
+                )
+                derived["threshold_no_placement"] = no_placement_derived["threshold"]
+                derived["no_placement"] = no_placement_derived
             per_metric[metric] = derived
-        out[mode] = {
+        key = "foreground_estimate" if mode == "foreground" else mode
+        out[key] = {
             "control_pairs": len(subset),
             "control_families": sorted({r["family"] for r in subset}),
             "scenes": sorted({r["scene"] for r in subset}),
+            "source": {
+                "foreground": "border_median" if mode == "foreground" else "alpha",
+                "mode": mode,
+            }
+            if mode in ("foreground", "foreground_alpha")
+            else None,
             "metrics": per_metric,
         }
+    # Existing callers and response-curve records use mode="foreground". Keep
+    # that name as an in-memory compatibility alias while publishing the
+    # explicit foreground_estimate source in the bundle schema.
+    if "foreground_estimate" in out:
+        out["foreground"] = out["foreground_estimate"]
     return out
 
 
 def threshold_value(thresholds, mode, metric):
-    node = thresholds.get(mode, {}).get("metrics", {}).get(metric)
+    source = "foreground_estimate" if mode == "foreground" else mode
+    node = thresholds.get(source, {}).get("metrics", {}).get(metric)
     return None if node is None else node.get("threshold")
 
 

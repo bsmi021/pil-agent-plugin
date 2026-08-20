@@ -58,11 +58,26 @@ source alone would have missed a real change.
      footnotes.
    A high similarity **plus** a tiny `changed_area_fraction` means the shared
    background matched — it is evidence about the backdrop, not the subject.
-4. **Reconcile.** Compare your visual read against the numbers. Where they
+4. **Look again, at what the numbers found.** This is the step most analysts
+   skip. The tools emit coordinates — `changed_region_bbox_fractional`,
+   `most_divergent_cells`, the foreground `bbox_fractional` — and you can turn
+   those back into something you can see:
+   - `pil_crop --region <bbox> --out crop.png` gives you that region at the
+     source's **native** resolution. Your first look at the image was resampled
+     to fit your encoder; detail below that resolution never reached you. If a
+     number surprises you, crop and look before you explain it.
+   - `pil_annotate --box <bbox> --out marked.png` draws numbered boxes so you
+     can write "box 3" and be understood by whoever reads your report.
+   - `pil_image_info` answers questions you cannot see at all: the true pixel
+     dimensions, whether an alpha channel exists *and* whether it is used, what
+     the EXIF and ICC claim.
+   Use `--region` on the diff tools to re-measure just that area when a
+   whole-frame number is dominated by something you do not care about.
+5. **Reconcile.** Compare your visual read against the numbers. Where they
    conflict, say so explicitly and reason about which is more trustworthy for that
    specific question. Do not silently defer to the numbers; measurement artefacts
    are common and documented in each payload's `interpretation_limits`.
-5. **Report.** Separate findings by confidence, and cite the specific field or
+6. **Report.** Separate findings by confidence, and cite the specific field or
    observation supporting each. When you cite a score, cite the flags that came
    with it.
 

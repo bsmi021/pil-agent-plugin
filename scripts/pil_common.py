@@ -86,6 +86,13 @@ ACCENT_AREA_SMALL_FRACTION = 0.005
 # transparency (any alpha < 255).
 ALPHA_FOREGROUND_MIN = 8
 
+# Cap on how far un-premultiplying a working-resolution pixel can amplify its
+# colour. Derived from ALPHA_FOREGROUND_MIN rather than invented: nothing below
+# the membership floor is ever read by a foreground statistic, so the guard
+# need only bound amplification at 255/8 ~= 32x for the pixels that ARE read.
+# Tying it to the existing constant means this fix adds no new magic number.
+UNPREMULTIPLY_COVERAGE_MIN = ALPHA_FOREGROUND_MIN / 255.0
+
 # OKLab distance from the border-median colour within which an opaque pixel
 # counts as background.
 DEFAULT_BACKGROUND_DELTA = 0.035
@@ -126,13 +133,25 @@ HUE_PRESENCE_MIN_PIXELS = 10
 CELL_MIN_SUPPORT_PIXELS = 64
 
 
-def load_rgb_alpha(path):
-    """Open an image; return (rgb, alpha).
+def load_rgba_straight(path):
+    """Open an image; return (composited_rgb, straight_rgb, alpha).
 
-    rgb is alpha-flattened onto black, byte-identical to what load_rgb returns,
-    so full-frame metrics are unchanged by this loader. alpha is a uint8 HxW
-    array, or None when the file is fully opaque -- a file that carries an alpha
-    channel but uses no transparency provides no foreground information.
+    Exists because the two RGB forms answer different questions and the tools
+    need both: the composited form is the rendered appearance that hashes and
+    pixel diffs must see (alpha-flattened onto black, byte-identical to what
+    load_rgb_alpha has always returned), the straight form is the object's own
+    un-composited colour that every colour statistic must see. A PNG stores
+    straight (non-premultiplied) alpha, so the RGB channels of
+    Image.open(path).convert("RGBA") already ARE the object's true colour at
+    every partial-coverage pixel -- reading them costs nothing and is exact,
+    unlike un-premultiplying the flattened form, which cannot recover the
+    colour compositing rounded away (see calibration/alpha_truth.py's
+    unpremultiply_recovery for the measured cost of that alternative).
+
+    alpha is a uint8 HxW array, or None when the file is fully opaque -- a file
+    that carries an alpha channel but uses no transparency provides no
+    foreground information. When alpha is None, straight_rgb IS composited_rgb
+    (the same object, not a copy), so a caller can assert that identity.
     """
     img = Image.open(path)
     if img.mode in ("RGBA", "LA", "P"):
@@ -140,10 +159,26 @@ def load_rgb_alpha(path):
         alpha = np.asarray(img.getchannel("A"), dtype=np.uint8)
         flat = Image.new("RGBA", img.size, (0, 0, 0, 255))
         flat.alpha_composite(img)
+        composited = flat.convert("RGB")
         if not bool((alpha < 255).any()):
-            alpha = None
-        return flat.convert("RGB"), alpha
-    return img.convert("RGB"), None
+            return composited, composited, None
+        straight = img.convert("RGB")
+        return composited, straight, alpha
+    rgb = img.convert("RGB")
+    return rgb, rgb, None
+
+
+def load_rgb_alpha(path):
+    """Open an image; return (rgb, alpha).
+
+    A two-element projection of load_rgba_straight, kept because full-frame
+    metrics must never see the straight colour: a straight-RGB full-frame read
+    would expose whatever a producer stored under fully-transparent pixels, and
+    the composited form is what every full-frame statistic has always used. rgb
+    is byte-identical to what this function has always returned.
+    """
+    composited, _straight, alpha = load_rgba_straight(path)
+    return composited, alpha
 
 
 def load_rgb(path):
@@ -278,6 +313,65 @@ def to_working(img):
     return img.resize(target, Image.LANCZOS)
 
 
+def resize_coverage(alpha, size):
+    """NEAREST-resample an alpha channel to working size.
+
+    NEAREST, and not an averaging kernel, because membership at working
+    resolution must remain identical to resize_mask's -- both select the same
+    source pixel, so `resize_coverage(alpha, s) >= ALPHA_FOREGROUND_MIN` is
+    provably the same boolean array as `resize_mask(alpha >= ALPHA_FOREGROUND_MIN, s)`.
+    That equality is what keeps the alpha and border-median paths selecting the
+    same pixels on a hard-edged object, and is pinned by an acceptance test
+    rather than assumed.
+    """
+    img = Image.fromarray(np.asarray(alpha, dtype=np.uint8), mode="L")
+    return np.asarray(img.resize(size, Image.NEAREST), dtype=np.uint8)
+
+
+def _resample_alpha_lanczos(alpha, size):
+    """LANCZOS-resample an alpha channel to working size, as float64.
+
+    Exists only to invert the same kernel that produced the resampled
+    premultiplied colour: resize_coverage's NEAREST output answers "is this
+    working pixel a member of the mask", this answers "how much does this
+    working pixel's colour need dividing down by" -- two different questions
+    that must not share one array. float64 throughout, per this module's
+    determinism contract: float32 anywhere in this path is a documented failure
+    mode (compounding rounding differences across platforms).
+    """
+    channel = Image.fromarray(np.asarray(alpha, dtype=np.float32), mode="F")
+    return np.asarray(channel.resize(size, Image.LANCZOS), dtype=np.float64)
+
+
+def working_straight_and_weights(composited_subject, alpha_subject, size):
+    """(working_straight_rgb, working_coverage) at `size`, from a full-res crop.
+
+    The working copy is a LANCZOS resample, so resampling the straight RGB
+    directly would average the object's colour against the transparent
+    region's stored RGB and bake a dark halo into the content. The correct
+    operation is to resample the *premultiplied* colour -- which is exactly
+    what `composited_subject` (composited onto black) already is -- resample
+    the coverage with the same kernel, and divide.
+
+    The clip to [0, 255] before dividing is required because LANCZOS has
+    negative lobes: the filtered premultiplied colour can overshoot its own
+    coverage near a hard edge. The division is guarded by
+    UNPREMULTIPLY_COVERAGE_MIN rather than by the raw coverage, so a
+    near-zero-coverage working pixel cannot blow the recovered colour up
+    arbitrarily; see that constant's comment for the amplification bound this
+    buys, and the working-resolution error-bound note in
+    docs/aaa-build-plan.md#3.4 for the ~0.5/w_bar code-value cost it does not
+    remove.
+    """
+    working_premultiplied = composited_subject.resize(size, Image.LANCZOS)
+    coverage = np.clip(_resample_alpha_lanczos(alpha_subject, size), 0.0, 255.0) / 255.0
+    premult_arr = np.asarray(working_premultiplied, dtype=np.float64)
+    denom = np.maximum(coverage, UNPREMULTIPLY_COVERAGE_MIN)
+    straight = np.clip(premult_arr / denom[..., None], 0.0, 255.0)
+    straight_img = Image.fromarray(np.rint(straight).astype(np.uint8), "RGB")
+    return straight_img, coverage
+
+
 def to_hex(rgb):
     return "#%02x%02x%02x" % (int(rgb[0]), int(rgb[1]), int(rgb[2]))
 
@@ -287,33 +381,82 @@ def luminance_array(img):
     return np.asarray(img.convert("L"), dtype=np.float64)
 
 
-def luminance_stats(img, mask=None):
+def _weighted_mean_std(values, weights):
+    w = np.asarray(weights, dtype=np.float64)
+    total = float(w.sum())
+    mean = float((values * w).sum() / total)
+    std = float(np.sqrt((w * (values - mean) ** 2).sum() / total))
+    return mean, std
+
+
+def luminance_stats(img, mask=None, weights=None):
+    """Mean/std luminance, coverage-weighted when `weights` is given.
+
+    Takes the existing unweighted branch verbatim when weights is None, so the
+    border-median path (and every full-frame call) is untouched -- a
+    ones-weighted mean computed as sum(1*x)/sum(1) can differ from x.mean() in
+    the last ULP, which is enough to break byte-identical JSON.
+    """
     lum = luminance_array(img)
     if mask is not None:
         lum = lum[mask]
+        if weights is not None:
+            weights = np.asarray(weights, dtype=np.float64)[mask]
         if lum.size == 0:
             return {"mean": None, "std": None}
+    if weights is not None:
+        mean, std = _weighted_mean_std(lum, weights)
+        return {"mean": round(mean, 3), "std": round(std, 3)}
     return {"mean": round(float(lum.mean()), 3), "std": round(float(lum.std()), 3)}
 
 
-def saturation_stats(img, mask=None):
+def saturation_stats(img, mask=None, weights=None):
+    """Mean/std HSV saturation, coverage-weighted when `weights` is given.
+
+    Same verbatim-when-unweighted guarantee as luminance_stats, for the same
+    reason.
+    """
     sat = np.asarray(img.convert("HSV"), dtype=np.float64)[:, :, 1]
     if mask is not None:
         sat = sat[mask]
+        if weights is not None:
+            weights = np.asarray(weights, dtype=np.float64)[mask]
         if sat.size == 0:
             return {"mean": None, "std": None}
+    if weights is not None:
+        mean, std = _weighted_mean_std(sat, weights)
+        return {"mean": round(mean, 3), "std": round(std, 3)}
     return {"mean": round(float(sat.mean()), 3), "std": round(float(sat.std()), 3)}
 
 
-def entropy_of(img, mask=None):
-    """Shannon entropy in bits of the 256-bin luminance histogram."""
+def entropy_of(img, mask=None, weights=None):
+    """Shannon entropy in bits of the 256-bin luminance histogram.
+
+    Coverage-weighted (each pixel contributes alpha/255 of a count to its bin)
+    when `weights` is given; takes the existing unweighted branch verbatim
+    otherwise, including PIL's own fast `.histogram()` in the no-mask case, so
+    the border-median and full-frame paths are untouched.
+    """
     if mask is None:
-        hist = np.asarray(img.convert("L").histogram(), dtype=np.float64)
+        if weights is None:
+            hist = np.asarray(img.convert("L").histogram(), dtype=np.float64)
+        else:
+            lum = np.asarray(img.convert("L"), dtype=np.float64)
+            w = np.asarray(weights, dtype=np.float64)
+            hist = np.histogram(
+                lum.ravel(), bins=256, range=(0, 256), weights=w.ravel()
+            )[0].astype(np.float64)
     else:
         lum = np.asarray(img.convert("L"), dtype=np.float64)[mask]
         if lum.size == 0:
             return 0.0
-        hist = np.histogram(lum, bins=256, range=(0, 256))[0].astype(np.float64)
+        if weights is None:
+            hist = np.histogram(lum, bins=256, range=(0, 256))[0].astype(np.float64)
+        else:
+            w = np.asarray(weights, dtype=np.float64)[mask]
+            hist = np.histogram(lum, bins=256, range=(0, 256), weights=w)[0].astype(
+                np.float64
+            )
     total = hist.sum()
     if total <= 0:
         return 0.0
@@ -336,12 +479,30 @@ def edge_magnitude(img):
     return np.hypot(gx, gy)
 
 
-def quantize_palette(img, n_colors):
+def quantize_palette(img, n_colors, weights=None):
     """Extract up to n_colors dominant colours with fractional coverage.
 
     Coverage is relative to the pixel count of the image passed in -- so for the
     chroma-masked accent image, coverage is a share of accent pixels, not of the
     whole frame.
+
+    `weights`, when given, must be a 1D array in the same pixel order as `img`'s
+    own flattened pixels (the same boolean-mask order `masked_strip`/
+    `accent_subset` build their strips in). Image.quantize accepts no weights of
+    its own, so the *choice* of cluster centres stays unweighted -- made from
+    MEDIANCUT over the straight-RGB strip exactly as before, which is already
+    most of the fix, because it means the centres are chosen from the object's
+    true colours rather than darkened ones. Only each entry's *coverage* is
+    reweighted afterwards, by reading the quantizer's own per-pixel index map
+    and computing `bincount(idx, weights=w) / w.sum()` -- exact, one extra
+    vectorised pass, no new constant. The residual this leaves (a large
+    low-coverage region can still win a palette slot it would not win under
+    true-weighted centre selection) is measured, not assumed -- see the W1
+    evidence bundle's MEDIANCUT residual comparison.
+
+    When weights is None this takes the existing code path verbatim, including
+    `getcolors`, so opaque output stays byte-identical rather than merely
+    numerically equal.
     """
     if img.width * img.height == 0:
         return []
@@ -349,21 +510,41 @@ def quantize_palette(img, n_colors):
         colors=n_colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE
     )
     palette = quantized.getpalette() or []
-    counts = quantized.getcolors(maxcolors=n_colors * 8) or []
-    total = float(img.width * img.height)
 
-    entries = []
-    for count, index in counts:
-        rgb = tuple(palette[index * 3 : index * 3 + 3])
-        if len(rgb) < 3:
-            continue
-        entries.append(
-            {
-                "hex": to_hex(rgb),
-                "rgb": [int(c) for c in rgb],
-                "coverage": round(count / total, 6),
-            }
-        )
+    if weights is None:
+        counts = quantized.getcolors(maxcolors=n_colors * 8) or []
+        total = float(img.width * img.height)
+        entries = []
+        for count, index in counts:
+            rgb = tuple(palette[index * 3 : index * 3 + 3])
+            if len(rgb) < 3:
+                continue
+            entries.append(
+                {
+                    "hex": to_hex(rgb),
+                    "rgb": [int(c) for c in rgb],
+                    "coverage": round(count / total, 6),
+                }
+            )
+    else:
+        idx = np.asarray(quantized).reshape(-1)
+        w = np.asarray(weights, dtype=np.float64).reshape(-1)
+        total_w = float(w.sum())
+        entries = []
+        if total_w > 0 and idx.size:
+            n_slots = len(palette) // 3
+            weighted_counts = np.bincount(idx, weights=w, minlength=n_slots)
+            for index in np.unique(idx):
+                rgb = tuple(palette[int(index) * 3 : int(index) * 3 + 3])
+                if len(rgb) < 3:
+                    continue
+                entries.append(
+                    {
+                        "hex": to_hex(rgb),
+                        "rgb": [int(c) for c in rgb],
+                        "coverage": round(float(weighted_counts[index] / total_w), 6),
+                    }
+                )
     # Stable ordering: heaviest first, hex as tiebreak, so JSON never floats.
     entries.sort(key=lambda e: (-e["coverage"], e["hex"]))
     return entries
@@ -401,11 +582,12 @@ def accent_subset(
     sat_min,
     val_min,
     within=None,
+    weights=None,
     space=DEFAULT_ACCENT_SPACE,
     chroma_min=DEFAULT_ACCENT_CHROMA_MIN,
     lightness_min=DEFAULT_ACCENT_LIGHTNESS_MIN,
 ):
-    """Return (accent-pixels-as-image, fraction) for vivid pixels.
+    """Return (accent-pixels-as-image, fraction, accent_weights) for vivid pixels.
 
     The returned image is a 1xN strip containing only the masked pixels, which
     lets the same quantiser run over the accent subset alone. With a `within`
@@ -413,20 +595,35 @@ def accent_subset(
     a share of foreground rather than of the frame. `space` selects which
     definition of "vivid" applies; the foreground intersection is identical
     either way.
+
+    `weights`, when given alongside `within`, makes `fraction` the coverage
+    share `sum(w over accent&within) / sum(w over within)` instead of a pixel
+    count ratio, matching alpha_truth.weighted_stats' accent_fraction
+    convention. `accent_weights` is the same weights array sliced to the
+    returned strip's pixel order (or None), for the caller to hand straight to
+    quantize_palette.
     """
     rgb = np.asarray(img)
     mask = accent_mask(img, sat_min, val_min, space, chroma_min, lightness_min)
     if within is not None:
         mask &= within
-        denominator = float(within.sum())
-        fraction = (float(mask.sum()) / denominator) if denominator else 0.0
+        if weights is not None:
+            w = np.asarray(weights, dtype=np.float64)
+            denom = float(w[within].sum())
+            fraction = (float(w[mask].sum()) / denom) if denom else 0.0
+        else:
+            denominator = float(within.sum())
+            fraction = (float(mask.sum()) / denominator) if denominator else 0.0
     else:
         fraction = float(mask.mean())
     selected = rgb[mask]
     if selected.size == 0:
-        return None, 0.0
+        return None, 0.0, None
     strip = selected.reshape(1, -1, 3).astype(np.uint8)
-    return Image.fromarray(strip, "RGB"), fraction
+    accent_weights = (
+        np.asarray(weights, dtype=np.float64)[mask] if weights is not None else None
+    )
+    return Image.fromarray(strip, "RGB"), fraction, accent_weights
 
 
 # Hue-family buckets over PIL's 0-255 H channel. Enumerating families separately
@@ -454,6 +651,7 @@ def hue_families(
     sat_min,
     val_min,
     within=None,
+    weights=None,
     space=DEFAULT_ACCENT_SPACE,
     chroma_min=DEFAULT_ACCENT_CHROMA_MIN,
     lightness_min=DEFAULT_ACCENT_LIGHTNESS_MIN,
@@ -474,6 +672,13 @@ def hue_families(
     current 0-255 HSV bounds into degrees would be worse than doing nothing.
     Deriving LCh boundaries by measurement is WP2's job, so the family names
     stay comparable with phase 1 until then.
+
+    `pixels` is always an integer count, unweighted, because
+    HUE_PRESENCE_MIN_PIXELS exists to stop a handful of anti-aliased edge
+    pixels flipping a verdict and that gate is a count question. When `weights`
+    is given, `fraction_of_accents` / `fraction_of_frame` become coverage
+    shares and a `coverage` (sum of weights, float) key is added per family;
+    without weights this function's return shape is unchanged from before.
     """
     hsv = np.asarray(img.convert("HSV"))
     hue = hsv[:, :, 0].astype(np.int16)
@@ -482,23 +687,34 @@ def hue_families(
     if within is not None:
         mask &= within
         total_px = float(within.sum())
+        total_w = float(np.asarray(weights, dtype=np.float64)[within].sum()) if weights is not None else None
     else:
         total_px = float(hue.size)
+        total_w = float(np.asarray(weights, dtype=np.float64).sum()) if weights is not None else None
     accent_px = float(mask.sum())
     masked_hue = hue[mask]
+    masked_weights = np.asarray(weights, dtype=np.float64)[mask] if weights is not None else None
+    accent_w = float(masked_weights.sum()) if masked_weights is not None else None
 
     out = {}
     for name, ranges in HUE_FAMILIES:
-        count = 0
+        family_mask = np.zeros(masked_hue.shape, dtype=bool)
         for lo, hi in ranges:
-            count += int(((masked_hue >= lo) & (masked_hue <= hi)).sum())
-        frac_accents = (count / accent_px) if accent_px else 0.0
-        out[name] = {
-            "pixels": count,
-            "fraction_of_accents": round(frac_accents, 6),
-            "fraction_of_frame": round(count / total_px, 6) if total_px else 0.0,
-            "negligible": bool(0.0 < frac_accents < HUE_FAMILY_NEGLIGIBLE),
-        }
+            family_mask |= (masked_hue >= lo) & (masked_hue <= hi)
+        count = int(family_mask.sum())
+        entry = {"pixels": count}
+        if masked_weights is not None:
+            coverage = float(masked_weights[family_mask].sum())
+            frac_accents = (coverage / accent_w) if accent_w else 0.0
+            frac_frame = (coverage / total_w) if total_w else 0.0
+            entry["coverage"] = round(coverage, 6)
+        else:
+            frac_accents = (count / accent_px) if accent_px else 0.0
+            frac_frame = (count / total_px) if total_px else 0.0
+        entry["fraction_of_accents"] = round(frac_accents, 6)
+        entry["fraction_of_frame"] = round(frac_frame, 6)
+        entry["negligible"] = bool(0.0 < frac_accents < HUE_FAMILY_NEGLIGIBLE)
+        out[name] = entry
     return out
 
 
@@ -614,7 +830,7 @@ def parse_grid(spec):
     return cols, rows
 
 
-def fractional_cells(img, cols, rows, mask=None):
+def fractional_cells(img, cols, rows, mask=None, weights=None, colour_img=None):
     """Per-cell statistics over a fractional grid.
 
     The grid is defined as fractions of the image's own dimensions, so two
@@ -623,10 +839,30 @@ def fractional_cells(img, cols, rows, mask=None):
     With a foreground mask, statistics run over each cell's foreground pixels
     only and every cell carries its `foreground_pixels` support count; a cell
     with no foreground reports null statistics rather than fabricating numbers
-    from pure background. Gradients are still taken on the unmasked image, so
-    silhouette edges -- real object structure -- survive.
+    from pure background. Gradients are always taken from `img`, unmasked, on
+    purpose -- silhouette edges are real object structure, and damping them by
+    coverage would make a thin object read as progressively less edgy the
+    thinner it gets, which is backwards.
+
+    `weights`, when given, coverage-weights luminance_mean/std and entropy
+    (Sum(w*x)/Sum(w)) over each cell's masked pixels, and adds
+    `foreground_coverage_fraction` (Sum(w)/cell size) beside `foreground_fraction`.
+    `edge_mean` is never weighted -- see the docstring above -- so it is always
+    read from `img`, the same source gradients always came from.
+
+    `colour_img`, when given alongside `weights`, is the un-premultiplied
+    working-resolution image that luminance/entropy are read from instead of
+    `img`. It exists because weighting `img` itself (still composited onto
+    black) would double-count the coverage discount: the composited value is
+    already colour*coverage, so weighting it again biases the mean *downward
+    more* than the unweighted reading (see docs/aaa-build-plan.md#3.11,
+    "weighting without un-premultiplying").
+
+    Passing neither `weights` nor `colour_img` takes the existing code path
+    verbatim, so the border-median path is untouched.
     """
-    lum = luminance_array(img)
+    lum_source = colour_img if colour_img is not None else img
+    lum = luminance_array(lum_source)
     edges = edge_magnitude(img)
     h, w = lum.shape
 
@@ -654,6 +890,11 @@ def fractional_cells(img, cols, rows, mask=None):
                 support = int(cell_mask.sum())
                 cell["foreground_pixels"] = support
                 cell["foreground_fraction"] = round(support / lum_cell.size, 6)
+                if weights is not None:
+                    cell_weights = weights[y0:y1, x0:x1]
+                    cell["foreground_coverage_fraction"] = round(
+                        float(cell_weights.sum()) / lum_cell.size, 6
+                    )
                 if support == 0:
                     # No foreground here: emit nulls, never NaN (which json.dump
                     # would happily serialise as invalid JSON).
@@ -667,6 +908,17 @@ def fractional_cells(img, cols, rows, mask=None):
                     continue
                 lum_cell = lum_cell[cell_mask]
                 edge_cell = edge_cell[cell_mask]
+                if weights is not None:
+                    w_cell = weights[y0:y1, x0:x1][cell_mask]
+                    lum_mean, lum_std = _weighted_mean_std(lum_cell, w_cell)
+                    cell.update(
+                        luminance_mean=round(lum_mean, 3),
+                        luminance_std=round(lum_std, 3),
+                        edge_mean=round(float(edge_cell.mean()), 3),
+                        entropy=_cell_entropy(lum_cell, weights=w_cell),
+                    )
+                    cells.append(cell)
+                    continue
             cell.update(
                 luminance_mean=round(float(lum_cell.mean()), 3),
                 luminance_std=round(float(lum_cell.std()), 3),
@@ -677,8 +929,11 @@ def fractional_cells(img, cols, rows, mask=None):
     return cells
 
 
-def _cell_entropy(lum_cell):
-    hist, _ = np.histogram(lum_cell, bins=256, range=(0, 256))
+def _cell_entropy(lum_cell, weights=None):
+    if weights is None:
+        hist, _ = np.histogram(lum_cell, bins=256, range=(0, 256))
+    else:
+        hist, _ = np.histogram(lum_cell, bins=256, range=(0, 256), weights=weights)
     total = hist.sum()
     if total <= 0:
         return 0.0

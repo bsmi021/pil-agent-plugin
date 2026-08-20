@@ -46,6 +46,10 @@ Always quote image paths: they frequently contain spaces or parentheses.
 | Same **object**, ignoring the backdrop? | both, with `--foreground` | same fields, foreground-masked |
 | Did my *intended* change land, and did anything else drift? | contract | per-predicate `verdict` + `detection_limit` |
 | Did the colour change *perceptually*? | palette | `base_palette_distance_de2000`, `accent_palette_distance_de2000` |
+| Measure only **part** of the frame | both, with `--region L,T,R,B` | same fields, scoped to the region |
+| Let me **see** that region at full resolution | `pil_crop` | native-resolution crop, optional integer upscale |
+| Let me **point** at something so a model understands | `pil_annotate` | numbered boxes drawn on a copy |
+| What does the **file** say — dimensions, alpha, EXIF, ICC? | `pil_image_info` | file facts vision cannot see |
 
 **Consult both tools for any "do these match?" question.** They are blind to
 different things. A measured cyan→red recolour scored 0.9990 structural similarity
@@ -163,6 +167,82 @@ the deciding fields. Three rules make the output trustworthy:
 - **Multi-pair aggregation is worst-case.** With `--pairs`, one diverging view
   fails the item; it cannot be averaged away.
 
+## Closing the loop: crop, annotate, and file facts
+
+These three exist because measurement and vision are blind to different things,
+and the fastest way to an answer is usually to hand one what the other found.
+
+### `pil_crop.py` — see the region at native resolution
+
+```bash
+... pil_crop.py "<image>" --region "0.1,0.4,0.3,0.9" --out crop.png [--scale 4] [--region-space foreground]
+```
+
+An image is resampled to fit a vision encoder, so detail below that resolution
+is simply gone, and the model does not even know the source's true pixel
+dimensions. The measurement tools already tell you *where* to look —
+`changed_region_bbox_fractional`, `most_divergent_cells`, the foreground
+`bbox_fractional`. Feed one of those here and read the crop.
+
+`--scale` is integer nearest-neighbour only. It magnifies; it never invents
+detail, and an upscaled crop contains no more real information than the source
+did. High-bit-depth `I`/`F`/`I;*` sources are **refused** rather than converted.
+
+### `pil_annotate.py` — point at something so a model understands you
+
+```bash
+... pil_annotate.py "<image>" --out marked.png --box "0.1,0.4,0.3,0.9" [--box ...] [--grid 4x3] [--from-json structure.json]
+```
+
+Draws numbered boxes and gridlines onto a **copy**, so a model shown the result
+can say "box 3" and be understood. `--from-json` takes a `pil_structure_diff`
+payload directly and draws what it found.
+
+Two things to know. **Numbering is by position** (top, then left), not the order
+you passed the boxes — `legend[].requested_index` maps each drawn number back to
+your input. And **never measure an annotated image**: the boxes and numerals are
+pixels, so feeding it back into the measurement tools measures the annotation.
+
+Where a numeral cannot be placed cleanly the tool says so rather than hiding it,
+via per-entry `glyph_hazards` and payload `flags`; a numeral that had to be
+forced into the frame is named `clamped`. Read those before trusting a crowded
+overlay. The read-back evidence is in
+[`runs/2026-08-20-annotate-readback/`](../../runs/2026-08-20-annotate-readback/README.md).
+
+### `pil_image_info.py` — what the file says
+
+```bash
+... pil_image_info.py "<image>" ["<image>" ...]
+```
+
+Images reach a model stripped and resampled, so it sees none of this: true pixel
+dimensions, mode, bit depth, whether an alpha channel exists **and** whether it
+is actually used, ICC presence, EXIF (including `EXIF.*`/`GPS.*` sub-IFD tags),
+DPI, frame count.
+
+It reports what the file *claims* and refuses to infer past it. An ICC profile's
+presence is not a colour-space guarantee; EXIF is producer-supplied and can be
+stale or wrong. Metadata has three states, not two: absent is `null`,
+**unreadable is `null` plus a flag** (`exif_unreadable`, `icc_unreadable`). One
+unreadable file never aborts a batch — it reports `readable: false` with a
+reason while its siblings still report.
+
+## `--region` on the measurement tools
+
+```bash
+... pil_structure_diff.py A.png B.png --region "0.1,0.4,0.3,0.9" [--region-space foreground]
+```
+
+Scopes every metric to a fractional box, applied to **both** images at full
+resolution before anything else. A `--region` measurement equals pre-cropping
+the file with `pil_crop` and measuring that, byte for byte — the two share one
+parser — with one documented exception, the `region_background_estimate_diverged`
+flag, which structurally cannot exist on an already-cropped file.
+
+Composed with `--foreground`, the region crops first and the mask (and, on the
+border-median path, the background estimate) is re-derived from the crop's own
+borders rather than inherited from the frame.
+
 ## These tools do not measure geometry
 
 `edge_mean` and `entropy` are 2D image-complexity proxies. They are **not**
@@ -185,9 +265,25 @@ Every `pil_structure_diff` payload repeats this under `interpretation_limits`.
 - Accent membership is a hard HSV threshold, echoed in the output as
   `accent_thresholds`. Colours near the boundary can flip between palettes.
 - Thresholds are calibrated against synthetic perturbations with exact ground
-  truth (`runs/2026-08-19-phase2-calibration/`), Neyman–Pearson with recorded
-  n and α, and every metric's detection limit is published there. Synthetic
-  controls underestimate real-revision difficulty, so treat detection limits
-  as best-case bounds.
+  truth, Neyman–Pearson with recorded n and α, and every metric's detection
+  limit is published. Synthetic controls underestimate real-revision
+  difficulty, so treat detection limits as best-case bounds. Bundles:
+  [full-frame + method](../../runs/2026-08-19-phase2-calibration/README.md),
+  [foreground by mask source](../../runs/2026-08-20-foreground-recalibration/README.md),
+  [real-image validation](../../runs/2026-08-20-phase2-real-validation/README.md).
+- **Foreground thresholds are split by how the mask was derived**, because they
+  differ by more than an order of magnitude. `threshold_foreground_alpha`
+  applies when the file carried real transparency; `..._estimate` when the mask
+  came from the border-median colour; `..._estimate_no_placement` is the same
+  derivation with the resampling control family excluded. Measured for
+  luminance: **0.997** on the alpha path, **34.166** on the estimate path,
+  **1.452** excluding placement noise. Reading the wrong one by an order of
+  magnitude is the easiest mistake to make here.
+- On **RGBA input in `--foreground` mode**, statistics are coverage-weighted:
+  each pixel's true colour is recovered and weighted by how much of the pixel
+  the object covers. Before 0.4.0 a partially-covered pixel was composited onto
+  black and counted at full weight, which read a 5px-wide blade ~28 code values
+  too dark and made a quarter-pixel re-render of an *unchanged* object look
+  like a real change. Full-frame behaviour is unchanged.
 - `entropy_delta` is demoted: calibration found it unable to resolve 24 of 26
   perturbation families. Do not let it decide anything.

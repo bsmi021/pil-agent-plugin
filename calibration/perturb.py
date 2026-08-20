@@ -45,6 +45,27 @@ REGION_FILL = (255, 0, 200)
 JPEG_SUBSAMPLING = 2
 
 
+def _rgb_alpha(img):
+    """Return an RGB working image and an optional untouched alpha channel."""
+    if img.mode in ("RGBA", "LA", "P"):
+        rgba = img.convert("RGBA")
+        return rgba.convert("RGB"), rgba.getchannel("A")
+    return img.convert("RGB"), None
+
+
+def _restore_alpha(rgb, alpha):
+    """Restore an input alpha channel after an RGB-only perturbation."""
+    if alpha is None:
+        return rgb
+    return Image.merge("RGBA", (*rgb.convert("RGB").split(), alpha))
+
+
+def _resize_float(channel, size):
+    """Resize one float channel using the same PIL path as scenes._resolve_rgba."""
+    source = Image.fromarray(np.asarray(channel, dtype=np.float32), mode="F")
+    return np.asarray(source.resize(size, Image.LANCZOS), dtype=np.float64)
+
+
 def derive_seed(*parts):
     """Stable 32-bit seed from arbitrary parts.
 
@@ -66,38 +87,48 @@ def hue_rotate(img, degrees, extent=1.0):
     is. That round trip is itself slightly lossy; ``hue_rotate(img, 0)`` is
     included in the control set precisely to measure how lossy.
     """
-    hsv = np.asarray(img.convert("HSV")).copy()
+    rgb, alpha = _rgb_alpha(img)
+    hsv = np.asarray(rgb.convert("HSV")).copy()
     height = hsv.shape[0]
     rows = max(1, int(round(height * extent)))
     shift = int(round(degrees * 255.0 / 360.0))
     band = hsv[:rows, :, 0].astype(np.int16)
     hsv[:rows, :, 0] = ((band + shift) % 256).astype(np.uint8)
-    return Image.fromarray(hsv, "HSV").convert("RGB")
+    return _restore_alpha(Image.fromarray(hsv, "HSV").convert("RGB"), alpha)
 
 
 def saturation_scale(img, factor):
     """Multiply the HSV saturation channel by ``factor`` and clip."""
-    hsv = np.asarray(img.convert("HSV")).astype(np.float64)
+    rgb, alpha = _rgb_alpha(img)
+    hsv = np.asarray(rgb.convert("HSV")).astype(np.float64)
     hsv[:, :, 1] = np.clip(hsv[:, :, 1] * factor, 0.0, 255.0)
-    return Image.fromarray(hsv.round().astype(np.uint8), "HSV").convert("RGB")
+    return _restore_alpha(
+        Image.fromarray(hsv.round().astype(np.uint8), "HSV").convert("RGB"), alpha
+    )
 
 
 def exposure_shift(img, delta):
     """Add ``delta`` (in 0-255 code values) to every channel and clip."""
-    arr = np.asarray(img).astype(np.int16) + int(delta)
-    return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB")
+    rgb, alpha = _rgb_alpha(img)
+    arr = np.asarray(rgb).astype(np.int16) + int(delta)
+    return _restore_alpha(Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB"), alpha)
 
 
 def gaussian_blur(img, radius):
-    return img.filter(ImageFilter.GaussianBlur(radius))
+    rgb, alpha = _rgb_alpha(img)
+    return _restore_alpha(rgb.filter(ImageFilter.GaussianBlur(radius)), alpha)
 
 
 def add_noise(img, sigma, seed):
     """Additive zero-mean gaussian noise, seeded."""
-    arr = np.asarray(img).astype(np.float64)
+    rgb, alpha = _rgb_alpha(img)
+    arr = np.asarray(rgb).astype(np.float64)
     rng = np.random.Generator(np.random.PCG64(int(seed)))
     noise = rng.normal(0.0, float(sigma), size=arr.shape)
-    return Image.fromarray(np.clip(arr + noise, 0, 255).round().astype(np.uint8), "RGB")
+    return _restore_alpha(
+        Image.fromarray(np.clip(arr + noise, 0, 255).round().astype(np.uint8), "RGB"),
+        alpha,
+    )
 
 
 def translate(img, fraction):
@@ -111,11 +142,13 @@ def translate(img, fraction):
     dx = int(round(width * fraction))
     if dx <= 0:
         return img.copy()
-    arr = np.asarray(img)
+    rgba = img.convert("RGBA") if img.mode in ("RGBA", "LA", "P") else None
+    source = rgba if rgba is not None else img.convert("RGB")
+    arr = np.asarray(source)
     out = np.empty_like(arr)
     out[:, dx:] = arr[:, : width - dx]
     out[:, :dx] = arr[:, :1]
-    return Image.fromarray(out, "RGB")
+    return Image.fromarray(out, "RGBA" if rgba is not None else "RGB")
 
 
 def rescale_roundtrip(img, factor):
@@ -126,11 +159,40 @@ def rescale_roundtrip(img, factor):
     and the claim has to break somewhere.
     """
     width, height = img.size
-    small = img.resize(
-        (max(1, int(round(width * factor))), max(1, int(round(height * factor)))),
-        Image.LANCZOS,
+    if img.mode not in ("RGBA", "LA", "P"):
+        small = img.resize(
+            (max(1, int(round(width * factor))), max(1, int(round(height * factor)))),
+            Image.LANCZOS,
+        )
+        return small.resize((width, height), Image.LANCZOS)
+
+    rgba = img.convert("RGBA")
+    source = np.asarray(rgba, dtype=np.float64)
+    alpha = source[:, :, 3]
+    premultiplied = source[:, :, :3] * (alpha / 255.0)[..., None]
+    small_size = (
+        max(1, int(round(width * factor))),
+        max(1, int(round(height * factor))),
     )
-    return small.resize((width, height), Image.LANCZOS)
+    small_premultiplied = np.stack(
+        [_resize_float(premultiplied[:, :, channel], small_size) for channel in range(3)],
+        axis=-1,
+    )
+    small_alpha = _resize_float(alpha, small_size)
+    final_premultiplied = np.stack(
+        [_resize_float(small_premultiplied[:, :, channel], (width, height)) for channel in range(3)],
+        axis=-1,
+    )
+    final_alpha = np.clip(_resize_float(small_alpha, (width, height)), 0.0, 255.0) / 255.0
+    straight = np.clip(
+        final_premultiplied / np.maximum(final_alpha, 1.0 / 255.0)[..., None],
+        0.0,
+        255.0,
+    )
+    alpha_out = np.rint(final_alpha * 255.0).astype(np.uint8)
+    rgb_out = np.rint(straight).astype(np.uint8)
+    rgb_out[alpha_out == 0] = 0
+    return Image.fromarray(np.dstack([rgb_out, alpha_out]), "RGBA")
 
 
 def jpeg_reencode(img, quality):
@@ -156,10 +218,11 @@ def region_recolour(img, region_fraction):
     side = min(side, width, height)
     x0 = (width - side) // 2
     y0 = (height - side) // 2
-    out = img.copy()
+    rgba = img.mode in ("RGBA", "LA", "P")
+    out = img.convert("RGBA") if rgba else img.convert("RGB")
     arr = np.asarray(out).copy()
-    arr[y0 : y0 + side, x0 : x0 + side] = REGION_FILL
-    return Image.fromarray(arr, "RGB")
+    arr[y0 : y0 + side, x0 : x0 + side, :3] = REGION_FILL
+    return Image.fromarray(arr, "RGBA" if rgba else "RGB")
 
 
 OPERATIONS = {

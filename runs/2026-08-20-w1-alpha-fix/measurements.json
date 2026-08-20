@@ -1,0 +1,962 @@
+{
+  "alpha_floor_sweep_weighted_11_2": [
+    {
+      "label": "aa_blade_w40",
+      "spread": 0.001,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 172.6401
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 172.6401
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 172.6403
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 172.6411
+        }
+      ]
+    },
+    {
+      "label": "aa_blade_w12",
+      "spread": 0.007,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 173.7221
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 173.7222
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 173.7234
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 173.7291
+        }
+      ]
+    },
+    {
+      "label": "aa_blade_w5",
+      "spread": 0.0304,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 174.9239
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 174.9242
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 174.9301
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 174.9543
+        }
+      ]
+    },
+    {
+      "label": "aa_blade_w3",
+      "spread": 0.0714,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 175.7306
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 175.7315
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 175.7451
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 175.802
+        }
+      ]
+    },
+    {
+      "label": "hard_blade_w12",
+      "spread": 0.0,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 173.7217
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 173.7217
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 173.7217
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 173.7217
+        }
+      ]
+    },
+    {
+      "label": "hard_blade_w5",
+      "spread": 0.0,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 174.9012
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 174.9012
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 174.9012
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 174.9012
+        }
+      ]
+    },
+    {
+      "label": "vivid_blade_w5",
+      "spread": 0.0141,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 175.7293
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 175.7316
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 175.7325
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 175.7184
+        }
+      ]
+    },
+    {
+      "label": "glass_a64",
+      "spread": 0.0,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 175.7493
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 175.7493
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 175.7493
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 175.7493
+        }
+      ]
+    },
+    {
+      "label": "glass_a128",
+      "spread": 0.0,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 176.8832
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 176.8832
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 176.8832
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 176.8832
+        }
+      ]
+    },
+    {
+      "label": "glass_a192",
+      "spread": 0.0,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 177.4306
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 177.4306
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 177.4306
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 177.4306
+        }
+      ]
+    },
+    {
+      "label": "alpha_ladder",
+      "spread": 0.0,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 172.0
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 172.0
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 172.0
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 172.0
+        }
+      ]
+    },
+    {
+      "label": "degenerate_hairline",
+      "spread": 0.0176,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 172.4661
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 172.466
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 172.468
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 172.4836
+        }
+      ]
+    },
+    {
+      "label": "angle_a00",
+      "spread": 0.0335,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 173.2808
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 173.2808
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 173.3143
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 173.3143
+        }
+      ]
+    },
+    {
+      "label": "angle_a20",
+      "spread": 0.049,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 175.1212
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 175.1244
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 175.1343
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 175.1702
+        }
+      ]
+    },
+    {
+      "label": "angle_a45",
+      "spread": 0.0369,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 174.6632
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 174.6633
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 174.6637
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 174.7001
+        }
+      ]
+    },
+    {
+      "label": "angle_a60",
+      "spread": 0.0387,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 174.6897
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 174.6936
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 174.6974
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 174.7284
+        }
+      ]
+    },
+    {
+      "label": "angle_a45_phase",
+      "spread": 0.0317,
+      "sweep": [
+        {
+          "floor": 8,
+          "luminance_mean": 175.449
+        },
+        {
+          "floor": 16,
+          "luminance_mean": 175.4805
+        },
+        {
+          "floor": 32,
+          "luminance_mean": 175.4807
+        },
+        {
+          "floor": 64,
+          "luminance_mean": 175.4807
+        }
+      ]
+    }
+  ],
+  "before_after_table": [
+    {
+      "label": "aa_blade_w40",
+      "partial_coverage_share": 0.094927,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0001,
+        "saturation_mean_error": 0.0001
+      },
+      "pre_fix_bias": {
+        "accent_fraction": -0.001,
+        "luminance_mean": -4.2609,
+        "saturation_mean": -0.2479
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "aa_blade_w12",
+      "partial_coverage_share": 0.283604,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0001,
+        "saturation_mean_error": 0.0001
+      },
+      "pre_fix_bias": {
+        "accent_fraction": -0.0035,
+        "luminance_mean": -12.8802,
+        "saturation_mean": -0.3203
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "aa_blade_w5",
+      "partial_coverage_share": 0.593853,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": 0.0001,
+        "saturation_mean_error": -0.0002
+      },
+      "pre_fix_bias": {
+        "accent_fraction": -0.0032,
+        "luminance_mean": -27.8796,
+        "saturation_mean": -0.3032
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "aa_blade_w3",
+      "partial_coverage_share": 0.58765,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": 0.0004,
+        "saturation_mean_error": 0.0003
+      },
+      "pre_fix_bias": {
+        "accent_fraction": -0.0032,
+        "luminance_mean": -42.8347,
+        "saturation_mean": -0.2437
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "hard_blade_w12",
+      "partial_coverage_share": 0.0,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": 0.0003,
+        "saturation_mean_error": 0.0003
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": 0.0,
+        "saturation_mean": 0.0
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "hard_blade_w5",
+      "partial_coverage_share": 0.0,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0002,
+        "saturation_mean_error": 0.0
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": 0.0,
+        "saturation_mean": 0.0
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "vivid_blade_w5",
+      "partial_coverage_share": 0.593853,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0003,
+        "saturation_mean_error": -0.0002
+      },
+      "pre_fix_bias": {
+        "accent_fraction": -0.073,
+        "luminance_mean": -28.1467,
+        "saturation_mean": 0.0265
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "glass_a64",
+      "partial_coverage_share": 0.821289,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0003,
+        "saturation_mean_error": 0.0002
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.2857,
+        "luminance_mean": -108.053,
+        "saturation_mean": 67.989
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "glass_a128",
+      "partial_coverage_share": 0.821289,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0002,
+        "saturation_mean_error": 0.0004
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.1237,
+        "luminance_mean": -72.2289,
+        "saturation_mean": 29.4392
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "glass_a192",
+      "partial_coverage_share": 0.821289,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": 0.0004,
+        "saturation_mean_error": 0.0004
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0455,
+        "luminance_mean": -35.8183,
+        "saturation_mean": 10.8272
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "alpha_ladder",
+      "partial_coverage_share": 0.702703,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": 0.0,
+        "saturation_mean_error": 0.0
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": -83.9459,
+        "saturation_mean": -1.2432
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "degenerate_empty",
+      "partial_coverage_share": 0.0,
+      "post_fix": null,
+      "pre_fix_bias": {},
+      "source": "alpha"
+    },
+    {
+      "label": "degenerate_opaque",
+      "partial_coverage_share": 0.0,
+      "post_fix": null,
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": 0.0,
+        "saturation_mean": 0.0
+      },
+      "source": "background_estimate"
+    },
+    {
+      "label": "degenerate_hairline",
+      "partial_coverage_share": 0.981336,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0001,
+        "saturation_mean_error": -0.0003
+      },
+      "pre_fix_bias": {
+        "accent_fraction": -0.0203,
+        "luminance_mean": -72.2647,
+        "saturation_mean": -4.7709
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "angle_a00",
+      "partial_coverage_share": 0.703195,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": 0.0002,
+        "saturation_mean_error": -0.0005
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": -48.6735,
+        "saturation_mean": 0.9214
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "angle_a20",
+      "partial_coverage_share": 0.644918,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0002,
+        "saturation_mean_error": -0.0004
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": -33.5961,
+        "saturation_mean": -0.137
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "angle_a45",
+      "partial_coverage_share": 0.56321,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": -0.0002,
+        "saturation_mean_error": -0.0002
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": -27.46,
+        "saturation_mean": -0.2599
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "angle_a60",
+      "partial_coverage_share": 0.589395,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": 0.0003,
+        "saturation_mean_error": -0.0003
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": -30.1905,
+        "saturation_mean": -0.3555
+      },
+      "source": "alpha"
+    },
+    {
+      "label": "angle_a45_phase",
+      "partial_coverage_share": 0.661529,
+      "post_fix": {
+        "accent_fraction_error": 0.0,
+        "luminance_mean_error": 0.0,
+        "saturation_mean_error": -0.0004
+      },
+      "pre_fix_bias": {
+        "accent_fraction": 0.0,
+        "luminance_mean": -44.945,
+        "saturation_mean": 4.9997
+      },
+      "source": "alpha"
+    }
+  ],
+  "mediancut_residual_11_3": {
+    "alpha_ladder": {
+      "replicated_k16_reference": [
+        {
+          "coverage": 1.0,
+          "hex": "#a8acb4",
+          "rgb": [
+            168,
+            172,
+            180
+          ]
+        }
+      ],
+      "shipped_unweighted_centres": [
+        {
+          "coverage": 1.0,
+          "hex": "#a8acb4",
+          "rgb": [
+            168,
+            172,
+            180
+          ]
+        }
+      ]
+    },
+    "glass_a128": {
+      "replicated_k16_reference": [
+        {
+          "coverage": 0.696769,
+          "hex": "#00ffff",
+          "rgb": [
+            0,
+            255,
+            255
+          ]
+        },
+        {
+          "coverage": 0.303231,
+          "hex": "#a8acb4",
+          "rgb": [
+            168,
+            172,
+            180
+          ]
+        }
+      ],
+      "shipped_unweighted_centres": [
+        {
+          "coverage": 0.697595,
+          "hex": "#00ffff",
+          "rgb": [
+            0,
+            255,
+            255
+          ]
+        },
+        {
+          "coverage": 0.302405,
+          "hex": "#a8acb4",
+          "rgb": [
+            168,
+            172,
+            180
+          ]
+        }
+      ]
+    },
+    "glass_a192": {
+      "replicated_k16_reference": [
+        {
+          "coverage": 0.775115,
+          "hex": "#00ffff",
+          "rgb": [
+            0,
+            255,
+            255
+          ]
+        },
+        {
+          "coverage": 0.224885,
+          "hex": "#a8acb4",
+          "rgb": [
+            168,
+            172,
+            180
+          ]
+        }
+      ],
+      "shipped_unweighted_centres": [
+        {
+          "coverage": 0.775797,
+          "hex": "#00ffff",
+          "rgb": [
+            0,
+            255,
+            255
+          ]
+        },
+        {
+          "coverage": 0.224203,
+          "hex": "#a8acb4",
+          "rgb": [
+            168,
+            172,
+            180
+          ]
+        }
+      ]
+    },
+    "glass_a64": {
+      "replicated_k16_reference": [
+        {
+          "coverage": 0.534647,
+          "hex": "#00ffff",
+          "rgb": [
+            0,
+            255,
+            255
+          ]
+        },
+        {
+          "coverage": 0.465353,
+          "hex": "#a8acb4",
+          "rgb": [
+            168,
+            172,
+            180
+          ]
+        }
+      ],
+      "shipped_unweighted_centres": [
+        {
+          "coverage": 0.535621,
+          "hex": "#00ffff",
+          "rgb": [
+            0,
+            255,
+            255
+          ]
+        },
+        {
+          "coverage": 0.464379,
+          "hex": "#a8acb4",
+          "rgb": [
+            168,
+            172,
+            180
+          ]
+        }
+      ]
+    }
+  },
+  "sub_pixel_excursion_table": [
+    {
+      "angle_deg": 0,
+      "commensurate": true,
+      "excess_excursion": -0.0003,
+      "reading_excursion": 3.823,
+      "readings": [
+        173.281,
+        175.367,
+        177.104
+      ],
+      "truth_excursion": 3.8233,
+      "truths": [
+        173.2808,
+        175.3675,
+        177.1041
+      ]
+    },
+    {
+      "angle_deg": 20,
+      "commensurate": false,
+      "excess_excursion": -0.0006,
+      "reading_excursion": 0.062,
+      "readings": [
+        175.121,
+        175.102,
+        175.059
+      ],
+      "truth_excursion": 0.0626,
+      "truths": [
+        175.1212,
+        175.1021,
+        175.0586
+      ]
+    },
+    {
+      "angle_deg": 45,
+      "commensurate": true,
+      "excess_excursion": 0.0002,
+      "reading_excursion": 0.786,
+      "readings": [
+        174.663,
+        175.449,
+        174.663
+      ],
+      "truth_excursion": 0.7858,
+      "truths": [
+        174.6632,
+        175.449,
+        174.6632
+      ]
+    },
+    {
+      "angle_deg": 60,
+      "commensurate": false,
+      "excess_excursion": 0.0001,
+      "reading_excursion": 0.021,
+      "readings": [
+        174.69,
+        174.694,
+        174.711
+      ],
+      "truth_excursion": 0.0209,
+      "truths": [
+        174.6897,
+        174.6944,
+        174.7106
+      ]
+    }
+  ],
+  "weighted_error_vs_partial_coverage_share_11_6": [
+    {
+      "label": "aa_blade_w40",
+      "luminance_mean_error": -0.0001,
+      "partial_coverage_share": 0.094927
+    },
+    {
+      "label": "aa_blade_w12",
+      "luminance_mean_error": -0.0001,
+      "partial_coverage_share": 0.283604
+    },
+    {
+      "label": "aa_blade_w5",
+      "luminance_mean_error": 0.0001,
+      "partial_coverage_share": 0.593853
+    },
+    {
+      "label": "aa_blade_w3",
+      "luminance_mean_error": 0.0004,
+      "partial_coverage_share": 0.58765
+    },
+    {
+      "label": "hard_blade_w12",
+      "luminance_mean_error": 0.0003,
+      "partial_coverage_share": 0.0
+    },
+    {
+      "label": "hard_blade_w5",
+      "luminance_mean_error": -0.0002,
+      "partial_coverage_share": 0.0
+    },
+    {
+      "label": "vivid_blade_w5",
+      "luminance_mean_error": -0.0003,
+      "partial_coverage_share": 0.593853
+    },
+    {
+      "label": "glass_a64",
+      "luminance_mean_error": -0.0003,
+      "partial_coverage_share": 0.821289
+    },
+    {
+      "label": "glass_a128",
+      "luminance_mean_error": -0.0002,
+      "partial_coverage_share": 0.821289
+    },
+    {
+      "label": "glass_a192",
+      "luminance_mean_error": 0.0004,
+      "partial_coverage_share": 0.821289
+    },
+    {
+      "label": "alpha_ladder",
+      "luminance_mean_error": 0.0,
+      "partial_coverage_share": 0.702703
+    },
+    {
+      "label": "degenerate_hairline",
+      "luminance_mean_error": -0.0001,
+      "partial_coverage_share": 0.981336
+    },
+    {
+      "label": "angle_a00",
+      "luminance_mean_error": 0.0002,
+      "partial_coverage_share": 0.703195
+    },
+    {
+      "label": "angle_a20",
+      "luminance_mean_error": -0.0002,
+      "partial_coverage_share": 0.644918
+    },
+    {
+      "label": "angle_a45",
+      "luminance_mean_error": -0.0002,
+      "partial_coverage_share": 0.56321
+    },
+    {
+      "label": "angle_a60",
+      "luminance_mean_error": 0.0003,
+      "partial_coverage_share": 0.589395
+    },
+    {
+      "label": "angle_a45_phase",
+      "luminance_mean_error": 0.0,
+      "partial_coverage_share": 0.661529
+    }
+  ]
+}
