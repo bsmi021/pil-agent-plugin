@@ -29,6 +29,10 @@ Last updated: 2026-08-19
   — the synthetic-derived thresholds run against a real production revision
   corpus: zero full-frame false alarms, published detection limits shown to
   transfer, support gating quiet on real cross-render pairs.
+- [Phase 3 handoff](phase3-handoff.md) — **start here if you are picking up
+  phase 3.** What remains (Track A5, Track B), the conventions this repository
+  enforces, what to reuse, the Blender acceptance corpus that already exists,
+  and how work is reviewed here.
 - [Phase 3 scope](phase3-scope.md) — closed loops between measurement and vision:
   native-resolution crops, readable overlays, image metadata, region-scoped
   metrics, discrimination-gated new metrics, and the Blender character-sheet loop.
