@@ -3,9 +3,11 @@
 Contracts, mapped to docs/aaa-build-plan.md #8.3's acceptance table:
   * region-equals-precrop (A6.2) -- the gate. pil_crop.py A --region R --out
     t.png, then measuring t.png, must equal measuring A --region R directly:
-    full payload, only the keys that legitimately differ removed, verified
-    against the REAL pil_crop binary so the two tools are proven to share one
-    parser rather than merely agreeing with each other.
+    full payload, only the keys that legitimately differ removed and one
+    flags value (region_background_estimate_diverged, structurally unable to
+    appear on a pre-cropped-file run -- see REGION_ONLY_FLAG_VALUES) filtered
+    out, verified against the REAL pil_crop binary so the two tools are
+    proven to share one parser rather than merely agreeing with each other.
   * identity region (A6.3)        -- --region 0,0,1,1 equals no --region.
   * determinism (A6.4)            -- repeated --region runs are byte-identical.
   * rejection discipline (A6.5)   -- malformed regions exit 2, empty stdout.
@@ -23,7 +25,7 @@ import subprocess
 import sys
 
 import pytest
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from conftest import SCRIPTS, preview_render, preview_render_rgba, synthetic_reference
 
@@ -37,6 +39,16 @@ TOOLS = ("pil_structure_diff.py", "pil_palette_diff.py")
 IMAGE_KEYS_TO_REMOVE = ("region", "source_size", "path")
 PARAMETER_KEYS_TO_REMOVE = ("region", "region_space")
 
+# The one flag VALUE (not a whole key) that both REGION_INTERPRETATION_LIMITS
+# blocks name as legitimately differing: it compares the crop's own
+# border-median colour against the ORIGINAL, un-cropped frame's, a comparison
+# that exists only when --region was actually passed. A pre-cropped-file run
+# has no frame to compare against, so it can structurally never carry this
+# flag even when an equivalent --region run legitimately does (docs/aaa-
+# build-plan.md #8.1). Filtered out of both sides' flags list rather than
+# added to IMAGE_KEYS_TO_REMOVE, which only names whole keys.
+REGION_ONLY_FLAG_VALUES = ("region_background_estimate_diverged",)
+
 
 def _strip_region_keys(payload):
     """Remove only the keys A6.2/A6.3 name as legitimately differing.
@@ -44,12 +56,20 @@ def _strip_region_keys(payload):
     Everything else -- palettes, hue census, luminance/saturation/entropy,
     cells, hashes, flags, foreground blocks, interpretation_limits -- stays
     in the comparison, so this cannot pass by accident on a handful of
-    scalar fields (the vacuous-test failure mode the plan calls out).
+    scalar fields (the vacuous-test failure mode the plan calls out). The
+    lone exception is REGION_ONLY_FLAG_VALUES, filtered from each image's
+    "flags" list rather than left in the comparison, or the gate would fail
+    forever on any region+--foreground case landing wholly inside an object
+    (a genuine, documented divergence, not a bug).
     """
     payload = copy.deepcopy(payload)
     for image in payload["images"].values():
         for key in IMAGE_KEYS_TO_REMOVE:
             image.pop(key, None)
+        if "flags" in image:
+            image["flags"] = [
+                f for f in image["flags"] if f not in REGION_ONLY_FLAG_VALUES
+            ]
     for key in PARAMETER_KEYS_TO_REMOVE:
         payload["parameters"].pop(key, None)
     return payload
@@ -68,35 +88,97 @@ def run_reject(script, *args):
     return subprocess.run(cmd, capture_output=True, text=True)
 
 
-# Four (image, region, region_space) pairs for A6.2, chosen to cover: a plain
-# even-sized frame; an odd-sized image (101x37) whose region edges land
-# exactly on .5 pixels at BOTH extents (0.5*101=50.5, 0.5*37=18.5); an
-# interior region away from any edge; and --region-space foreground on a
-# real RGBA object, so the foreground-bbox-origin code path is exercised too.
+def _la_mode_opaque_source(size=(200, 200)):
+    """A grayscale-plus-alpha (LA) sprite: fully transparent background, one
+    solid hard-edged (binary alpha, no antialiasing) interior block.
+
+    Exercises the RGBA/LA/P conversion path pil_common.load_rgba_straight
+    shares for all three modes, through a different PIL mode from
+    preview_render_rgba's true RGBA -- the "opaque" REGION_PAIRS case
+    (docs/aaa-build-plan.md #8, W6 fix round): a region wholly inside this
+    block is fully opaque post-crop even though the source file carries real
+    (elsewhere-transparent) alpha, the exact composition Blocking-1 broke.
+    """
+    img = Image.new("LA", size, (0, 0))
+    draw = ImageDraw.Draw(img)
+    draw.rectangle([60, 60, 140, 140], fill=(200, 255))
+    return img
+
+
+# Six (image, region, region_space, foreground) pairs for A6.2, chosen to
+# cover: a plain even-sized frame; an odd-sized image (101x37) whose region
+# edges land exactly on .5 pixels at BOTH extents (0.5*101=50.5,
+# 0.5*37=18.5); an interior region away from any edge; --region-space
+# foreground on a real RGBA object, so the foreground-bbox-origin code path
+# is exercised too; and two --foreground pairs -- one true RGBA, one LA --
+# each with a region landing wholly inside a solid, alpha-carrying object,
+# which is the exact composition W6's fix round Blocking-1 broke: alpha
+# survives the crop as an all-opaque array unless _apply_region re-applies
+# load_rgba_straight's own all-opaque-means-None rule. Neither of the first
+# four pairs ever passed --foreground, which is why A6.2 never caught it.
 REGION_PAIRS = [
     pytest.param(
         lambda: synthetic_reference(size=(400, 300)),
         "0.1,0.4,0.3,0.9",
         "frame",
+        False,
         id="even_frame_space",
     ),
     pytest.param(
         lambda: synthetic_reference(size=(101, 37)),
         "0.5,0.5,1.0,1.0",
         "frame",
+        False,
         id="odd_size_half_pixel_edges",
     ),
     pytest.param(
         lambda: synthetic_reference(size=(200, 150)),
         "0.05,0.10,0.95,0.90",
         "frame",
+        False,
         id="interior_region",
     ),
     pytest.param(
         lambda: preview_render_rgba(size=(400, 300)),
         "0,0,1,1",
         "foreground",
+        False,
         id="foreground_space_rgba",
+    ),
+    pytest.param(
+        lambda: preview_render_rgba(size=(400, 300)),
+        "0.06,0.887,0.11,0.94",
+        "frame",
+        True,
+        id="rgba_foreground_region_inside_opaque_object",
+    ),
+    pytest.param(
+        lambda: _la_mode_opaque_source(size=(200, 200)),
+        "0.35,0.35,0.65,0.65",
+        "frame",
+        True,
+        id="la_mode_foreground_region_inside_opaque_object",
+    ),
+    # D9 also names "two source resolutions" for the region-equals-precrop
+    # gate. This is NOT a cross-resolution comparison (that is the separate,
+    # necessarily-approximate TestRegionResolutionIndependence below, since
+    # LANCZOS resampling is not byte-exact) -- it is the SAME byte-equality
+    # gate as every other REGION_PAIRS entry, just applied independently to
+    # a 400x300 render and its own 800x600 LANCZOS upscale, so each size's
+    # region-run is checked against that size's own pre-crop.
+    pytest.param(
+        lambda: preview_render(),
+        "0.05,0.833,0.14,0.95",
+        "frame",
+        False,
+        id="resolution_400x300",
+    ),
+    pytest.param(
+        lambda: preview_render().resize((800, 600), Image.LANCZOS),
+        "0.05,0.833,0.14,0.95",
+        "frame",
+        False,
+        id="resolution_800x600_upscaled",
     ),
 ]
 
@@ -106,9 +188,11 @@ class TestRegionEqualsPreCrop:
     identical pixels, because both share pil_region's rect arithmetic."""
 
     @pytest.mark.parametrize("script", TOOLS)
-    @pytest.mark.parametrize(("image_factory", "region", "region_space"), REGION_PAIRS)
+    @pytest.mark.parametrize(
+        ("image_factory", "region", "region_space", "foreground"), REGION_PAIRS
+    )
     def test_region_run_equals_precropped_file_run(
-        self, tool, tmp_img, script, image_factory, region, region_space
+        self, tool, tmp_img, script, image_factory, region, region_space, foreground
     ):
         # Arrange: build the pre-cropped file with the REAL pil_crop binary.
         src = tmp_img(image_factory(), "src.png")
@@ -124,11 +208,20 @@ class TestRegionEqualsPreCrop:
             region_space,
         )
 
-        # Act
+        # Act: --foreground, when requested, is applied identically to the
+        # --region run and the equivalent pre-cropped-file run -- omitting it
+        # from either side would test nothing about the composition.
+        foreground_args = ["--foreground"] if foreground else []
         region_result, _ = tool(
-            script, src, "--region", region, "--region-space", region_space
+            script,
+            src,
+            "--region",
+            region,
+            "--region-space",
+            region_space,
+            *foreground_args,
         )
-        precrop_result, _ = tool(script, cropped)
+        precrop_result, _ = tool(script, cropped, *foreground_args)
 
         # Assert: full payload equality with only the named keys removed.
         assert _strip_region_keys(region_result) == _strip_region_keys(precrop_result)

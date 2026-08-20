@@ -1,0 +1,287 @@
+{
+  "accent_gate": {
+    "agreement_rate": 0.878201,
+    "both_pass_fraction": 0.806793,
+    "hsv": {
+      "saturation_min": 100,
+      "value_min": 60
+    },
+    "hsv_only_fraction": 0.028809,
+    "hsv_only_median_chroma": 38.423,
+    "hsv_only_median_lightness": 17.501,
+    "hsv_pass_fraction": 0.835602,
+    "hsv_pass_with_chroma_below_20": 0.008866,
+    "hsv_pass_with_lightness_below_20": 0.026528,
+    "lch_candidate": {
+      "chroma_min": 20.0,
+      "lightness_min": 20.0
+    },
+    "lch_only_fraction": 0.092991,
+    "lch_only_median_chroma": 30.231,
+    "lch_only_median_lightness": 73.369,
+    "lch_pass_fraction": 0.899784
+  },
+  "boundaries": [
+    {
+      "boundary_deg": 45.856,
+      "from_family": "red",
+      "misclassified_points_at_boundary": 173,
+      "to_family": "orange"
+    },
+    {
+      "boundary_deg": 75.696,
+      "from_family": "orange",
+      "misclassified_points_at_boundary": 1065,
+      "to_family": "yellow"
+    },
+    {
+      "boundary_deg": 104.363,
+      "from_family": "yellow",
+      "misclassified_points_at_boundary": 650,
+      "to_family": "green"
+    },
+    {
+      "boundary_deg": 144.389,
+      "from_family": "green",
+      "misclassified_points_at_boundary": 2674,
+      "to_family": "cyan"
+    },
+    {
+      "boundary_deg": 207.919,
+      "from_family": "cyan",
+      "misclassified_points_at_boundary": 275,
+      "to_family": "blue"
+    },
+    {
+      "boundary_deg": 298.885,
+      "from_family": "blue",
+      "misclassified_points_at_boundary": 3792,
+      "to_family": "purple"
+    },
+    {
+      "boundary_deg": 318.94,
+      "from_family": "purple",
+      "misclassified_points_at_boundary": 279,
+      "to_family": "magenta"
+    },
+    {
+      "boundary_deg": 16.318,
+      "from_family": "magenta",
+      "misclassified_points_at_boundary": 2510,
+      "to_family": "red"
+    }
+  ],
+  "derived_intervals_deg": {
+    "blue": [
+      207.919,
+      298.885
+    ],
+    "cyan": [
+      144.389,
+      207.919
+    ],
+    "green": [
+      104.363,
+      144.389
+    ],
+    "magenta": [
+      318.94,
+      16.318
+    ],
+    "orange": [
+      45.856,
+      75.696
+    ],
+    "purple": [
+      298.885,
+      318.94
+    ],
+    "red": [
+      16.318,
+      45.856
+    ],
+    "yellow": [
+      75.696,
+      104.363
+    ]
+  },
+  "families": {
+    "blue": {
+      "gated_points": 30050,
+      "hsv_hue_ranges_0_255": [
+        [
+          131,
+          165
+        ]
+      ],
+      "lch_chroma_median": 41.84,
+      "lch_hue_mean_deg": 266.385,
+      "lch_hue_p1_deg": 209.061,
+      "lch_hue_p99_deg": 303.635,
+      "lch_hue_spread_deg": 94.575,
+      "lch_lightness_median": 50.553
+    },
+    "cyan": {
+      "gated_points": 30083,
+      "hsv_hue_ranges_0_255": [
+        [
+          96,
+          130
+        ]
+      ],
+      "lch_chroma_median": 47.702,
+      "lch_hue_mean_deg": 168.169,
+      "lch_hue_p1_deg": 141.687,
+      "lch_hue_p99_deg": 206.959,
+      "lch_hue_spread_deg": 65.272,
+      "lch_lightness_median": 73.786
+    },
+    "green": {
+      "gated_points": 45350,
+      "hsv_hue_ranges_0_255": [
+        [
+          43,
+          95
+        ]
+      ],
+      "lch_chroma_median": 75.89,
+      "lch_hue_mean_deg": 128.389,
+      "lch_hue_p1_deg": 105.124,
+      "lch_hue_p99_deg": 146.259,
+      "lch_hue_spread_deg": 41.134,
+      "lch_lightness_median": 74.729
+    },
+    "magenta": {
+      "gated_points": 38678,
+      "hsv_hue_ranges_0_255": [
+        [
+          201,
+          245
+        ]
+      ],
+      "lch_chroma_median": 69.17,
+      "lch_hue_mean_deg": 342.318,
+      "lch_hue_p1_deg": 319.189,
+      "lch_hue_p99_deg": 22.802,
+      "lch_hue_spread_deg": 63.613,
+      "lch_lightness_median": 48.952
+    },
+    "orange": {
+      "gated_points": 12897,
+      "hsv_hue_ranges_0_255": [
+        [
+          11,
+          25
+        ]
+      ],
+      "lch_chroma_median": 54.393,
+      "lch_hue_mean_deg": 59.946,
+      "lch_hue_p1_deg": 45.734,
+      "lch_hue_p99_deg": 78.467,
+      "lch_hue_spread_deg": 32.733,
+      "lch_lightness_median": 57.342
+    },
+    "purple": {
+      "gated_points": 30079,
+      "hsv_hue_ranges_0_255": [
+        [
+          166,
+          200
+        ]
+      ],
+      "lch_chroma_median": 84.382,
+      "lch_hue_mean_deg": 308.44,
+      "lch_hue_p1_deg": 295.308,
+      "lch_hue_p99_deg": 318.643,
+      "lch_hue_spread_deg": 23.335,
+      "lch_lightness_median": 36.299
+    },
+    "red": {
+      "gated_points": 17142,
+      "hsv_hue_ranges_0_255": [
+        [
+          0,
+          10
+        ],
+        [
+          246,
+          255
+        ]
+      ],
+      "lch_chroma_median": 61.914,
+      "lch_hue_mean_deg": 32.356,
+      "lch_hue_p1_deg": 10.938,
+      "lch_hue_p99_deg": 45.333,
+      "lch_hue_spread_deg": 34.395,
+      "lch_lightness_median": 48.251
+    },
+    "yellow": {
+      "gated_points": 14769,
+      "hsv_hue_ranges_0_255": [
+        [
+          26,
+          42
+        ]
+      ],
+      "lch_chroma_median": 59.68,
+      "lch_hue_mean_deg": 91.613,
+      "lch_hue_p1_deg": 73.061,
+      "lch_hue_p99_deg": 105.762,
+      "lch_hue_spread_deg": 32.701,
+      "lch_lightness_median": 71.443
+    }
+  },
+  "family_order_by_lch_hue": [
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "cyan",
+    "blue",
+    "purple",
+    "magenta"
+  ],
+  "grid": {
+    "hsv_source": "PIL Image.convert('HSV') on the grid itself",
+    "points": 262144,
+    "steps_per_channel": 64,
+    "subsampled": false
+  },
+  "method": "Derive LCh hue-angle intervals by measuring the current HSV behaviour.",
+  "provenance": {
+    "bundle_date": "2026-08-20",
+    "calibration_sha256": {
+      "alpha_truth.py": "4addf4b00d70ab0e018f85ce46ad804e315a5560e63434a1c877c99e3e85e5df",
+      "derive.py": "198666fa9b87409c28186f43b48303114540059fdc63e50fa98590f31b49c746",
+      "distill_detection_limits.py": "3531a9b4f97edff9e5c02a2705bda01da2b1708ee1cf376f931a01cbfe0370ce",
+      "lch.py": "48c79f7bf86cc08ff9beb2feb1f04e58a9b46ae44d0d4c7462e55790c595eb58",
+      "measure.py": "36f8b9680ff19c27ab6d24b8ae88a60d2d3533b16739bacadcb14ddbe4af1edf",
+      "perturb.py": "3e3f4d42ad2a44d5579bd803233515006dfecacc23583dab0fced27d8e269a5f",
+      "run_all.py": "1ffbde3a92832b4b20585f1df9ead2d1a8c99a9d0a22bf90a522be4243f19d8f",
+      "scenes.py": "fba42da940c8b81bf6052fc297325377a746cc791f2f12d3dd479d61f264a9ca",
+      "validate_real.py": "4975050e9f2983d45526528e2115d106b76e4931a5cca8c04e331b81d524ebad"
+    },
+    "numpy": "2.5.2",
+    "pillow": "12.3.0",
+    "python": "3.12.0",
+    "quick_mode": false,
+    "tool_sha256": {
+      "pil_annotate.py": "3b3b7a52325387c42dee2da74ac29d6da342f191c27d7e20d84ea133148f81e7",
+      "pil_color.py": "978cd4cc43285fb7cabb00f2f004520ddf97c1dc94237c924b6623ae292339c3",
+      "pil_common.py": "79e7f60147f44445da0c5c3e5ae34746642e10cc13c99271026f5f2c3104edd2",
+      "pil_contract_verdict.py": "687360ceba8051d86378b0b328495b4702b40ab7f3f09232598bb3e970255a8f",
+      "pil_crop.py": "cbe51aa73c18c363c582e0c0b5f24f8408195335317825b342da966cc4626295",
+      "pil_image_info.py": "62a87b1c9145b1cf187ecf74d9c4766cbba1287aaa09dc01dc3e6fcfc9a05d3c",
+      "pil_palette_diff.py": "cf05f5f8b88c2a4600fc29522d653632936ab956ba7e2e07b419f303ef073083",
+      "pil_region.py": "ee80898be2d508c550dd950a660521be93bb7cfe8924c7c79fe3a3a74eabd343",
+      "pil_structure_diff.py": "9fc93a6eaf9a8c836dbd9543a41210e6651ae4662358258ecdd85b8ca8b2d73f"
+    }
+  },
+  "provenance_note": "Derived by measurement against the current HSV behaviour; no authoritative CIELAB hue-angle boundary set for basic colour names exists to port. These intervals reproduce the shipping classifier in a perceptually uniform space -- they are not a colour-naming standard.",
+  "reproduction": {
+    "agreement_rate": 0.947879,
+    "agreements": 207631,
+    "disagreement_rate": 0.052121,
+    "gated_points": 219048
+  }
+}

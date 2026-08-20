@@ -3,7 +3,7 @@
 
     uv run python calibration/run_all.py
 
-Regenerates ``runs/2026-08-19-phase2-calibration/`` from nothing: builds the
+Regenerates ``runs/2026-08-20-foreground-recalibration/`` from nothing: builds the
 synthetic corpus, runs both bundled tools over every pair, derives the
 thresholds, detection limits, LCh hue boundaries and constant verdicts, and
 writes the ledger.
@@ -41,8 +41,8 @@ import measure  # noqa: E402
 import perturb  # noqa: E402
 import scenes  # noqa: E402
 
-DEFAULT_OUT = REPO_ROOT / "runs" / "2026-08-19-phase2-calibration"
-BUNDLE_DATE = "2026-08-19"
+DEFAULT_OUT = REPO_ROOT / "runs" / "2026-08-20-foreground-recalibration"
+BUNDLE_DATE = "2026-08-20"
 
 JSON_ARTEFACTS = ("derived-thresholds.json", "response-curves.json", "lch-hue-boundaries.json")
 
@@ -53,6 +53,53 @@ def _write_json(path, payload):
 
 def _sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def null_change_check(jobs=None):
+    """Re-run the pre-W2 opaque foreground corpus and compare six decimals."""
+    historical_path = REPO_ROOT / "runs" / "2026-08-19-phase2-calibration" / "derived-thresholds.json"
+    historical = json.loads(historical_path.read_text(encoding="utf-8"))
+    units = []
+    recipes = tuple(row[0] for row in measure.CONTROL_RECIPES)
+    for seed in scenes.CONTROL_SEEDS:
+        units.extend(
+            measure._control_units(
+                "thin_object",
+                {"seed": seed},
+                seed,
+                recipes,
+                ("foreground",),
+                "control",
+                "thin_object",
+                ("palette", "structure"),
+            )
+        )
+    with tempfile.TemporaryDirectory(prefix="pil-w2-a21-") as root:
+        root = Path(root)
+        tools_dir = root / "tools"
+        tool_hashes = measure.snapshot_tools(tools_dir)
+        records = measure.collect_units(tools_dir, root / "images", units, jobs=jobs)
+    observed = derive.control_thresholds(records)["foreground_estimate"]["metrics"]
+    expected = historical["control_sets"]["foreground"]["metrics"]
+    comparisons = {}
+    passed = True
+    for metric in sorted(expected):
+        old = expected[metric].get("threshold")
+        new = observed.get(metric, {}).get("threshold")
+        match = old is not None and new is not None and round(float(old), 6) == round(float(new), 6)
+        passed = passed and match
+        comparisons[metric] = {
+            "existing": old,
+            "rerun": new,
+            "match_to_6dp": match,
+        }
+    return {
+        "status": "PASS" if passed else "FAIL",
+        "historical_bundle": "runs/2026-08-19-phase2-calibration",
+        "corpus": "thin_object opaque foreground controls, 5 seeds x 20 recipes",
+        "tool_sha256": tool_hashes,
+        "comparisons": comparisons,
+    }
 
 
 def plan_summary(records):
@@ -70,10 +117,13 @@ def plan_summary(records):
         "scene_size": list(scenes.SCENE_SIZE),
         "control_seeds": list(scenes.CONTROL_SEEDS),
         "grid_seeds": list(scenes.GRID_SEEDS),
+        "foreground_scenes": list(scenes.FOREGROUND_SCENES),
+        "alpha_corpus_scenes": len(scenes.ALPHA_CORPUS),
+        "rgba_skipped_recipes": dict(measure.RGBA_SKIPPED_RECIPES),
     }
 
 
-def run_once(out_dir, quick=False, jobs=None, keep_images=False, progress=None):
+def run_once(out_dir, quick=False, jobs=None, keep_images=False, progress=None, acceptance=None):
     """Full pipeline into ``out_dir``. Returns the summary dict."""
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -101,6 +151,19 @@ def run_once(out_dir, quick=False, jobs=None, keep_images=False, progress=None):
         }
         derived["provenance"] = provenance
         derived["corpus"] = plan_summary(records)
+        derived["rgba_control_family"] = {
+            "status": "calibrated",
+            "source": "alpha",
+            "recipes_declared": [row[0] for row in measure.RGBA_CONTROL_RECIPES],
+            "recipes_measured": [
+                row[0]
+                for row in measure.RGBA_CONTROL_RECIPES
+                if row[0] not in measure.RGBA_SKIPPED_RECIPES
+            ],
+            "skipped_recipes": dict(measure.RGBA_SKIPPED_RECIPES),
+            "alpha_assertion": "RGB-only recipes assert byte-identical alpha; rescale uses premultiplied resampling.",
+        }
+        derived["acceptance"] = {"A2.1_null_change": acceptance}
         response["provenance"] = provenance
         boundaries["provenance"] = provenance
 
@@ -150,7 +213,11 @@ def render_readme(derived, response, boundaries):
     provenance = derived["provenance"]
     verdicts = derived["constant_verdicts"]
     full = derived["control_sets"].get("full_frame", {})
-    fore = derived["control_sets"].get("foreground", {})
+    fore = derived["control_sets"].get("foreground_estimate", {})
+    fore_alpha = derived["control_sets"].get("foreground_alpha", {})
+    historical_path = REPO_ROOT / "runs" / "2026-08-19-phase2-calibration" / "derived-thresholds.json"
+    historical = json.loads(historical_path.read_text(encoding="utf-8")) if historical_path.exists() else {}
+    historical_fore = historical.get("control_sets", {}).get("foreground", {}).get("metrics", {})
 
     parts = []
     parts.append(
@@ -232,6 +299,40 @@ additive noise, drawn from a `PCG64` generator whose seed is derived up front.
 """)
 
     parts.append(
+        """## W2 foreground control scenes
+
+The opaque foreground estimate uses exactly `thin_object`, `structured`,
+`blob_object`, and `multipart_object`. `structured` qualifies because its
+(32,32,36) margin is a genuine backdrop; `busy` is excluded because the
+background is the subject, and `dark_accent` is excluded because its black base
+would make the foreground mask a chroma mask rather than a backdrop estimate.
+
+- `blob_object`: a filled rounded form at approximately 15% of the frame with
+  low perimeter-to-area, testing whether rescale noise is specifically a thin-
+  object effect.
+- `multipart_object`: three separated rounded components at approximately 8%
+  combined, testing a disjoint mask and cell-support gating.
+
+The existing `ALPHA_CORPUS` supplies the RGBA source family. The A2.1
+null-change preflight is recorded in `derived-thresholds.json`; it reports the
+exact per-metric six-decimal comparisons rather than treating a mismatch as a
+pass.
+"""
+    )
+
+    a21 = (derived.get("acceptance") or {}).get("A2.1_null_change") or {}
+    a21_rows = [
+        [f"`{metric}`", _num(row.get("existing")), _num(row.get("rerun")), "yes" if row.get("match_to_6dp") else "NO"]
+        for metric, row in sorted((a21.get("comparisons") or {}).items())
+    ]
+    parts.append(
+        "## A2.1 null-change check\n\n"
+        + f"Status: **{a21.get('status', 'unrecorded')}**. The unmodified opaque `thin_object` corpus was re-run against the post-W1 tool snapshot; equality is tested to six decimal places.\n\n"
+        + _table(["Metric", "2026-08-19", "Re-run", "Match to 6 dp"], a21_rows)
+        + "\n\n"
+    )
+
+    parts.append(
         "## Control thresholds — full frame\n\n"
         + _table(
             ["Metric", "n", "α", "Q(1−α)", "CI upper = **threshold**", "control max", "quantile == max?"],
@@ -254,25 +355,88 @@ additive noise, drawn from a `PCG64` generator whose seed is derived up front.
         " as floors, not estimates.\n"
     )
 
-    if fore.get("metrics"):
-        parts.append(
-            "## Control thresholds — foreground mode\n\n"
-            + _table(
-                ["Metric", "n", "α", "Q(1−α)", "CI upper = **threshold**", "control max"],
-                [
-                    [
-                        f"`{metric}`",
-                        _num(node["n"]),
-                        _num(node["alpha"]),
-                        _num(node["point_estimate"]),
-                        f"**{_num(node['threshold'])}**",
-                        _num(node["observed_max"]),
-                    ]
-                    for metric, node in sorted(fore.get("metrics", {}).items())
-                ],
-            )
-            + "\n"
+    def _ratio(node):
+        medians = sorted(
+            [value.get("median") for value in (node.get("by_control_family") or {}).values() if value.get("median") is not None],
+            reverse=True,
         )
+        if len(medians) < 2 or medians[1] == 0:
+            return None
+        return medians[0] / medians[1]
+
+    foreground_rows = []
+    for metric, node in sorted(fore.get("metrics", {}).items()):
+        old = historical_fore.get(metric, {})
+        no_place = node.get("threshold_no_placement")
+        delta = None if no_place is None or node.get("threshold") is None else node["threshold"] - no_place
+        factor = None if no_place in (None, 0) or node.get("threshold") is None else node["threshold"] / no_place
+        foreground_rows.append([
+            f"`{metric}`",
+            _num(node["n"]),
+            _num(node["alpha"]),
+            f"**{_num(node['threshold'])}**",
+            _num(no_place),
+            _num(delta),
+            _num(factor),
+            _num(old.get("threshold")),
+            _num(_ratio(node)),
+            _num(_ratio(old)),
+        ])
+    parts.append(
+        "## Control thresholds — foreground estimate (border-median)\n\n"
+        + _table(
+            ["Metric", "n", "α", "threshold", "no-placement threshold", "delta", "factor", "2026-08-19", "new dom./next", "old dom./next"],
+            foreground_rows,
+        )
+        + "\n\nThe no-placement column uses the same Neyman–Pearson bootstrap construction after excluding only `rescale_roundtrip`; it is not a second method. A ratio above 10× remains a statement about the dominant family, not a general noise floor.\n"
+    )
+
+    increased_rows = []
+    for metric, node in sorted(fore.get("metrics", {}).items()):
+        old_value = historical_fore.get(metric, {}).get("threshold")
+        new_value = node.get("threshold")
+        if old_value is not None and new_value is not None and float(new_value) > float(old_value):
+            increased_rows.append([
+                f"`{metric}`",
+                _num(old_value),
+                _num(new_value),
+                "The widened four-scene opaque control set measured a higher upper-tail floor; the table's dominant-family ratio and no-placement estimate show whether that increase is placement-led.",
+            ])
+    parts.append(
+        "## Increased foreground thresholds — explanations\n\n"
+        + (_table(["Metric", "Old", "New", "Explanation"], increased_rows) if increased_rows else "No foreground estimate increased relative to the 2026-08-19 bundle.")
+        + "\n"
+    )
+
+    parts.append(
+        "## Control thresholds — foreground alpha source\n\n"
+        + _table(
+            ["Metric", "n", "α", "threshold", "no-placement threshold", "dominant family"],
+            [
+                [
+                    f"`{metric}`",
+                    _num(node["n"]),
+                    _num(node["alpha"]),
+                    f"**{_num(node['threshold'])}**",
+                    _num(node.get("threshold_no_placement")),
+                    (max((node.get("by_control_family") or {}).items(), key=lambda item: item[1].get("median", 0.0))[0]
+                     if node.get("by_control_family") else "—"),
+                ]
+                for metric, node in sorted(fore_alpha.get("metrics", {}).items())
+            ],
+        )
+        + "\n\nThe RGBA source is measured over the existing `ALPHA_CORPUS` with premultiplied resampling for `rescale_roundtrip`.\n"
+    )
+
+    rgba = derived.get("rgba_control_family", {})
+    parts.append(
+        "## RGBA control-family accounting\n\n"
+        + f"Declared recipes: {len(rgba.get('recipes_declared', []))}; measured recipes: {len(rgba.get('recipes_measured', []))}.\n\n"
+        + _table(["Skipped recipe", "Reason"], [[f"`{name}`", reason] for name, reason in sorted(rgba.get("skipped_recipes", {}).items())])
+        + "\n\n"
+        + rgba.get("alpha_assertion", "")
+        + "\n"
+    )
 
     parts.append(
         "## Constants — current guess vs derived vs verdict\n\n"
@@ -324,9 +488,15 @@ additive noise, drawn from a `PCG64` generator whose seed is derived up front.
   scope. That deliberately raises the noise floor above pure re-encode noise, and
   it means every detection limit is quoted relative to a floor that already
   tolerates ±1 code value of exposure, σ≈1 of noise and a 1° hue rotation.
-- **The alpha foreground path is uncalibrated.** Every calibration scene is
-  opaque, so `ALPHA_FOREGROUND_MIN` and the alpha branch of `foreground_mask`
-  were never exercised. Only the border-median colour path is measured here.
+- **The control units are not independent draws.** The opaque foreground set is
+  four scenes crossed with a fixed recipe list, and the alpha set is the existing
+  `ALPHA_CORPUS` crossed with that list. Values within a recipe remain
+  correlated, so the bootstrap CI is tighter than the design earns.
+- **The alpha foreground path is calibrated here, but only for this synthetic
+  corpus and one Pillow build.** RGBA `rescale_roundtrip` uses premultiplied
+  resampling and one un-premultiply; RGB-only recipes assert unchanged alpha.
+- **Sub-threshold perturbations are inside the control set by design**, so the
+  detection limits describe a floor that already tolerates those perturbations.
 - **The LCh accent gate is compared, not ranked.** Deciding between the HSV and
   LCh gates needs a ground-truth notion of "is this pixel an accent", which no
   synthetic corpus supplies. What is measured is what each gate admits and how
@@ -533,8 +703,10 @@ def main(argv=None):
         print(message, flush=True)
 
     started = time.monotonic()
+    acceptance = null_change_check(args.jobs)
+    print(f"A2.1 null-change check: {acceptance['status']}")
     print(f"pass 1: full pipeline -> {args.out}")
-    summary = run_once(args.out, args.quick, args.jobs, args.keep_images, progress)
+    summary = run_once(args.out, args.quick, args.jobs, args.keep_images, progress, acceptance)
     print(f"pass 1 complete: {summary['records']} units in {time.monotonic() - started:.1f}s")
     _print_verdicts(args.out)
 
@@ -546,7 +718,7 @@ def main(argv=None):
     try:
         started = time.monotonic()
         print(f"pass 2: determinism check -> {verify_dir}")
-        run_once(verify_dir, args.quick, args.jobs, False, progress)
+        run_once(verify_dir, args.quick, args.jobs, False, progress, acceptance)
         print(f"pass 2 complete in {time.monotonic() - started:.1f}s")
 
         mismatched = []

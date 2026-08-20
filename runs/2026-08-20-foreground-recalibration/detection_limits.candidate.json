@@ -1,0 +1,1596 @@
+{
+  "accent_fraction_delta_abs": {
+    "detection_limits": {
+      "additive_noise@extent=1": "16 sigma code values",
+      "exposure_down@extent=1": "not resolved at any tested magnitude",
+      "exposure_up@extent=1": "32 code values (+)",
+      "gaussian_blur@extent=1": "2 radius px",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "0.02 region fraction of frame",
+      "rescale_roundtrip@extent=1": "0.92 downscale loss (1 - factor)",
+      "saturation_down@extent=1": "0.25 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "0.25 saturation_gain (factor - 1)",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 3e-06,
+          "n": 76,
+          "next_family_median": 0.0
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 6.91e-06
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0126905,
+          "n": 80,
+          "next_family_median": 0.001344
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 0.047179
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.002283,
+          "n": 80,
+          "next_family_median": 0.000841
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 0.016402,
+    "threshold_foreground": 0.092181,
+    "threshold_foreground_alpha": 0.003494,
+    "threshold_foreground_estimate": 0.092181,
+    "threshold_foreground_estimate_no_placement": 0.047179
+  },
+  "accent_hue_shift_detected": {
+    "detection_limits": {
+      "hue_rotation@extent=0.05": "60 degrees",
+      "hue_rotation@extent=0.25": "15 degrees",
+      "hue_rotation@extent=1": "15 degrees"
+    },
+    "provenance": {
+      "foreground": null,
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": null,
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": null,
+    "threshold_foreground": null,
+    "threshold_foreground_alpha": null,
+    "threshold_foreground_estimate": null,
+    "threshold_foreground_estimate_no_placement": null
+  },
+  "accent_palette_distance": {
+    "detection_limits": {
+      "additive_noise@extent=1": "not resolved at any tested magnitude",
+      "exposure_down@extent=1": "64 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "120 degrees",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "0.5 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "subthreshold_saturation",
+          "median": 3.66255,
+          "n": 24,
+          "next_family_median": 2.97005
+        },
+        "n": 240,
+        "no_placement": {
+          "alpha": 0.05,
+          "n": 192,
+          "threshold": 6.9138
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 2.9781,
+          "n": 75,
+          "next_family_median": 2.51425
+        },
+        "n": 300,
+        "no_placement": {
+          "alpha": 0.05,
+          "n": 240,
+          "threshold": 16.01
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 4.9788,
+          "n": 80,
+          "next_family_median": 4.1141
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 56.6137,
+    "threshold_foreground": 18.970541,
+    "threshold_foreground_alpha": 8.5676,
+    "threshold_foreground_estimate": 18.970541,
+    "threshold_foreground_estimate_no_placement": 16.01
+  },
+  "accent_palette_distance_de2000": {
+    "detection_limits": {
+      "additive_noise@extent=1": "16 sigma code values",
+      "exposure_down@extent=1": "32 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "8 radius px",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "30 degrees",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "0.5 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "subthreshold_hue",
+          "median": 0.98665,
+          "n": 12,
+          "next_family_median": 0.91165
+        },
+        "n": 240,
+        "no_placement": {
+          "alpha": 0.05,
+          "n": 192,
+          "threshold": 1.5119
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 1.0111,
+          "n": 75,
+          "next_family_median": 0.7538
+        },
+        "n": 300,
+        "no_placement": {
+          "alpha": 0.05,
+          "n": 240,
+          "threshold": 4.7169
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 1.3886,
+          "n": 100,
+          "next_family_median": 1.24555
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 9.8104,
+    "threshold_foreground": 5.30879,
+    "threshold_foreground_alpha": 1.53919,
+    "threshold_foreground_estimate": 5.30879,
+    "threshold_foreground_estimate_no_placement": 4.7169
+  },
+  "ahash_distance": {
+    "detection_limits": {
+      "additive_noise@extent=1": "not resolved at any tested magnitude",
+      "exposure_down@extent=1": "64 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "8 radius px",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "30 degrees",
+      "hue_rotation@extent=1": "15 degrees (non-monotonic response)",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "0.02 region fraction of frame",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "0.25 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "0.1 saturation_gain (factor - 1)",
+      "translation@extent=1": "0.041667 fraction of width"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 19,
+          "next_family_median": 0.0
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 0.0
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 1.0,
+          "n": 80,
+          "next_family_median": 0.0
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 1.0
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 20,
+          "next_family_median": 0.0
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 1.0,
+    "threshold_foreground": 10.0,
+    "threshold_foreground_alpha": 1.0,
+    "threshold_foreground_estimate": 10.0,
+    "threshold_foreground_estimate_no_placement": 1.0
+  },
+  "base_palette_distance": {
+    "detection_limits": {
+      "additive_noise@extent=1": "not resolved at any tested magnitude",
+      "exposure_down@extent=1": "32 code values (-)",
+      "exposure_up@extent=1": "32 code values (+)",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "not resolved at any tested magnitude",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.1396,
+          "n": 76,
+          "next_family_median": 0.0477
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 3.6876
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 10.2977,
+          "n": 80,
+          "next_family_median": 3.18835
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 27.5835
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 2.884,
+          "n": 100,
+          "next_family_median": 1.9137
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 36.0039,
+    "threshold_foreground": 30.5506,
+    "threshold_foreground_alpha": 4.0135,
+    "threshold_foreground_estimate": 30.5506,
+    "threshold_foreground_estimate_no_placement": 27.5835
+  },
+  "base_palette_distance_de2000": {
+    "detection_limits": {
+      "additive_noise@extent=1": "not resolved at any tested magnitude",
+      "exposure_down@extent=1": "64 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "not resolved at any tested magnitude",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0256,
+          "n": 76,
+          "next_family_median": 0.0112
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 1.1536
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 2.6075,
+          "n": 80,
+          "next_family_median": 0.56055
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 8.3067
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 1.04405,
+          "n": 100,
+          "next_family_median": 0.5924
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 10.8691,
+    "threshold_foreground": 8.8515,
+    "threshold_foreground_alpha": 1.1536,
+    "threshold_foreground_estimate": 8.8515,
+    "threshold_foreground_estimate_no_placement": 8.3067
+  },
+  "changed_area_fraction": {
+    "detection_limits": {
+      "additive_noise@extent=1": "16 sigma code values",
+      "exposure_down@extent=1": "32 code values (-)",
+      "exposure_up@extent=1": "32 code values (+)",
+      "gaussian_blur@extent=1": "1 radius px",
+      "hue_rotation@extent=0.05": "30 degrees",
+      "hue_rotation@extent=0.25": "15 degrees (non-monotonic response)",
+      "hue_rotation@extent=1": "15 degrees",
+      "jpeg_reencode@extent=1": "70 quality loss (100 - quality)",
+      "region_recolour@extent=1": "0.001 region fraction of frame",
+      "rescale_roundtrip@extent=1": "0.5 downscale loss (1 - factor)",
+      "saturation_down@extent=1": "0.25 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "0.25 saturation_gain (factor - 1)",
+      "translation@extent=1": "0.002604 fraction of width"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 19,
+          "next_family_median": 0.0
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 0.0
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.050007,
+          "n": 80,
+          "next_family_median": 0.0008775
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 0.00451
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 20,
+          "next_family_median": 0.0
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 0.000671,
+    "threshold_foreground": 0.28713,
+    "threshold_foreground_alpha": 0.0,
+    "threshold_foreground_estimate": 0.28713,
+    "threshold_foreground_estimate_no_placement": 0.00451
+  },
+  "dhash_distance": {
+    "detection_limits": {
+      "additive_noise@extent=1": "not resolved at any tested magnitude",
+      "exposure_down@extent=1": "not resolved at any tested magnitude",
+      "exposure_up@extent=1": "not resolved at any tested magnitude",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "30 degrees",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "0.05 region fraction of frame",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "0.75 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "2 saturation_gain (factor - 1)",
+      "translation@extent=1": "0.020833 fraction of width"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 19,
+          "next_family_median": 0.0
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 2.0
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 1.0,
+          "n": 80,
+          "next_family_median": 0.0
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 3.81
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 20,
+          "next_family_median": 0.0
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 5.0,
+    "threshold_foreground": 14.0,
+    "threshold_foreground_alpha": 2.0,
+    "threshold_foreground_estimate": 14.0,
+    "threshold_foreground_estimate_no_placement": 3.81
+  },
+  "entropy_delta": {
+    "detection_limits": {
+      "additive_noise@extent=1": "16 sigma code values",
+      "exposure_down@extent=1": "not resolved at any tested magnitude",
+      "exposure_up@extent=1": "not resolved at any tested magnitude",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "not resolved at any tested magnitude",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.057,
+          "n": 76,
+          "next_family_median": 0.0109
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 1.632
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 1.6224,
+          "n": 80,
+          "next_family_median": 1.3472
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 1.6247
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 0.6439,
+          "n": 100,
+          "next_family_median": 0.3614
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 2.3772,
+    "threshold_foreground": 5.304,
+    "threshold_foreground_alpha": 1.632,
+    "threshold_foreground_estimate": 5.304,
+    "threshold_foreground_estimate_no_placement": 1.6247
+  },
+  "entropy_delta_abs": {
+    "detection_limits": {
+      "additive_noise@extent=1": "16 sigma code values",
+      "exposure_down@extent=1": "not resolved at any tested magnitude",
+      "exposure_up@extent=1": "not resolved at any tested magnitude",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "not resolved at any tested magnitude",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.057,
+          "n": 76,
+          "next_family_median": 0.0109
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 1.632
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 1.6224,
+          "n": 80,
+          "next_family_median": 1.3472
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 1.6247
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 0.6439,
+          "n": 100,
+          "next_family_median": 0.3614
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 2.3772,
+    "threshold_foreground": 5.304,
+    "threshold_foreground_alpha": 1.632,
+    "threshold_foreground_estimate": 5.304,
+    "threshold_foreground_estimate_no_placement": 1.6247
+  },
+  "hue_family_delta_l1": {
+    "detection_limits": {
+      "additive_noise@extent=1": "16 sigma code values",
+      "exposure_down@extent=1": "64 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "2 radius px",
+      "hue_rotation@extent=0.05": "60 degrees",
+      "hue_rotation@extent=0.25": "15 degrees (non-monotonic response)",
+      "hue_rotation@extent=1": "15 degrees",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "0.02 region fraction of frame",
+      "rescale_roundtrip@extent=1": "0.65 downscale loss (1 - factor)",
+      "saturation_down@extent=1": "0.5 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 19,
+          "next_family_median": 0.0
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 0.034188
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0052785,
+          "n": 80,
+          "next_family_median": 0.002612
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 0.140812
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0182265,
+          "n": 80,
+          "next_family_median": 0.0037465
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 0.097987,
+    "threshold_foreground": 0.140812,
+    "threshold_foreground_alpha": 0.034188,
+    "threshold_foreground_estimate": 0.140812,
+    "threshold_foreground_estimate_no_placement": 0.140812
+  },
+  "hue_family_delta_max": {
+    "detection_limits": {
+      "additive_noise@extent=1": "16 sigma code values",
+      "exposure_down@extent=1": "64 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "2 radius px",
+      "hue_rotation@extent=0.05": "120 degrees",
+      "hue_rotation@extent=0.25": "15 degrees",
+      "hue_rotation@extent=1": "15 degrees",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "0.02 region fraction of frame",
+      "rescale_roundtrip@extent=1": "0.75 downscale loss (1 - factor)",
+      "saturation_down@extent=1": "0.5 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 19,
+          "next_family_median": 0.0
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 0.017094
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0026395,
+          "n": 80,
+          "next_family_median": 0.001306
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 0.070406
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.007239,
+          "n": 80,
+          "next_family_median": 0.001379
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 0.041354,
+    "threshold_foreground": 0.070406,
+    "threshold_foreground_alpha": 0.017094,
+    "threshold_foreground_estimate": 0.070406,
+    "threshold_foreground_estimate_no_placement": 0.070406
+  },
+  "luminance_mean_delta_abs": {
+    "detection_limits": {
+      "additive_noise@extent=1": "32 sigma code values (non-monotonic response)",
+      "exposure_down@extent=1": "4 code values (-)",
+      "exposure_up@extent=1": "4 code values (+)",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "120 degrees",
+      "hue_rotation@extent=1": "15 degrees (non-monotonic response)",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "0.02 region fraction of frame",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "0.1 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "0.1 saturation_gain (factor - 1)",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.02,
+          "n": 76,
+          "next_family_median": 0.01
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 0.997
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 2.9785,
+          "n": 80,
+          "next_family_median": 1.0
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 1.452
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_exposure",
+          "median": 0.9975,
+          "n": 40,
+          "next_family_median": 0.3605
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 1.243,
+    "threshold_foreground": 34.166,
+    "threshold_foreground_alpha": 0.997,
+    "threshold_foreground_estimate": 34.166,
+    "threshold_foreground_estimate_no_placement": 1.452
+  },
+  "saturation_mean_delta_abs": {
+    "detection_limits": {
+      "additive_noise@extent=1": "4 sigma code values",
+      "exposure_down@extent=1": "8 code values (-)",
+      "exposure_up@extent=1": "8 code values (+)",
+      "gaussian_blur@extent=1": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "70 quality loss (100 - quality) (non-monotonic response)",
+      "region_recolour@extent=1": "0.05 region fraction of frame",
+      "rescale_roundtrip@extent=1": "not resolved at any tested magnitude",
+      "saturation_down@extent=1": "0.1 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "0.25 saturation_gain (factor - 1)",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.061,
+          "n": 76,
+          "next_family_median": 0.014
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 1.232
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_saturation",
+          "median": 1.7185,
+          "n": 40,
+          "next_family_median": 0.823
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 3.0
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 1.1175,
+          "n": 80,
+          "next_family_median": 0.964
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 8.679,
+    "threshold_foreground": 5.087,
+    "threshold_foreground_alpha": 1.232,
+    "threshold_foreground_estimate": 5.087,
+    "threshold_foreground_estimate_no_placement": 3.0
+  },
+  "structural_dissimilarity": {
+    "detection_limits": {
+      "additive_noise@extent=1": "4 sigma code values",
+      "exposure_down@extent=1": "64 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "8 radius px",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "0.92 downscale loss (1 - factor)",
+      "saturation_down@extent=1": "0.75 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0003465,
+          "n": 76,
+          "next_family_median": 0.000208
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 0.027778
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0620745,
+          "n": 80,
+          "next_family_median": 0.021452
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 0.039831
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 0.015769,
+          "n": 100,
+          "next_family_median": 0.0022555
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 0.037263,
+    "threshold_foreground": 0.206301,
+    "threshold_foreground_alpha": 0.027778,
+    "threshold_foreground_estimate": 0.206301,
+    "threshold_foreground_estimate_no_placement": 0.039831
+  },
+  "structural_similarity": {
+    "detection_limits": {
+      "additive_noise@extent=1": "4 sigma code values",
+      "exposure_down@extent=1": "64 code values (-)",
+      "exposure_up@extent=1": "64 code values (+)",
+      "gaussian_blur@extent=1": "8 radius px",
+      "hue_rotation@extent=0.05": "not resolved at any tested magnitude",
+      "hue_rotation@extent=0.25": "not resolved at any tested magnitude",
+      "hue_rotation@extent=1": "not resolved at any tested magnitude",
+      "jpeg_reencode@extent=1": "not resolved at any tested magnitude",
+      "region_recolour@extent=1": "not resolved at any tested magnitude",
+      "rescale_roundtrip@extent=1": "0.92 downscale loss (1 - factor)",
+      "saturation_down@extent=1": "0.75 saturation_loss (1 - factor)",
+      "saturation_up@extent=1": "not resolved at any tested magnitude",
+      "translation@extent=1": "not resolved at any tested magnitude"
+    },
+    "provenance": {
+      "foreground_alpha": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0003465,
+          "n": 76,
+          "next_family_median": 0.000208
+        },
+        "n": 380,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 304,
+          "threshold": 0.027778
+        },
+        "scenes": [
+          "aa_blade_w12",
+          "aa_blade_w3",
+          "aa_blade_w40",
+          "aa_blade_w5",
+          "alpha_ladder",
+          "angle_a00",
+          "angle_a20",
+          "angle_a45",
+          "angle_a45_phase",
+          "angle_a60",
+          "degenerate_empty",
+          "degenerate_hairline",
+          "degenerate_opaque",
+          "glass_a128",
+          "glass_a192",
+          "glass_a64",
+          "hard_blade_w12",
+          "hard_blade_w5",
+          "vivid_blade_w5"
+        ]
+      },
+      "foreground_estimate": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0620745,
+          "n": 80,
+          "next_family_median": 0.021452
+        },
+        "n": 400,
+        "no_placement": {
+          "alpha": 0.01,
+          "n": 320,
+          "threshold": 0.039831
+        },
+        "scenes": [
+          "blob_object",
+          "multipart_object",
+          "structured",
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 0.015769,
+          "n": 100,
+          "next_family_median": 0.0022555
+        },
+        "n": 400,
+        "no_placement": null,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
+    "threshold": 0.962737,
+    "threshold_foreground": 0.793699,
+    "threshold_foreground_alpha": 0.972222,
+    "threshold_foreground_estimate": 0.793699,
+    "threshold_foreground_estimate_no_placement": 0.960169
+  }
+}

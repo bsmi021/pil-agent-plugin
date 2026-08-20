@@ -1172,13 +1172,48 @@ numbered together.
    pixels: feeding this output to `pil_palette_diff` or `pil_structure_diff`
    measures the annotation as well as the content."
 3. "Box numbers are geometric glyphs from a table defined in this file, not
-   rendered text, so the output is byte-identical on every machine and every
-   Pillow version. Only digits exist; your labels appear in `legend`, never in
+   rendered text, so the annotation is **pixel-identical across Pillow versions
+   and machines**, and the output file is **byte-identical across runs in one
+   environment**. Only digits exist; your labels appear in `legend`, never in
    the image."
+
+> **Corrected 2026-08-20, after the W4 re-critic measured it.** This item
+> previously read "byte-identical on every machine and every Pillow version",
+> which is false at the FILE level and was my error, not the implementer's — the
+> tool reproduced the spec wording faithfully. Measured: `edge_right.png` is
+> 1426 bytes under Pillow 10.4.0 and 1408 under 12.3.0, with different sha256
+> and **identical pixels**; `edge_overlap.png` likewise, 1303 against 1293.
+> Pillow's PNG encoder changes between versions; the glyph table's determinism
+> guarantee is over *pixels*, which is all it can be. This matters because the
+> payload publishes `output.sha256`, so an agent comparing digests across
+> environments would have concluded the annotation changed when it had not.
+> A4.1 and D7 are unaffected: they require byte-identity across runs in one
+> environment, which holds and was re-verified under engineered hazard ties.
 4. "Numbering is by position (top, then left), not by the order you passed the
    boxes. `requested_index` maps each drawn number back to your input."
 5. "The boxes are the caller's. This tool asserts nothing about what is inside
    them."
+
+> **Placement vocabulary amended 2026-08-20, after W4's fix round.** This
+> section and the 6.3 example name exactly two placements, `outside_top_left`
+> and `inside_top_left`. The shipped tool emits eight names plus `clamped`, and
+> adds a per-entry `glyph_hazards` field and a flag vocabulary
+> (`glyph_overlaps_glyph`, `glyph_overlaps_box_outline`,
+> `glyph_overlaps_grid_line`, `glyph_touches_frame_edge`,
+> `glyph_clamped_into_frame`).
+>
+> This is a strengthening and it is accepted. Round 1's headline defect was a
+> legend reporting `inside_top_left` for a glyph sitting 3px OUTSIDE its box —
+> two names could not describe the geometry truthfully, so an honest fix needed
+> more names, and `clamped` exists precisely so the tool must confess when it
+> cannot place a numeral cleanly. The re-critic found 0 placement-name lies in
+> 4052 randomised trials and could not construct a counterexample. The flag
+> vocabulary replaces a hardcoded `"flags": []`, which by construction could
+> never report a collision, with something measured.
+>
+> It was escalated before shipping rather than slipped in, which is the
+> behaviour this build wants. Treat the eight names and `glyph_hazards` as part
+> of the contract from here.
 
 **Must NOT be claimed:** that a numbered region contains anything in
 particular; that the overlay is measurable; that the tool found the regions
@@ -1192,7 +1227,7 @@ particular; that the overlay is measurable; that the tool found the regions
 | A4.2 | Source untouched: sha256 of the source file before and after equals, in the same test. |
 | A4.3 | Font independence: the module contains no `ImageFont` import at all — `grep -c "ImageFont" scripts/pil_annotate.py` returns 0. This is a stronger and cheaper check than trying to vary installed fonts in CI. |
 | A4.4 | Digit legibility, verified by a **model reading the output back**, not by asserting pixels were drawn. Deliverable: `runs/2026-08-2X-annotate-readback/README.md` recording an agent shown the annotated PNG (and not the JSON) transcribing every box number correctly, on at least 3 images spanning light, dark and busy content, with the transcript quoted. Phase 3 names this failure mode explicitly; a unit test cannot cover it. |
-| A4.5 | No occlusion of box content: for every box, the glyph footprint does not intersect the box interior when `glyph_placement == "outside_top_left"`, asserted geometrically. |
+| A4.5 | No occlusion of box content: for every box, the glyph footprint does not intersect the box interior when `glyph_placement == "outside_top_left"`, asserted geometrically. **Generalised 2026-08-20 (see the placement-vocabulary note below): every `outside_*` placement must be disjoint from its own box, every `inside_*` contained by it, and anything else must name itself `clamped`. The shipped test asserts the generalised rule across the whole legend, which is strictly stronger than this criterion's letter.** |
 | A4.6 | `--from-json` on a real `pil_structure_diff` payload draws exactly `len(most_divergent_cells)` + (1 if `changed_region_bbox_fractional` else 0) boxes, and the legend records `source` for each. |
 | A4.7 | Grid lines drawn before boxes: on a case where a box edge coincides with a grid line, the box colour is the one present at that pixel. |
 | A4.8 | Refuses overwrite without `--overwrite`; exit 2 with empty stdout. |
@@ -1545,6 +1580,17 @@ Re-run after W6 and after W7, not only after W1.
 > new keys may be added, but every key that existed before must carry the same
 > value. Grade it by comparing the intersection of the two payloads' keys, not
 > by byte-diffing the whole document.
+>
+> **Append-only carve-out, added 2026-08-20 after the W6 critic caught the
+> amendment contradicting itself.** `interpretation_limits` is a pre-existing
+> *key* whose *value* legitimately grows — W6 appends a region entry, W1 appends
+> alpha entries — so the restatement above forbids the very change it was
+> written to bless. The carve-out: `interpretation_limits` is graded as
+> **append-only**. Every entry present before must still be present with its
+> wording unchanged, and new entries may be appended; the list is not required
+> to be equal. No other field gets this exemption — a numeric or structural
+> field that changes value is still a D2 failure. Grade it by asserting the old
+> list is a subsequence of the new one.
 
 **D3 — the alpha fix is graded against truth, not against a threshold.**
 `tests/test_alpha_weighting.py` does not read `scripts/detection_limits.json`

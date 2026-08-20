@@ -30,6 +30,9 @@ The corpus is four blocks:
     FOREGROUND_MIN_FRACTION, which are statements about how small a subject can
     get before the numbers stop describing it.
 4.  **An accent-area sweep** -- for ACCENT_AREA_SMALL_FRACTION, likewise.
+5.  **An RGBA foreground control family** -- the existing ALPHA_CORPUS crossed
+    with RGB-only controls and a premultiplied rescale path; JPEG is recorded as
+    skipped because it cannot carry alpha.
 """
 
 from __future__ import annotations
@@ -47,6 +50,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 
 CALIBRATION_DIR = Path(__file__).resolve().parent
 REPO_ROOT = CALIBRATION_DIR.parent
@@ -150,7 +154,14 @@ def build_image(workdir, spec):
     stable across runs and two identical specs share one file.
     """
     path = spec_path(workdir, spec)
-    img = scenes.build(spec["scene"], **spec.get("scene_params", {}))
+    if spec.get("alpha_scene"):
+        img = scenes.build_alpha(
+            spec["alpha_scene"],
+            composite=bool(spec.get("composite", False)),
+            **spec.get("scene_params", {}),
+        )
+    else:
+        img = scenes.build(spec["scene"], **spec.get("scene_params", {}))
     if spec.get("op"):
         img = perturb.apply(spec["op"], img, spec.get("op_params", {}))
     img.save(path, format="PNG", **spec.get("save", {}))
@@ -351,6 +362,16 @@ CONTROL_RECIPES = (
     ("blur_025", "subthreshold_blur", "gaussian_blur", {"radius": 0.25}, {}),
 )
 
+# The opaque corpus predates W2 and is frozen for A2.1. RGBA gets an explicit
+# JPEG slot so the inapplicable recipe is visible in the bundle rather than
+# silently disappearing from the family count.
+RGBA_CONTROL_RECIPES = CONTROL_RECIPES + (
+    ("jpeg_reencode_q85", "jpeg_reencode", "jpeg_reencode", {"quality": 85}, {}),
+)
+RGBA_SKIPPED_RECIPES = {
+    "jpeg_reencode_q85": "JPEG has no alpha channel; RGBA controls skip it by design."
+}
+
 # Reduced control set for the sweeps, where the question is how the noise floor
 # moves with foreground / accent area rather than what it is in absolute terms.
 SWEEP_CONTROL_RECIPES = (
@@ -418,6 +439,45 @@ def _control_units(scene, scene_params, seed, recipes, modes, kind, scene_label,
     return units
 
 
+def _alpha_control_units(label, scene, scene_params, recipes, tools):
+    """Build RGBA foreground controls while preserving the alpha source."""
+    units = []
+    for name, family, op, op_params, save in recipes:
+        if name in RGBA_SKIPPED_RECIPES:
+            continue
+        spec_a = {
+            "scene": label,
+            "alpha_scene": scene,
+            "scene_params": dict(scene_params),
+        }
+        spec_b = {
+            "scene": label,
+            "alpha_scene": scene,
+            "scene_params": dict(scene_params),
+            "op": op,
+            "op_params": _resolve_params(op_params, "alpha", label, name),
+            "save": dict(save),
+        }
+        if op is None and not save:
+            spec_b = dict(spec_b, duplicate=True)
+        units.append(
+            _unit(
+                unit_id=f"alpha_control|{family}|{name}|{label}|foreground_alpha",
+                kind="alpha_control",
+                family=family,
+                level=name,
+                scene=label,
+                scene_label=label,
+                scene_seed=None,
+                mode="foreground_alpha",
+                spec_a=spec_a,
+                spec_b=spec_b,
+                tools=tools,
+            )
+        )
+    return units
+
+
 def build_plan(quick=False):
     """The full list of measurement units. Pure data; no I/O."""
     grid = perturb.QUICK_GRID if quick else perturb.GRID
@@ -431,8 +491,8 @@ def build_plan(quick=False):
 
     units = []
 
-    # 1. No-change controls, every scene x every control seed.
-    for scene in sorted(scenes.SCENE_BUILDERS):
+    # 1. No-change controls for the frozen pre-W2 four-scene corpus.
+    for scene in sorted(scenes.FULL_FRAME_SCENES):
         for seed in control_seeds:
             modes = ["full_frame"]
             if scene in scenes.FOREGROUND_SCENES:
@@ -447,13 +507,47 @@ def build_plan(quick=False):
                     "control",
                     scene,
                     ("palette", "structure"),
+            )
+        )
+
+    # W2a's foreground control set includes exactly four meaningful opaque
+    # scenes, including the two added scenes. Keep these units out of the
+    # full-frame set so the phase-2 full-frame thresholds remain comparable.
+    for scene in sorted(scenes.FOREGROUND_SCENES):
+        if scene in scenes.FULL_FRAME_SCENES:
+            continue
+        for seed in control_seeds:
+            units.extend(
+                _control_units(
+                    scene,
+                    {"seed": seed},
+                    seed,
+                    control_recipes,
+                    ("foreground",),
+                    "control",
+                    scene,
+                    ("palette", "structure"),
                 )
             )
+
+    # W2b's alpha control family uses every declared alpha scene once per
+    # recipe. JPEG is represented in RGBA_CONTROL_RECIPES but skipped above;
+    # run_all records that skip explicitly in the derived payload.
+    for label, scene, params in scenes.ALPHA_CORPUS:
+        units.extend(
+            _alpha_control_units(
+                label,
+                scene,
+                params,
+                RGBA_CONTROL_RECIPES,
+                ("palette", "structure"),
+            )
+        )
 
     # 2. The perturbation grid.
     for family in sorted(grid):
         for index, level in enumerate(grid[family]):
-            for scene in sorted(scenes.SCENE_BUILDERS):
+            for scene in sorted(scenes.FULL_FRAME_SCENES):
                 for seed in grid_seeds:
                     spec_a = {"scene": scene, "scene_params": {"seed": seed}}
                     spec_b = {
@@ -620,6 +714,19 @@ def _materialise(workdir, units, jobs, progress):
 
 
 def _measure_unit(tools_dir, unit, path_a, path_b):
+    alpha_policy = None
+    if unit["kind"] == "alpha_control":
+        with Image.open(path_a) as image_a, Image.open(path_b) as image_b:
+            alpha_a = np.asarray(image_a.convert("RGBA").getchannel("A"), dtype=np.uint8)
+            alpha_b = np.asarray(image_b.convert("RGBA").getchannel("A"), dtype=np.uint8)
+        if unit["family"] == "rescale_roundtrip":
+            alpha_policy = "premultiplied_resample"
+        else:
+            alpha_policy = "unchanged"
+            if not np.array_equal(alpha_a, alpha_b):
+                raise AssertionError(
+                    f"RGBA control {unit['unit_id']} changed alpha in an RGB-only recipe"
+                )
     palette = structure = None
     fg = ["--foreground"] if unit["mode"] == "foreground" else []
     if "palette" in unit["tools"]:
@@ -652,6 +759,9 @@ def _measure_unit(tools_dir, unit, path_a, path_b):
     }
     record["metrics"] = metrics
     record["diagnostics"] = diagnostics
+    if alpha_policy is not None:
+        diagnostics["alpha_policy"] = alpha_policy
+        diagnostics["alpha_unchanged"] = bool(alpha_policy == "unchanged")
     return record
 
 
@@ -694,6 +804,29 @@ def collect(tools_dir, workdir, quick=False, jobs=None, progress=None):
 
     if progress:
         progress(f"  measurement: {len(records)} units in {time.monotonic() - started:.1f}s")
+    return [records[key] for key in sorted(records)]
+
+
+def collect_units(tools_dir, workdir, units, jobs=None):
+    """Measure an explicitly supplied unit list for acceptance preflights."""
+    _bind_snapshot(tools_dir)
+    _ANALYSE_CACHE.clear()
+    jobs = jobs or min(16, (os.cpu_count() or 4))
+    paths = _materialise(workdir, units, jobs, progress=None)
+    records = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
+        futures = {
+            pool.submit(
+                _measure_unit,
+                tools_dir,
+                unit,
+                paths[spec_key(unit["spec_a"])],
+                paths[spec_key(unit["spec_b"])],
+            ): unit["unit_id"]
+            for unit in units
+        }
+        for future in concurrent.futures.as_completed(futures):
+            records[futures[future]] = future.result()
     return [records[key] for key in sorted(records)]
 
 

@@ -133,16 +133,22 @@ REGION_INTERPRETATION_LIMITS = [
     "--region crops BOTH images to the same fractional box at full "
     "resolution before any measurement runs -- never after, which is what "
     "keeps a --region measurement resolution-independent and identical to "
-    "pre-cropping the file with pil_crop.py and measuring the result. "
-    "Composed with --foreground, the order is: region crop first, then the "
-    "foreground mask -- and, on the border-median path, the background "
-    "estimate -- is re-derived from the crop's own pixels, never inherited "
-    "from the whole frame. region_background_estimate_diverged fires when "
-    "that re-derived estimate lands further than --background-delta (in "
-    "OKLab) from the whole frame's own border-median colour -- the "
-    "signature of a region that contains little or no backdrop, where the "
-    "re-derived estimate is the more honest one but also the more "
-    "surprising one.",
+    "pre-cropping the file with pil_crop.py and measuring the result -- with "
+    "exactly one exception: the flags list. region_background_estimate_"
+    "diverged (below) can appear on a --region run and never on the "
+    "equivalent pre-cropped-file run, because it compares the crop's own "
+    "border-median colour against the ORIGINAL, un-cropped frame's -- a "
+    "comparison a pre-cropped file structurally cannot make, having no frame "
+    "left to compare against. Every other field, including every colour and "
+    "structure statistic, is unaffected. Composed with --foreground, the "
+    "order is: region crop first, then the foreground mask -- and, on the "
+    "border-median path, the background estimate -- is re-derived from the "
+    "crop's own pixels, never inherited from the whole frame. "
+    "region_background_estimate_diverged fires when that re-derived estimate "
+    "lands further than --background-delta (in OKLab) from the whole "
+    "frame's own border-median colour -- the signature of a region that "
+    "contains little or no backdrop, where the re-derived estimate is the "
+    "more honest one but also the more surprising one.",
 ]
 
 
@@ -193,6 +199,16 @@ def _apply_region(composited_rgb, straight_rgb, alpha, region, region_space, bac
     if alpha is not None:
         straight_rgb = straight_rgb.crop(rect)
         alpha = alpha[top:bottom, left:right]
+        if not bool((alpha < 255).any()):
+            # Mirror load_rgba_straight's own rule (pil_common.py): an
+            # all-opaque alpha carries no foreground information and
+            # normalises to None. Without this, a region cropped out of an
+            # all-opaque part of the alpha array stays non-None while the
+            # equivalent pre-cropped FILE would load with alpha=None,
+            # putting the two on different mask paths and breaking the
+            # region-equals-pre-crop identity this function exists to keep.
+            alpha = None
+            straight_rgb = composited_rgb
     else:
         straight_rgb = composited_rgb
 

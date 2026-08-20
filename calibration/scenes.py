@@ -338,17 +338,67 @@ def busy(size=SCENE_SIZE, seed=101):
     return Image.fromarray(np.clip(arr, 0, 255).round().astype(np.uint8), "RGB")
 
 
+def blob_object(size=SCENE_SIZE, seed=101):
+    """A thick, filled rounded object occupying about fifteen percent of the frame.
+
+    The broad interior keeps perimeter-to-area low, so a LANCZOS rescale has
+    little edge material to move.  A tiny seeded placement offset gives the
+    control seeds distinct, deterministic renders without changing the scene's
+    object class.
+    """
+    w, h = size
+    rnd = lcg(seed + 17)
+    offset = (int(next(rnd) * 7) - 3, int(next(rnd) * 7) - 3)
+    box_w, box_h = int(round(w * 0.38)), int(round(h * 0.43))
+    left = int(round((w - box_w) / 2)) + offset[0]
+    top = int(round((h - box_h) / 2)) + offset[1]
+    right, bottom = left + box_w - 1, top + box_h - 1
+    radius = max(8, int(round(min(box_w, box_h) * 0.28)))
+    img = Image.new("RGB", size, PREVIEW_BG)
+    ImageDraw.Draw(img).rounded_rectangle(
+        [left, top, right, bottom], radius=radius, fill=(150, 178, 210)
+    )
+    return img
+
+
+def multipart_object(size=SCENE_SIZE, seed=101):
+    """Three separated rounded components covering about eight percent combined."""
+    w, h = size
+    rnd = lcg(seed + 29)
+    jitter = (int(next(rnd) * 5) - 2, int(next(rnd) * 5) - 2)
+    component_w, component_h = int(round(w * 0.15)), int(round(h * 0.17))
+    top = int(round(h * 0.40)) + jitter[1]
+    lefts = (int(round(w * 0.14)) + jitter[0], int(round(w * 0.425)) + jitter[0], int(round(w * 0.71)) + jitter[0])
+    img = Image.new("RGB", size, PREVIEW_BG)
+    draw = ImageDraw.Draw(img)
+    colours = ((210, 155, 88), (116, 190, 140), (190, 112, 176))
+    radius = max(6, int(round(min(component_w, component_h) * 0.25)))
+    for left, colour in zip(lefts, colours):
+        draw.rounded_rectangle(
+            [left, top, left + component_w - 1, top + component_h - 1],
+            radius=radius,
+            fill=colour,
+        )
+    return img
+
+
 SCENE_BUILDERS = {
     "dark_accent": dark_accent,
     "structured": structured,
     "thin_object": thin_object,
     "busy": busy,
+    "blob_object": blob_object,
+    "multipart_object": multipart_object,
 }
+
+# The pre-W2 full-frame corpus is frozen so the new object controls do not
+# silently rewrite the phase-2 full-frame thresholds.
+FULL_FRAME_SCENES = ("dark_accent", "structured", "thin_object", "busy")
 
 # Scenes for which running the tools in --foreground mode is meaningful. On the
 # other three the "background" is the subject, so foreground mode would be
 # measuring an artefact of the border-median estimate rather than an object.
-FOREGROUND_SCENES = ("thin_object",)
+FOREGROUND_SCENES = ("thin_object", "structured", "blob_object", "multipart_object")
 
 
 def build(scene, **params):
