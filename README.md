@@ -227,6 +227,10 @@ A caller reading only a similarity score or a hash would have concluded "identic
 
 | Question | Tool | Field |
 |---|---|---|
+| Let me **see** a region at full resolution | `pil_crop` | native-resolution crop, integer upscale only |
+| Let me **point** at something a model will understand | `pil_annotate` | numbered boxes on a copy |
+| What does the **file** say (alpha, EXIF, ICC, true size)? | `pil_image_info` | file facts vision never receives |
+| Measure only part of the frame | both diffs, `--region` | every field, scoped |
 | Is this the same image? | structure | `dhash_distance`, `changed_area_fraction` |
 | Same layout / composition? | structure | `structural_similarity` |
 | What changed, and where? | structure | `changed_region_bbox_fractional`, `most_divergent_cells` |
@@ -294,11 +298,11 @@ uv sync
 uv run pytest -v
 ```
 
-**211 tests.** Fixtures are generated synthetically in-process, so no binary test
+**473 tests.** Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
 Six tests additionally confirm results against a real reference image and **skip
-when it is absent** — so a fresh clone reports `205 passed, 6 skipped`, which is
+when it is absent** — so a fresh clone reports `467 passed, 6 skipped`, which is
 expected. Their strongest assertions are duplicated unskipped against a synthetic
 stand-in, so a clean checkout still guards every known regression.
 
@@ -340,6 +344,33 @@ measured.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.4.0 — coverage-weighted foreground, three new tools, region scoping.**
+
+The headline fix: on RGBA input in `--foreground` mode, statistics are now
+coverage-weighted. Previously a partially-covered edge pixel was composited onto
+black and then counted like a fully-opaque one, which read a 5px-wide blade
+**27.9 code values too dark** and — worse — made the reading depend on *where*
+the object landed on the pixel grid, so a quarter-pixel re-render of an
+unchanged asset could cross a calibrated threshold and report a change that
+never happened. Measured after the fix: error against alpha-weighted truth is
+**±0.0004** across all 19 corpus scenes, and the placement excursion is
+**±0.0006** against a bound of 0.5. Full-frame behaviour is byte-identical.
+
+Three new tools close the loop between measurement and vision:
+[`pil_crop`](scripts/pil_crop.py) hands vision a native-resolution view of a
+region the tools located, [`pil_annotate`](scripts/pil_annotate.py) draws
+numbered boxes so a model can point precisely, and
+[`pil_image_info`](scripts/pil_image_info.py) reports the file facts an image
+never carries into a vision encoder. `--region` scopes every metric on both
+diff tools, byte-equal to pre-cropping with `pil_crop`.
+
+Foreground thresholds are now [split by mask source](runs/2026-08-20-foreground-recalibration/README.md)
+and the alpha path is calibrated for the first time (luminance **0.997** against
+the estimate path's 34.166, n=380, α=0.01). The annotation tool's legibility is
+[verified by read-back](runs/2026-08-20-annotate-readback/README.md) — fresh
+agents shown only the image transcribed 27 of 27 numerals correctly, and the
+bundle records an earlier round that *failed*.
 
 Phase 1 complete: tools built and validated, plugin packaged,
 `claude plugin validate --strict` passing, and the package audited against and

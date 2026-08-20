@@ -115,6 +115,18 @@ def _load_source_pixels(source_bytes, display_path):
     to make that conversion faithful. info is cleared immediately so no
     inherited ICC profile, EXIF block, DPI or text chunk can leak into the
     saved crop.
+
+    SCOPE OF THAT REJECTION, measured rather than assumed. It reaches only the
+    modes Pillow still reports as high-bit-depth by the time this function sees
+    them -- I, F and I;*. A 16-bit COLOUR PNG (RGB/RGBA/LA) never gets here as
+    such: Pillow decodes it to 8-bit at open(), so ``img.mode`` is already
+    "RGB". That path is a high-byte scale, not the clipping this gate exists to
+    prevent -- measured on a 16-bit source, 1186 distinct values become 256 and
+    ``loaded == (v >> 8)`` holds exactly while ``loaded == clip(v, 0, 255)``
+    does not -- so the crop is a faithful 8-bit rendition of the source rather
+    than a corrupted one. The distinction matters because the rejection message
+    says the tool "will not clip or rescale", and for 16-bit colour the rescale
+    has already happened in the decoder, out of this tool's reach.
     """
     try:
         img = Image.open(io.BytesIO(source_bytes))
@@ -124,7 +136,10 @@ def _load_source_pixels(source_bytes, display_path):
     if img.mode == "I" or img.mode == "F" or img.mode.startswith("I;"):
         raise CropRejected(
             f"unsupported high-bit-depth image mode {img.mode!r}; "
-            "pil_crop accepts 8-bit pixels only and will not clip or rescale them"
+            "pil_crop accepts 8-bit pixels only and will not itself clip or "
+            "rescale them. (A 16-bit COLOUR source does not reach this path: "
+            "Pillow scales it to 8 bits in the decoder, which is faithful "
+            "high-byte scaling rather than clipping.)"
         )
     has_alpha = img.mode in ("RGBA", "LA") or (
         img.mode == "P" and "transparency" in img.info

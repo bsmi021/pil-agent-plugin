@@ -20,7 +20,7 @@ import numpy as np
 from PIL import ExifTags, Image, ImageCms
 
 
-TOOL_VERSION = "0.3.0"
+TOOL_VERSION = "0.4.0"
 
 # This is an explicit decoder-mode table, rather than a claim inferred from a
 # file's contents.  Modes Pillow does not document here intentionally report
