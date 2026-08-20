@@ -1,0 +1,326 @@
+{
+  "control_seeds": [
+    101,
+    211,
+    337,
+    449,
+    563
+  ],
+  "descriptors": {
+    "fill_ratio": {
+      "alpha": 0.05,
+      "detection_limit": {
+        "magnitude": null,
+        "max_magnitude_tested": 0.5,
+        "median_at_max": null,
+        "reason": "not detected at any tested magnitude",
+        "threshold": 0.1551188
+      },
+      "n_no_op": 60,
+      "no_op_distribution": {
+        "max": 0.16794,
+        "mean": 0.03751898,
+        "median": 0.020068,
+        "min": 0.0,
+        "n": 60,
+        "p25": 0.003681,
+        "p75": 0.0496245
+      },
+      "no_op_threshold_bootstrap": {
+        "alpha": 0.05,
+        "ci_level": 0.95,
+        "ci_lower": 0.0943987,
+        "ci_method": "percentile bootstrap, two-sided",
+        "ci_upper": 0.1551188,
+        "degenerate": false,
+        "n": 60,
+        "observed_max": 0.16794,
+        "point_estimate": 0.15126755,
+        "quantile": 0.95,
+        "quantile_method": "numpy linear interpolation",
+        "resamples": 2000,
+        "threshold": 0.1551188
+      },
+      "reference_notch_magnitude": 0.05,
+      "reshape_response": [
+        {
+          "magnitude": 0.05,
+          "max": 0.05029,
+          "median": 0.049683,
+          "min": 0.049176,
+          "n": 5
+        },
+        {
+          "magnitude": 0.1,
+          "max": 0.104655,
+          "median": 0.103393,
+          "min": 0.097379,
+          "n": 5
+        },
+        {
+          "magnitude": 0.2,
+          "max": 0.201157,
+          "median": 0.198733,
+          "min": 0.196705,
+          "n": 5
+        },
+        {
+          "magnitude": 0.3,
+          "max": 0.301398,
+          "median": 0.291549,
+          "min": 0.287241,
+          "n": 5
+        },
+        {
+          "magnitude": 0.5,
+          "max": null,
+          "median": null,
+          "min": null,
+          "n": 0
+        }
+      ],
+      "verdict": "DEMOTE",
+      "verdict_reason": "reshape response never clears the no-op noise floor at any tested magnitude"
+    },
+    "orientation_histogram_l1": {
+      "alpha": 0.05,
+      "detection_limit": {
+        "magnitude": null,
+        "max_magnitude_tested": 0.5,
+        "median_at_max": null,
+        "reason": "not detected at any tested magnitude",
+        "threshold": 0.30083835
+      },
+      "n_no_op": 60,
+      "no_op_distribution": {
+        "max": 0.336261,
+        "mean": 0.07977777,
+        "median": 0.06159,
+        "min": 0.0,
+        "n": 60,
+        "p25": 0.021768,
+        "p75": 0.1017315
+      },
+      "no_op_threshold_bootstrap": {
+        "alpha": 0.05,
+        "ci_level": 0.95,
+        "ci_lower": 0.155729,
+        "ci_method": "percentile bootstrap, two-sided",
+        "ci_upper": 0.30083835,
+        "degenerate": false,
+        "n": 60,
+        "observed_max": 0.336261,
+        "point_estimate": 0.2463761,
+        "quantile": 0.95,
+        "quantile_method": "numpy linear interpolation",
+        "resamples": 2000,
+        "threshold": 0.30083835
+      },
+      "reference_notch_magnitude": 0.05,
+      "reshape_response": [
+        {
+          "magnitude": 0.05,
+          "max": 0.118153,
+          "median": 0.115547,
+          "min": 0.115443,
+          "n": 5
+        },
+        {
+          "magnitude": 0.1,
+          "max": 0.165011,
+          "median": 0.163089,
+          "min": 0.158121,
+          "n": 5
+        },
+        {
+          "magnitude": 0.2,
+          "max": 0.222471,
+          "median": 0.217813,
+          "min": 0.215691,
+          "n": 5
+        },
+        {
+          "magnitude": 0.3,
+          "max": 0.260264,
+          "median": 0.257052,
+          "min": 0.25477,
+          "n": 5
+        },
+        {
+          "magnitude": 0.5,
+          "max": null,
+          "median": null,
+          "min": null,
+          "n": 0
+        }
+      ],
+      "verdict": "DEMOTE",
+      "verdict_reason": "reshape response never clears the no-op noise floor at any tested magnitude"
+    },
+    "perimeter_squared_over_area": {
+      "alpha": 0.05,
+      "detection_limit": {
+        "magnitude": null,
+        "max_magnitude_tested": 0.5,
+        "median_at_max": null,
+        "reason": "not detected at any tested magnitude",
+        "threshold": 19.05291515
+      },
+      "n_no_op": 60,
+      "no_op_distribution": {
+        "max": 21.695457,
+        "mean": 2.7419802,
+        "median": 0.244641,
+        "min": 0.0,
+        "n": 60,
+        "p25": 0.15836075,
+        "p75": 1.38510125
+      },
+      "no_op_threshold_bootstrap": {
+        "alpha": 0.05,
+        "ci_level": 0.95,
+        "ci_lower": 7.00724615,
+        "ci_method": "percentile bootstrap, two-sided",
+        "ci_upper": 19.05291515,
+        "degenerate": false,
+        "n": 60,
+        "observed_max": 21.695457,
+        "point_estimate": 17.6587868,
+        "quantile": 0.95,
+        "quantile_method": "numpy linear interpolation",
+        "resamples": 2000,
+        "threshold": 19.05291515
+      },
+      "reference_notch_magnitude": 0.05,
+      "reshape_response": [
+        {
+          "magnitude": 0.05,
+          "max": 4.176787,
+          "median": 4.139788,
+          "min": 4.111415,
+          "n": 5
+        },
+        {
+          "magnitude": 0.1,
+          "max": 7.110745,
+          "median": 7.084361,
+          "min": 6.690065,
+          "n": 5
+        },
+        {
+          "magnitude": 0.2,
+          "max": 12.487203,
+          "median": 12.330621,
+          "min": 12.259554,
+          "n": 5
+        },
+        {
+          "magnitude": 0.3,
+          "max": 19.16156,
+          "median": 18.825365,
+          "min": 18.480061,
+          "n": 5
+        },
+        {
+          "magnitude": 0.5,
+          "max": null,
+          "median": null,
+          "min": null,
+          "n": 0
+        }
+      ],
+      "verdict": "DEMOTE",
+      "verdict_reason": "reshape response never clears the no-op noise floor at any tested magnitude"
+    }
+  },
+  "measured_tool": "pil_silhouette",
+  "no_op_plan": [
+    {
+      "op": "rescale_roundtrip",
+      "params": {
+        "factor": 0.5
+      }
+    },
+    {
+      "op": "rescale_roundtrip",
+      "params": {
+        "factor": 0.35
+      }
+    },
+    {
+      "op": "translate",
+      "params": {
+        "fraction": 0.002604
+      }
+    },
+    {
+      "op": "translate",
+      "params": {
+        "fraction": 0.005208
+      }
+    },
+    {
+      "op": "translate",
+      "params": {
+        "fraction": 0.010417
+      }
+    },
+    {
+      "op": "gaussian_blur",
+      "params": {
+        "radius": 0.5
+      }
+    },
+    {
+      "op": "gaussian_blur",
+      "params": {
+        "radius": 1.0
+      }
+    },
+    {
+      "op": "jpeg_reencode",
+      "params": {
+        "quality": 95
+      }
+    },
+    {
+      "op": "jpeg_reencode",
+      "params": {
+        "quality": 85
+      }
+    },
+    {
+      "op": "rotate_local",
+      "params": {
+        "degrees": 3
+      }
+    },
+    {
+      "op": "rotate_local",
+      "params": {
+        "degrees": 6
+      }
+    },
+    {
+      "op": "rotate_local",
+      "params": {
+        "degrees": 12
+      }
+    }
+  ],
+  "notes": [
+    "Rotation is included in the no-op class because pose is not a shape change and the tools' scale-invariance claim implies pose-invariance for a silhouette-shape descriptor. calibration/perturb.py has no rotate operation and is on the no-touch list; this gate implements rotation locally as Image.rotate(fillcolor=PREVIEW_BG) so exposed corners stay in the border-median background class.",
+    "Reshape fixtures (blob_with_notch) are built here rather than added to calibration/scenes.py, which is on the no-touch list. The base geometry is reproduced from scenes.blob_object verbatim to keep the fixture visually consistent with the control corpus.",
+    "The tool is invoked as a subprocess (never imported), per docs/phase3-build-plan.md #1 -- calibrating an imported function would calibrate something the caller never runs."
+  ],
+  "reference_shape_change_magnitude": 0.05,
+  "reshape_magnitudes": [
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5
+  ],
+  "tool": "silhouette_gate",
+  "version": "0.4.0"
+}
