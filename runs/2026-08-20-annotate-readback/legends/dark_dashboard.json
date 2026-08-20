@@ -1,0 +1,180 @@
+{
+  "flags": [],
+  "grid": {
+    "cols": 4,
+    "lines_drawn": 5,
+    "rows": 3
+  },
+  "interpretation_limits": [
+    "The overlay is drawn on a copy. The source file is not modified; its sha256 is recorded here so you can verify that.",
+    "Never measure an annotated image. The boxes, grid and numerals are pixels: feeding this output to pil_palette_diff or pil_structure_diff measures the annotation as well as the content.",
+    "Box numbers are geometric glyphs from a table defined in this file, not rendered text, so the output is byte-identical on every machine and every Pillow version. Only digits exist; your labels appear in legend, never in the image.",
+    "Numbering is by position (top, then left), not by the order you passed the boxes. requested_index maps each drawn number back to your input. It is unique only within a source: --box numbers its own arguments from 0, and each --from-json region list numbers its own entries from 0, so read (source, requested_index) as the pair that identifies an input.",
+    "The boxes are the caller's. This tool asserts nothing about what is inside them."
+  ],
+  "legend": [
+    {
+      "fractional": [
+        0.03,
+        0.04,
+        0.97,
+        0.18
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "inside_top_left",
+      "glyph_rect": [
+        23,
+        22,
+        38,
+        43
+      ],
+      "label": null,
+      "number": 1,
+      "pixel_rect": [
+        21,
+        20,
+        679,
+        90
+      ],
+      "requested_index": 0,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.03,
+        0.22,
+        0.49,
+        0.58
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_bottom_left",
+      "glyph_rect": [
+        21,
+        291,
+        36,
+        312
+      ],
+      "label": null,
+      "number": 2,
+      "pixel_rect": [
+        21,
+        110,
+        343,
+        290
+      ],
+      "requested_index": 1,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.53,
+        0.22,
+        0.97,
+        0.58
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_bottom_left",
+      "glyph_rect": [
+        371,
+        291,
+        386,
+        312
+      ],
+      "label": null,
+      "number": 3,
+      "pixel_rect": [
+        371,
+        110,
+        679,
+        290
+      ],
+      "requested_index": 2,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.62,
+        0.28,
+        0.88,
+        0.53
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_left",
+      "glyph_rect": [
+        434,
+        118,
+        449,
+        139
+      ],
+      "label": null,
+      "number": 4,
+      "pixel_rect": [
+        434,
+        140,
+        616,
+        265
+      ],
+      "requested_index": 3,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.03,
+        0.64,
+        0.97,
+        0.94
+      ],
+      "glyph_colour": "#ffffff",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_top_right",
+      "glyph_rect": [
+        664,
+        298,
+        679,
+        319
+      ],
+      "label": null,
+      "number": 5,
+      "pixel_rect": [
+        21,
+        320,
+        679,
+        470
+      ],
+      "requested_index": 4,
+      "source": "--box"
+    }
+  ],
+  "output": {
+    "path": "runs\\2026-08-20-annotate-readback\\annotated\\dark_dashboard.png",
+    "sha256": "82dacb9feb5ce0e649256bd5a65fe4fc5e335d1d75cb1a84b6f1b6988b4f20cb",
+    "size": [
+      700,
+      500
+    ]
+  },
+  "parameters": {
+    "from_json": null,
+    "grid": {
+      "cols": 4,
+      "rows": 3
+    },
+    "label_scale": 3,
+    "overwrite": true,
+    "thickness": 2
+  },
+  "source": {
+    "path": "runs\\2026-08-20-annotate-readback\\sources\\dark_dashboard.png",
+    "sha256": "ddc7f3cf53ebdbdc11804333b8390830cce4484a8ea6a638b7b0cc994511f770",
+    "size": [
+      700,
+      500
+    ]
+  },
+  "tool": "pil_annotate",
+  "version": "0.4.0"
+}

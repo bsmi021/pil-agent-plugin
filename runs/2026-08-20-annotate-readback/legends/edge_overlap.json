@@ -1,0 +1,99 @@
+{
+  "flags": [],
+  "grid": {
+    "cols": 1,
+    "lines_drawn": 0,
+    "rows": 1
+  },
+  "interpretation_limits": [
+    "The overlay is drawn on a copy. The source file is not modified; its sha256 is recorded here so you can verify that.",
+    "Never measure an annotated image. The boxes, grid and numerals are pixels: feeding this output to pil_palette_diff or pil_structure_diff measures the annotation as well as the content.",
+    "Box numbers are geometric glyphs from a table defined in this file, not rendered text, so the output is byte-identical on every machine and every Pillow version. Only digits exist; your labels appear in legend, never in the image.",
+    "Numbering is by position (top, then left), not by the order you passed the boxes. requested_index maps each drawn number back to your input. It is unique only within a source: --box numbers its own arguments from 0, and each --from-json region list numbers its own entries from 0, so read (source, requested_index) as the pair that identifies an input.",
+    "The boxes are the caller's. This tool asserts nothing about what is inside them."
+  ],
+  "legend": [
+    {
+      "fractional": [
+        0.1,
+        0.0,
+        0.3,
+        0.4
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_bottom_right",
+      "glyph_rect": [
+        105,
+        121,
+        120,
+        142
+      ],
+      "label": null,
+      "number": 1,
+      "pixel_rect": [
+        40,
+        0,
+        120,
+        120
+      ],
+      "requested_index": 0,
+      "source": "--box"
+    },
+    {
+      "fractional": [
+        0.12,
+        0.0,
+        0.4,
+        0.5
+      ],
+      "glyph_colour": "#000000",
+      "glyph_hazards": [],
+      "glyph_placement": "outside_bottom_left",
+      "glyph_rect": [
+        48,
+        151,
+        63,
+        172
+      ],
+      "label": null,
+      "number": 2,
+      "pixel_rect": [
+        48,
+        0,
+        160,
+        150
+      ],
+      "requested_index": 1,
+      "source": "--box"
+    }
+  ],
+  "output": {
+    "path": "runs\\2026-08-20-annotate-readback\\annotated\\edge_overlap.png",
+    "sha256": "1960984346d929c33dabd86fc9a663d11f8e31e219b01b326c7fcd5661b7009b",
+    "size": [
+      400,
+      300
+    ]
+  },
+  "parameters": {
+    "from_json": null,
+    "grid": {
+      "cols": 1,
+      "rows": 1
+    },
+    "label_scale": 3,
+    "overwrite": true,
+    "thickness": 2
+  },
+  "source": {
+    "path": "runs\\2026-08-20-annotate-readback\\sources\\edge_overlap.png",
+    "sha256": "135761391807d40b71e936a636ffb454e99d28e84e8256f8729d6a588a40a7fe",
+    "size": [
+      400,
+      300
+    ]
+  },
+  "tool": "pil_annotate",
+  "version": "0.4.0"
+}
