@@ -25,6 +25,10 @@ Last updated: 2026-08-19
   — Neyman–Pearson thresholds with n/α/CI, detection limits per metric per
   perturbation, LCh hue-family boundaries, constant verdicts and their
   application (one rejected, reason recorded in `scripts/pil_common.py`).
+- [Phase 2 real-image validation](../runs/2026-08-20-phase2-real-validation/README.md)
+  — the synthetic-derived thresholds run against a real production revision
+  corpus: zero full-frame false alarms, published detection limits shown to
+  transfer, support gating quiet on real cross-render pairs.
 - [Phase 3 scope](phase3-scope.md) — closed loops between measurement and vision:
   native-resolution crops, readable overlays, image metadata, region-scoped
   metrics, discrimination-gated new metrics, and the Blender character-sheet loop.
@@ -54,19 +58,24 @@ conforming to [Agent Plugins 1.0.0](https://agent-plugins.org/specification)
 Phase 2 implemented (0.3.0): CIEDE2000 verified against all 34 published
 reference values; thresholds calibrated by Neyman–Pearson over synthetic ground
 truth with published detection limits; contract-driven verdicts with a refuse
-list that never approximates; worst-case multi-pair aggregation. Open gates:
-real-image threshold validation and the alpha foreground path (see the
-[calibration bundle](../runs/2026-08-19-phase2-calibration/README.md)).
+list that never approximates; worst-case multi-pair aggregation. Thresholds
+were then [validated against a real production corpus](../runs/2026-08-20-phase2-real-validation/README.md)
+— zero full-frame false alarms, detection limits shown to transfer. One gate
+stays open: the alpha foreground path is uncalibrated.
 
 Phase 3 scoped and awaiting sign-off.
 
 ## Open items
 
-- **Real-image validation of calibrated thresholds has not run.** The
-  calibration corpus is synthetic; the bundle records this gate as open. Needs
-  a small labelled set of genuine revisions.
-- **The alpha foreground path is uncalibrated** — every calibration scene is
-  opaque; only the border-median colour path is measured.
+- **The alpha foreground path is uncalibrated** — every calibration scene and
+  every validation render is opaque; only the border-median colour path is
+  measured. The one phase 2 gate still open.
+- **Validation covers one asset from one pipeline.** The thresholds transferred
+  to real production renders, but a second corpus from a different renderer
+  would be needed to claim generalisation.
+- **Two foreground-mode accent metrics sit closest to their budget**
+  (`accent_palette_distance` and its ΔE2000 form, ~0.08–0.09 exceedance against
+  a 0.10 limit). Widen these first if a future corpus pushes them over.
 - **HSV vs LCh accent gate is compared, not ranked.** Deciding needs a
   ground-truth notion of "is this pixel an accent"; LCh remains opt-in
   (`--accent-space lch`).

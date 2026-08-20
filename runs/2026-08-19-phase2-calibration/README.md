@@ -245,11 +245,16 @@ perturbation curves at *any* tested magnitude.
   correlated and semantic.** A hue rotation over a band of rows is not what a
   re-render does. This calibration will systematically *underestimate* difficulty
   on real input, so every detection limit here is a best case.
-- **No real-image validation set is included.** The scope asks for one; this repo
-  distributes no images (the phase 1 reference is private and gated behind
-  `PIL_AGENT_REFERENCE_IMAGE`), so the check that synthetic-derived thresholds do
-  not fall apart on genuine input has *not* been performed. That gate is still
-  open, and the thresholds here should be treated as provisional until it closes.
+- ~~**No real-image validation set is included.**~~ **Gate closed 2026-08-20.**
+  The thresholds derived here were validated against a real production corpus —
+  the Black Order Swordsman iteration renders — and passed: zero full-frame
+  false alarms over 160 real no-change controls, 21 of 24 real revision pairs
+  detected in both modes, and the three undetected ones sub-limit exactly as the
+  published `region_recolour` detection limit (2% of frame) predicts. See
+  [`runs/2026-08-20-phase2-real-validation/README.md`](../2026-08-20-phase2-real-validation/README.md),
+  including two gate criteria that were refined mid-run with the strict results
+  preserved. The corpus is one asset from one pipeline, so this demonstrates
+  *transfer*, not generalisation.
 - **No academic precedent was found** for visual-regression or screenshot-diff
   threshold calibration specifically. This applies general Neyman–Pearson
   practice to the problem. It is not a validated domain methodology and must not

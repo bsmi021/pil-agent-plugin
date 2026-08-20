@@ -366,6 +366,15 @@ verdicts where every null result carries its detection limit, `geometry.*` and
 `style.*` refuse rather than approximate, and multi-pair aggregation is
 worst-case so one broken view cannot be averaged away.
 
+Those thresholds were then
+[validated against a real production corpus](runs/2026-08-20-phase2-real-validation/README.md)
+— a game asset's actual revision history — rather than only the synthetic data
+they were derived from: **zero false alarms** across 160 real no-change controls
+in full-frame mode, 21 of 24 real revision pairs detected in both modes, and the
+three undetected ones below the published 2%-of-frame detection limit exactly as
+that limit predicts. The published detection limits transfer to production
+input, which is what makes a `SATISFIED` invariant's limit worth reading.
+
 Known limitations, tracked in [`docs/index.md`](docs/index.md#open-items):
 
 - Thresholds are calibrated against a small sample and need broader validation.
