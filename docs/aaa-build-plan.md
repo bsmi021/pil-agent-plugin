@@ -1526,6 +1526,26 @@ weakened without a written justification in its docstring.
 fixture, in both tools, without `--foreground`, including on RGBA inputs.
 Re-run after W6 and after W7, not only after W1.
 
+> **Amended 2026-08-20, after W6 landed.** As written, D2 became unsatisfiable
+> the moment §8.2's payload additions shipped, and the contradiction is
+> internal to this plan rather than a defect in anyone's work. §8.2 mandates
+> `source_size`, `parameters.region`, `parameters.region_space`, the per-image
+> `region` block and a region `interpretation_limits` entry **unconditionally**
+> — verified present on a plain invocation with no `--region` — so a byte diff
+> against the pre-W6 payload is necessarily non-empty for *every* invocation,
+> region-using or not. Those fields are load-bearing: A6.2 and A6.3 compare
+> full payloads between a `--region` run and a pre-cropped-file run, and a
+> field that appears only when `--region` is passed would make that equality
+> impossible. W6 raised this rather than quietly weakening §8.2 or ignoring D2,
+> which is the correct handling.
+>
+> D2's intent is *"the alpha fix did not move full-frame numbers"*, and that
+> intent survives intact. The criterion is therefore restated as: **no
+> pre-existing payload field changes its value** on a full-frame invocation —
+> new keys may be added, but every key that existed before must carry the same
+> value. Grade it by comparing the intersection of the two payloads' keys, not
+> by byte-diffing the whole document.
+
 **D3 — the alpha fix is graded against truth, not against a threshold.**
 `tests/test_alpha_weighting.py` does not read `scripts/detection_limits.json`
 (`grep -c detection_limits tests/test_alpha_weighting.py` == 0), and its bounds

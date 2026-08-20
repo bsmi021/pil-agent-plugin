@@ -54,16 +54,26 @@ from pil_common import (  # noqa: E402
     HUE_PRESENCE_MIN_PIXELS,
     accent_subset,
     entropy_of,
+    estimate_background,
     foreground_estimate,
     foreground_mask,
     hue_families,
     load_rgba_straight,
     luminance_stats,
+    mask_bbox,
     masked_strip,
     palette_distance,
     palette_distance_de2000,
     quantize_palette,
     saturation_stats,
+)
+from pil_region import (  # noqa: E402
+    DEFAULT_REGION_SPACE,
+    REGION_SPACES,
+    RegionError,
+    parse_fractional_bbox,
+    rect_to_fractional,
+    resolve_pixel_rect,
 )
 
 TOOL_VERSION = "0.3.0"
@@ -112,6 +122,88 @@ ALPHA_INTERPRETATION_LIMITS = [
     "values on thin or highly transparent objects (see the W1 evidence "
     "bundle); it is not a rounding error.",
 ]
+
+# Appended to INTERPRETATION_LIMITS unconditionally, unlike
+# ALPHA_INTERPRETATION_LIMITS above: --region carries no pre-existing byte-
+# identity obligation (it is new in this release), and A6.2/A6.3 require a
+# --region run and an equivalent pre-cropped-file run to compare equal on
+# this field, which only an unconditional entry can satisfy -- the same
+# reasoning that makes source_size and parameters.region unconditional.
+REGION_INTERPRETATION_LIMITS = [
+    "--region crops BOTH images to the same fractional box at full "
+    "resolution before any measurement runs -- never after, which is what "
+    "keeps a --region measurement resolution-independent and identical to "
+    "pre-cropping the file with pil_crop.py and measuring the result. "
+    "Composed with --foreground, the order is: region crop first, then the "
+    "foreground mask -- and, on the border-median path, the background "
+    "estimate -- is re-derived from the crop's own pixels, never inherited "
+    "from the whole frame. region_background_estimate_diverged fires when "
+    "that re-derived estimate lands further than --background-delta (in "
+    "OKLab) from the whole frame's own border-median colour -- the "
+    "signature of a region that contains little or no backdrop, where the "
+    "re-derived estimate is the more honest one but also the more "
+    "surprising one.",
+]
+
+
+def _apply_region(composited_rgb, straight_rgb, alpha, region, region_space, background_delta):
+    """Crop all three full-resolution arrays to --region before anything else runs.
+
+    Cropping here -- before the foreground mask is derived and before any
+    statistic runs -- is what keeps a --region measurement resolution-
+    independent and makes it identical to pre-cropping the file with
+    pil_crop.py and measuring the result (A6.2): every statistic downstream
+    simply treats whatever this function returns as "the image", so this is
+    the only place region semantics live in this tool, and the equality
+    with pil_crop is a consequence of sharing pil_region's rect arithmetic
+    rather than something asserted separately.
+
+    Returns (composited_rgb, straight_rgb, alpha, region_block, source_size).
+    region_block is None and source_size equals the untouched image's own
+    size when region is None, so a caller that never asks for a region pays
+    nothing beyond the size lookup.
+    """
+    width, height = composited_rgb.size
+    source_size = [width, height]
+    if region is None:
+        return composited_rgb, straight_rgb, alpha, None, source_size
+
+    reference_rect = None
+    if region_space == "foreground":
+        full_mask, _source, _bg_hex = foreground_mask(composited_rgb, alpha, background_delta)
+        bbox = mask_bbox(full_mask)
+        if bbox is None:
+            raise RegionError(
+                "region-space foreground: the foreground mask is empty, so "
+                "there is no foreground bounding box to resolve --region against"
+            )
+        ref_left, ref_top, ref_right, ref_bottom = bbox
+        size = (ref_right - ref_left, ref_bottom - ref_top)
+        origin = (ref_left, ref_top)
+        reference_rect = list(bbox)
+    else:
+        size = (width, height)
+        origin = (0, 0)
+
+    rect = resolve_pixel_rect(region, size, origin=origin)
+    resolved_fractional = rect_to_fractional(rect, (width, height))
+    left, top, right, bottom = rect
+
+    composited_rgb = composited_rgb.crop(rect)
+    if alpha is not None:
+        straight_rgb = straight_rgb.crop(rect)
+        alpha = alpha[top:bottom, left:right]
+    else:
+        straight_rgb = composited_rgb
+
+    region_block = {
+        "requested_fractional": region,
+        "resolved_pixel_rect": list(rect),
+        "resolved_fractional": resolved_fractional,
+        "space": region_space,
+        "reference_rect": reference_rect,
+    }
+    return composited_rgb, straight_rgb, alpha, region_block, source_size
 
 INTERPRETATION_LIMITS = [
     "Base-palette coverage is area-weighted: a visually dominant accent that "
@@ -203,8 +295,14 @@ def analyse(
     foreground,
     background_delta,
     accent_space=DEFAULT_ACCENT_SPACE,
+    region=None,
+    region_space=DEFAULT_REGION_SPACE,
 ):
     composited_rgb, straight_rgb, alpha = load_rgba_straight(path)
+    frame_rgb = composited_rgb
+    composited_rgb, straight_rgb, alpha, region_block, source_size = _apply_region(
+        composited_rgb, straight_rgb, alpha, region, region_space, background_delta
+    )
     flags = []
     within = None
     weights = None
@@ -213,6 +311,19 @@ def analyse(
         within, foreground_block, weights = _foreground_analysis(
             composited_rgb, alpha, background_delta, flags
         )
+        if region_block is not None and alpha is None:
+            # --region composed with --foreground re-derives the background
+            # estimate from the crop's own borders rather than inheriting
+            # the frame's (docs/aaa-build-plan.md #8.1) -- flag when that
+            # choice actually matters. Gated to the border-median path
+            # (alpha is None): the alpha path never uses a background
+            # estimate to derive its mask, so there is no inherited-vs-
+            # re-derived ambiguity for it to surface.
+            frame_lab, _frame_hex = estimate_background(frame_rgb)
+            crop_lab, _crop_hex = estimate_background(composited_rgb)
+            divergence = float(np.sqrt(np.sum((crop_lab - frame_lab) ** 2)))
+            if divergence > background_delta:
+                flags.append("region_background_estimate_diverged")
     else:
         fraction, source, background_hex = foreground_estimate(
             composited_rgb, alpha, background_delta
@@ -258,6 +369,11 @@ def analyse(
     return {
         "path": str(path),
         "size": list(composited_rgb.size),
+        # source_size is the file's own size, unconditionally: it equals
+        # size when no --region was given, and lets a caller with only the
+        # payload in hand tell the crop's size from the file's (A6, #8.2).
+        "source_size": source_size,
+        "region": region_block,
         "mode": composited_rgb.mode,
         "aspect_ratio": round(composited_rgb.width / composited_rgb.height, 4),
         "base_palette": base_palette,
@@ -449,10 +565,35 @@ def main(argv=None):
         help="OKLab distance from the border-median colour within which an "
         f"opaque pixel counts as background (default {DEFAULT_BACKGROUND_DELTA})",
     )
+    parser.add_argument(
+        "--region",
+        default=None,
+        help="fractional bbox 'L,T,R,B' or JSON '[L,T,R,B]' (same parser and "
+        "half-up rounding rule as pil_crop.py); crops BOTH images to this "
+        "box at full resolution before any measurement runs, so the "
+        "reported palettes and statistics describe only the region",
+    )
+    parser.add_argument(
+        "--region-space",
+        choices=REGION_SPACES,
+        default=DEFAULT_REGION_SPACE,
+        help="resolve --region against the whole frame or the foreground's "
+        f"own bounding box (default {DEFAULT_REGION_SPACE}). Composed with "
+        "--foreground: --region crops first, and the foreground mask -- and, "
+        "on the border-median path, the background estimate -- is then "
+        "re-derived from the crop's own pixels rather than inherited from "
+        "the whole frame; see region_background_estimate_diverged",
+    )
     args = parser.parse_args(argv)
 
     if args.colors < 2:
         parser.error("--colors must be >= 2")
+
+    try:
+        region_box = parse_fractional_bbox(args.region) if args.region is not None else None
+    except RegionError as exc:
+        print(f"pil_palette_diff: {exc}", file=sys.stderr)
+        return 2
 
     def run(path):
         return analyse(
@@ -463,25 +604,38 @@ def main(argv=None):
             args.foreground,
             args.background_delta,
             args.accent_space,
+            region_box,
+            args.region_space,
         )
 
-    images = {"a": run(args.image_a)}
-    diff = None
-    if args.image_b:
-        images["b"] = run(args.image_b)
-        diff = build_diff(images["a"], images["b"], foreground=args.foreground)
+    try:
+        images = {"a": run(args.image_a)}
+        diff = None
+        if args.image_b:
+            images["b"] = run(args.image_b)
+            diff = build_diff(images["a"], images["b"], foreground=args.foreground)
+    except RegionError as exc:
+        print(f"pil_palette_diff: {exc}", file=sys.stderr)
+        return 2
 
     # interpretation_limits is a static payload field on every other run, but
     # the alpha-related entries only apply -- and must only appear -- when the
     # alpha-weighted path was actually exercised for at least one image, so
     # full-frame and opaque-input --foreground output stay byte-identical to
-    # the pre-0.4.0 tree (docs/aaa-build-plan.md A1.1).
+    # the pre-0.4.0 tree (docs/aaa-build-plan.md A1.1). REGION_INTERPRETATION_
+    # LIMITS is NOT gated the same way: unlike the alpha entries it carries no
+    # pre-existing byte-identity obligation to protect (--region is new in
+    # this release), and A6.2/A6.3 (docs/aaa-build-plan.md #8.3) require a
+    # --region run and an equivalent pre-cropped-file run to compare equal on
+    # this field too -- only possible if it is unconditional, the same way
+    # source_size and parameters.region are unconditional per #8.2.
     alpha_path_used = any(
         img["foreground"].get("coverage_weighted") for img in images.values()
     )
     interpretation_limits = list(INTERPRETATION_LIMITS)
     if alpha_path_used:
         interpretation_limits += ALPHA_INTERPRETATION_LIMITS
+    interpretation_limits += REGION_INTERPRETATION_LIMITS
 
     payload = {
         "tool": "pil_palette_diff",
@@ -509,6 +663,8 @@ def main(argv=None):
                 "fraction": HUE_PRESENCE_MIN_FRACTION,
                 "pixels": HUE_PRESENCE_MIN_PIXELS,
             },
+            "region": region_box,
+            "region_space": args.region_space,
         },
         "images": images,
         "diff": diff,
