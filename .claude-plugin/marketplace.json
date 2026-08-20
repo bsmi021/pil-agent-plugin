@@ -7,14 +7,14 @@
     "url": "https://github.com/bsmi021"
   },
   "metadata": {
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "pil-agent-plugin",
       "displayName": "PIL Image Measurement",
       "description": "Quantitative image measurement and diffing built on Pillow. Complements native vision with exact colour palettes, hue census, layout statistics, perceptual hashes and changed-region localisation.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "design",
       "keywords": [
         "image-analysis",

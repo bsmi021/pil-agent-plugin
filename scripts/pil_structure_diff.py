@@ -60,7 +60,7 @@ from pil_common import (  # noqa: E402
     to_working,
 )
 
-TOOL_VERSION = "0.2.0"
+TOOL_VERSION = "0.3.0"
 
 # Feature scales used to normalise each per-cell statistic into roughly 0..1
 # before differencing, so no single feature dominates the similarity score.
@@ -100,6 +100,10 @@ INTERPRETATION_LIMITS = [
     "the background, so a rescaled copy reads moderately different even though "
     "dhash still reports the same layout. Compare like-resolution renders "
     "where possible; rely on relative ranking otherwise.",
+    "entropy_delta is DEMOTED: WP2 calibration (runs/2026-08-19-phase2-"
+    "calibration) found it unable to resolve 24 of 26 perturbation families "
+    "at any tested magnitude, with 9 non-monotonic response curves. It is "
+    "kept for continuity; do not let it decide anything.",
 ]
 
 

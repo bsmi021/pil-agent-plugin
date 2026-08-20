@@ -1,10 +1,21 @@
 # Phase 2 scope — trustworthy verdicts
 
-Last updated: 2026-08-18
-Status: proposed, awaiting sign-off. Revised once against
+Last updated: 2026-08-19
+Status: **implemented** (0.3.0). WP1 → `scripts/pil_color.py` + the `*_de2000`
+fields and `--accent-space lch`; WP2 → `calibration/` and the
+[calibration bundle](../runs/2026-08-19-phase2-calibration/README.md), with
+verdict-by-verdict application recorded in `scripts/pil_common.py`'s constant
+comments (one derivation rejected, with the reason recorded there); WP3+WP4 →
+`scripts/pil_contract_verdict.py`. WP2's real-image validation gate **closed
+2026-08-20** — see
+[`runs/2026-08-20-phase2-real-validation/README.md`](../runs/2026-08-20-phase2-real-validation/README.md).
+One gate remains open and is stated in the bundle: the alpha foreground path is
+uncalibrated (every calibration and validation image is opaque).
+
+Originally proposed 2026-08-18 and revised once against
 [phase 2 research findings](research-phase2-colour-and-calibration.md) — WP1's
-verification gate has passed, and WP2's threshold methodology changed as a result
-of that research.
+verification gate passed before implementation, and WP2's threshold methodology
+changed as a result of that research.
 
 ## Premise
 

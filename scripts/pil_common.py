@@ -25,6 +25,8 @@ from __future__ import annotations
 import numpy as np
 from PIL import Image, ImageFilter
 
+from pil_color import ciede2000, rgb_to_lab_array, rgb_to_lch_array
+
 # Working size for structural metrics. Both inputs are resampled to this long
 # edge so that a rescaled copy of an image yields the same cell statistics.
 WORKING_LONG_EDGE = 256
@@ -40,8 +42,37 @@ EDGE_PREBLUR_RADIUS = 1.0
 DEFAULT_ACCENT_SAT_MIN = 100
 DEFAULT_ACCENT_VAL_MIN = 60
 
+# LCh(ab) alternative to the HSV accent gate: accent iff C* >= chroma floor AND
+# L* >= lightness floor. Implemented but NOT yet the default -- selecting it is
+# --accent-space lch, and the default flips only once WP2 has calibrated these
+# numbers.
+#
+# These are the research document's C_MIN and L_MIN. They are *reasoned inputs
+# pending WP2 calibration*, not measured thresholds: genuine UI neutrals were
+# measured at C* ~ 9-13 so a floor of 20 clears them with margin, and an L*
+# floor of 20 excludes the dim maroon (#401010, L* = 12.6) that HSV wrongly
+# admits as a vivid accent. No upper L* bound: vivid yellow is L* = 97.14 with
+# C* = 96.91, so a cap would discard the most saturated colour in sRGB.
+#
+# Why the measurand changes rather than the tuning: HSV S is max-minus-min over
+# max of the *companded* channels, so it stays high as a colour goes to black,
+# and HSV V treats "as bright as possible" identically for yellow (L* = 97) and
+# blue (L* = 32). There is no monotone relationship between HSV S and C* at all,
+# so no choice of sat_min could have fixed either failure.
+DEFAULT_ACCENT_CHROMA_MIN = 20.0
+DEFAULT_ACCENT_LIGHTNESS_MIN = 20.0
+
+# The accent-mask spaces this module knows how to build. "hsv" is the phase-1
+# behaviour and remains the default.
+ACCENT_SPACES = ("hsv", "lch")
+DEFAULT_ACCENT_SPACE = "hsv"
+
 # Per-pixel luminance delta above which a pixel counts as "changed".
-CHANGE_THRESHOLD = 10
+# WP2-calibrated (runs/2026-08-19-phase2-calibration, n=400, alpha=0.01):
+# smallest gate whose bootstrap CI upper bound on the controls' changed-area
+# stays below 0.001. The phase-1 guess of 10 let re-encode and resample noise
+# through as "change".
+CHANGE_THRESHOLD = 20
 
 # Accent coverage below this fraction is flagged as very small: too few vivid
 # pixels for hue statistics to be trustworthy on their own.
@@ -61,7 +92,10 @@ DEFAULT_BACKGROUND_DELTA = 0.035
 
 # Foreground below this fraction of the frame earns foreground_too_small: thin
 # assets leave so few pixels that regional and hue statistics are noisy.
-FOREGROUND_MIN_FRACTION = 0.02
+# WP2-calibrated (foreground-fraction sweep, n=6 grid points -- coarse):
+# smallest measured share at which foreground-mode control noise stays under
+# its own thresholds; below it the mask is unstable and the flag must fire.
+FOREGROUND_MIN_FRACTION = 0.022588
 
 # Estimated foreground below this fraction earns background_dominant in default
 # (full-frame) mode: the frame's metrics mostly describe the background.
@@ -72,13 +106,24 @@ BACKGROUND_DOMINANT_MAX = 0.10
 # invariant, the absolute pixel floor keeps a handful of anti-aliased edge
 # pixels from flipping the verdict on small foregrounds. The census itself is
 # never gated -- these bound only verdict participation.
+#
+# WP2 calibration confirmed the fraction (joint sweep, n=400, alpha=0.01) and
+# recommended lowering the pixel floor to 1. That recommendation is REJECTED,
+# with the reason recorded: the synthetic controls are same-scene re-encodes,
+# so cross-render anti-aliasing jitter -- the production failure this floor
+# exists for, pinned by test_single_stray_pixel_does_not_flip_the_verdict --
+# never appears in the negative class, and the sweep measured no benefit to
+# lowering (identical false-alarm rate and detection limits at both settings).
 HUE_PRESENCE_MIN_FRACTION = 0.0002
 HUE_PRESENCE_MIN_PIXELS = 10
 
 # Minimum foreground pixels for a grid cell to participate in the structural
 # similarity score (counted on the fixed-size working copy, so resolution does
-# not move it).
-CELL_MIN_SUPPORT_PIXELS = 16
+# not move it). WP2-calibrated (904 control cell pairs bucketed by support):
+# smallest bucket whose p99 divergence stays within 2x the best-supported
+# bucket's. The phase-0.2.0 guess of 16 admitted cells whose statistics were
+# still dominated by sampling noise.
+CELL_MIN_SUPPORT_PIXELS = 64
 
 
 def load_rgb_alpha(path):
@@ -324,17 +369,53 @@ def quantize_palette(img, n_colors):
     return entries
 
 
-def accent_subset(img, sat_min, val_min, within=None):
+def accent_mask(
+    img,
+    sat_min,
+    val_min,
+    space=DEFAULT_ACCENT_SPACE,
+    chroma_min=DEFAULT_ACCENT_CHROMA_MIN,
+    lightness_min=DEFAULT_ACCENT_LIGHTNESS_MIN,
+):
+    """Boolean HxW mask of "vivid accent" pixels, in the requested space.
+
+    "hsv" is phase 1's rule and stays the default, thresholds exclusive so the
+    numbers it produces are unchanged. "lch" is the WP1 alternative: chroma and
+    lightness floors on D65 CIELAB, thresholds inclusive because they are stated
+    as `C* >= C_MIN and L* >= L_MIN`. The two are different measurands, not two
+    tunings of one -- see DEFAULT_ACCENT_CHROMA_MIN.
+    """
+    if space == "lch":
+        lch = rgb_to_lch_array(np.asarray(img, dtype=np.float64))
+        return (lch[:, :, 1] >= chroma_min) & (lch[:, :, 0] >= lightness_min)
+    if space != "hsv":
+        raise ValueError(
+            f"unknown accent space {space!r}; expected one of {ACCENT_SPACES}"
+        )
+    hsv = np.asarray(img.convert("HSV"))
+    return (hsv[:, :, 1] > sat_min) & (hsv[:, :, 2] > val_min)
+
+
+def accent_subset(
+    img,
+    sat_min,
+    val_min,
+    within=None,
+    space=DEFAULT_ACCENT_SPACE,
+    chroma_min=DEFAULT_ACCENT_CHROMA_MIN,
+    lightness_min=DEFAULT_ACCENT_LIGHTNESS_MIN,
+):
     """Return (accent-pixels-as-image, fraction) for vivid pixels.
 
     The returned image is a 1xN strip containing only the masked pixels, which
     lets the same quantiser run over the accent subset alone. With a `within`
     foreground mask, only foreground pixels are considered and the fraction is
-    a share of foreground rather than of the frame.
+    a share of foreground rather than of the frame. `space` selects which
+    definition of "vivid" applies; the foreground intersection is identical
+    either way.
     """
-    hsv = np.asarray(img.convert("HSV"))
     rgb = np.asarray(img)
-    mask = (hsv[:, :, 1] > sat_min) & (hsv[:, :, 2] > val_min)
+    mask = accent_mask(img, sat_min, val_min, space, chroma_min, lightness_min)
     if within is not None:
         mask &= within
         denominator = float(within.sum())
@@ -368,7 +449,15 @@ HUE_FAMILIES = (
 HUE_FAMILY_NEGLIGIBLE = 0.01
 
 
-def hue_families(img, sat_min, val_min, within=None):
+def hue_families(
+    img,
+    sat_min,
+    val_min,
+    within=None,
+    space=DEFAULT_ACCENT_SPACE,
+    chroma_min=DEFAULT_ACCENT_CHROMA_MIN,
+    lightness_min=DEFAULT_ACCENT_LIGHTNESS_MIN,
+):
     """Per-hue-family census of the chroma-masked pixels.
 
     Complements the palettes: quantisation reports *which* colours dominate by
@@ -378,10 +467,17 @@ def hue_families(img, sat_min, val_min, within=None):
 
     With a `within` foreground mask, only foreground pixels are considered and
     fraction_of_frame becomes a fraction of the foreground.
+
+    `space` selects which pixels count as accents. Bucketing itself always runs
+    on the HSV hue channel, in both spaces: the research found no authoritative
+    CIELAB hue-angle boundary set for basic colour names, and porting the
+    current 0-255 HSV bounds into degrees would be worse than doing nothing.
+    Deriving LCh boundaries by measurement is WP2's job, so the family names
+    stay comparable with phase 1 until then.
     """
     hsv = np.asarray(img.convert("HSV"))
     hue = hsv[:, :, 0].astype(np.int16)
-    mask = (hsv[:, :, 1] > sat_min) & (hsv[:, :, 2] > val_min)
+    mask = accent_mask(img, sat_min, val_min, space, chroma_min, lightness_min)
 
     if within is not None:
         mask &= within
@@ -430,6 +526,40 @@ def palette_distance(pal_a, pal_b):
         return weighted / weight_total if weight_total else 0.0
 
     return round((one_way(pal_a, pal_b) + one_way(pal_b, pal_a)) / 2.0, 4)
+
+
+def palette_distance_de2000(pal_a, pal_b):
+    """The same coverage-weighted symmetric Chamfer distance, but with CIEDE2000
+    as the pairwise metric instead of Euclidean RGB.
+
+    Structurally identical to palette_distance -- nearest neighbour in the other
+    palette for each entry, weighted by that entry's coverage, averaged in both
+    directions so the result is order-independent. Only the distance function
+    differs, and that is the whole point: RGB distance is not perceptually
+    uniform, which is how phase 1 managed to score a genuinely recoloured image
+    as *more* similar than an unchanged rescale.
+
+    Rounded to 4 dp for emission and no further. The value is raw dE00: it is
+    not a percentage, it is not bounded at 100, and it carries no verbal band.
+    """
+    if not pal_a or not pal_b:
+        return None
+
+    lab_a = rgb_to_lab_array(np.array([e["rgb"] for e in pal_a], dtype=np.float64))
+    lab_b = rgb_to_lab_array(np.array([e["rgb"] for e in pal_b], dtype=np.float64))
+    # (len(a), len(b)) pairwise matrix in one vectorised call.
+    pairwise = ciede2000(lab_a[:, None, :], lab_b[None, :, :])
+
+    def one_way(nearest, palette):
+        weights = np.array([e["coverage"] for e in palette], dtype=np.float64)
+        weight_total = weights.sum()
+        if weight_total <= 0:
+            return 0.0
+        return float((nearest * weights).sum() / weight_total)
+
+    a_to_b = one_way(pairwise.min(axis=1), pal_a)
+    b_to_a = one_way(pairwise.min(axis=0), pal_b)
+    return round((a_to_b + b_to_a) / 2.0, 4)
 
 
 def _hash_bits(img, size, horizontal_diff):

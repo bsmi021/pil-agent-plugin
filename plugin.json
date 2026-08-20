@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "pil-agent-plugin",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Quantitative image measurement and diffing built on Pillow. Complements native vision with exact colour palettes, hue census, layout statistics, perceptual hashes and changed-region localisation.",
   "author": {
     "name": "bsmi021",
