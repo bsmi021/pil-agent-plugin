@@ -77,6 +77,26 @@ SATURATION_LIMIT = _foreground_threshold("saturation_mean_delta_abs")  # 4.8875
 LUMINANCE_LIMIT = _foreground_threshold("luminance_mean_delta_abs")  # 34.12895
 SIMILARITY_LIMIT = _foreground_threshold("structural_similarity")  # 0.793772
 
+# The full-frame luminance noise floor (1.243), used by the sub-pixel placement
+# test rather than the foreground one. The choice is forced, not preferred.
+#
+# Read the by-family breakdown for foreground luminance_mean_delta_abs in
+# runs/2026-08-19-phase2-calibration/derived-thresholds.json: the published
+# threshold of 34.129 rests on ONE control family, rescale_roundtrip, at median
+# 27.460 and max 34.998, while every other foreground family sits at or under
+# 1.564 (blur 1.452, exposure 1.000, saturation 0.330, noise 0.237, hue 0.125,
+# identical and re-encode 0.000). Rescale round-trip is placement perturbation,
+# so 34.129 is a statement about resampling a thin object rather than about
+# foreground measurement noise in general.
+#
+# Grading a placement-stability test against it would therefore be circular:
+# the bound is loose precisely because of the defect under test, and the test
+# would pass today while asserting nothing. 1.243 is the nearest uncontaminated
+# no-change floor, and the foreground non-placement floor (~1.564) is close
+# enough to it that the distinction does not carry the result -- the measured
+# excursions are 15.91 and 17.74, over 10x either number.
+FULL_FRAME_LUMINANCE_LIMIT = DETECTION_LIMITS["luminance_mean_delta_abs"]["threshold"]
+
 ALPHA_SCENES = {label: (scene, params) for label, scene, params in scenes.ALPHA_CORPUS}
 
 
@@ -338,6 +358,85 @@ class TestAlphaWeightedTruth:
         assert truly_vivid.sum() > 0, "scene must contain vivid pixels to gate"
         rejected = int((truly_vivid & ~admitted).sum())
         assert rejected == 0, f"{rejected} vivid pixels rejected by the accent gate"
+
+
+class TestSubPixelPlacement:
+    """Whether the reading describes the object or where the object was drawn.
+
+    Every other test here varies the object. This one holds the object
+    completely fixed -- same colour, width, length, angle, area -- and moves it
+    by a fraction of a pixel. Nothing about the asset changes, so nothing about
+    the measurement should.
+
+    It matters because a re-render is exactly this: a rendering pipeline that
+    shifts an asset half a pixel between two builds has not changed the asset,
+    and a tool that reports it as changed produces the false positive this
+    plugin exists to prevent.
+    """
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason=(
+            "measured: translating the SAME blade by quarter-pixel steps moves the "
+            "reported foreground luminance by 21.56 code values at 0 degrees and "
+            "16.70 at 45 degrees, while alpha-weighted truth moves only 3.82 and "
+            "0.79 -- excursions of 17.74 and 15.91 beyond the object's own "
+            "variation, against a bound of 1.243. That bound is the FULL-FRAME "
+            "calibrated luminance threshold, not the foreground one, and the "
+            "choice is forced. In runs/2026-08-19-phase2-calibration/"
+            "derived-thresholds.json, under control_sets.foreground.metrics."
+            "luminance_mean_delta_abs.by_control_family, the whole foreground "
+            "control set is the thin_object scene at n=100 and the threshold of "
+            "34.129 is set by a single family: rescale_roundtrip, n=20, median "
+            "27.460, max 34.998. Every other foreground family tops out at 1.564 "
+            "(subthreshold_blur), with identical, png_reencode and "
+            "subthreshold_hue at 0.000-0.125. Rescale round-trip IS placement "
+            "perturbation, so grading a placement-stability test against 34.129 "
+            "would be circular -- the bound is loose precisely because of the "
+            "defect under test. 1.243 is the nearest uncontaminated no-change "
+            "floor. The 45-degree blade reads 147.203 at offset 0.00, 130.504 at "
+            "0.25 and 147.203 again at 0.50: bistable, not noisy. Off-axis angles "
+            "already satisfy this -- 20 degrees moves 0.75 against truth 0.06, and "
+            "60 degrees 0.94 against 0.07 -- so the failure is specific to the two "
+            "grid-commensurate angles, whose edges repeat one sub-pixel phase along "
+            "their whole length and therefore accumulate correlated error instead "
+            "of averaging it out. Weighting each pixel by its coverage removes the "
+            "excursion at every angle, because the reading stops depending on how "
+            "the coverage was distributed."
+        ),
+    )
+    def test_a_sub_pixel_re_render_does_not_change_the_reading(
+        self, tool, tmp_path_factory
+    ):
+        # Arrange: one blade per (angle, sub-pixel offset), everything but the
+        # placement held fixed.
+        root = tmp_path_factory.mktemp("alpha-phase")
+
+        # Act: for each angle, how far does the reading travel across offsets,
+        # and how far does the object itself travel?
+        excursions = {}
+        for angle in scenes.ALPHA_PHASE_ANGLES:
+            readings, truths = [], []
+            for offset in scenes.ALPHA_PHASE_OFFSETS:
+                image = scenes.alpha_blade(
+                    angle_deg=angle, phase_px=offset, **scenes.ALPHA_PHASE_BLADE
+                )
+                path = root / f"a{angle}_p{offset}.png"
+                image.save(path)
+                result, _ = tool("pil_palette_diff.py", path, "--foreground")
+                assert result["images"]["a"]["foreground"]["source"] == "alpha"
+                readings.append(result["images"]["a"]["luminance"]["mean"])
+                rgb, alpha = alpha_truth.truth_arrays(image)
+                truths.append(alpha_truth.weighted_stats(rgb, alpha)["luminance_mean"])
+            # What the reading did beyond what the object did.
+            excursions[angle] = (max(readings) - min(readings)) - (
+                max(truths) - min(truths)
+            )
+
+        # Assert: a sub-pixel translation is a no-change event, so the reading
+        # must not travel further than the object does by more than the noise
+        # floor the full-frame mode is already held to.
+        assert max(excursions.values()) <= FULL_FRAME_LUMINANCE_LIMIT, excursions
 
 
 class TestAlphaFloorSweep:

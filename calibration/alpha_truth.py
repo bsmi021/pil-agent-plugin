@@ -249,6 +249,18 @@ def scene_truth(label, scene, params):
         "partial_share_of_foreground": _round(
             partial.sum() / visible.sum() if visible.any() else 0.0, 6
         ),
+        # How many distinct alpha values the partial-coverage pixels take.
+        # Recorded next to the share because the two answer different
+        # questions: the share says how much of the object is fringe, this says
+        # how varied that fringe is. A low count means the edge repeats one
+        # sub-pixel phase along its length -- an axis-aligned or 45-degree edge
+        # -- so its per-pixel errors are correlated rather than averaging out.
+        # It is a signature of that correlation, NOT a predictor of the bias's
+        # magnitude: measured here, the 45-degree blade collapses to 48 distinct
+        # values against 78-80 off-axis while reading a *smaller* delta than the
+        # off-axis angles at the same placement. See alpha_blade's docstring for
+        # why placement, not nominal angle, is the variable that moves the bias.
+        "distinct_partial_alphas": int(np.unique(alpha[partial]).size),
         "foreground_fraction_of_frame": _round(visible.mean(), 6),
         "truth": truth,
         "tool_path": tool,

@@ -271,6 +271,29 @@ perturbation curves at *any* tested magnitude.
 - **The alpha foreground path is uncalibrated.** Every calibration scene is
   opaque, so `ALPHA_FOREGROUND_MIN` and the alpha branch of `foreground_mask`
   were never exercised. Only the border-median colour path is measured here.
+  The RGBA corpus added on 2026-08-20 (`calibration/scenes.py` `ALPHA_CORPUS`,
+  `tests/test_alpha_foreground.py`) exercises it and documents what it gets
+  wrong; the constants here are still derived from opaque input only.
+- **The foreground luminance threshold is set by one control family, and that
+  family perturbs placement.** Read the by-family breakdown for
+  `luminance_mean_delta_abs` in foreground mode: `rescale_roundtrip` has median
+  **27.460** and max 34.998, while *every* other family sits at or under
+  **1.564** (`subthreshold_blur` 1.452, exposure 1.000, saturation 0.330, noise
+  0.237, hue 0.125, identical and re-encode 0.000). The published threshold of
+  **34.12895 is therefore a statement about resampling a thin object, not about
+  foreground measurement noise in general**, and it is roughly 20x looser than
+  the same metric's floor for any change that does not move the object on the
+  pixel grid. Two consequences, both open:
+  1. A foreground luminance verdict that clears 34.129 today has been graded
+     against the most permissive possible bound. Non-placement changes below
+     ~20 code values are inside the noise floor of one family only.
+  2. That looseness is not merely conservative — the 2026-08-20 corpus shows a
+     *sub-pixel* re-render of an unchanged object moving the reported foreground
+     luminance by up to 21.56 code values while the object itself moves 3.82.
+     The threshold appears to have absorbed a measurement defect rather than
+     measured around it. Re-deriving it after the alpha/coverage fix should
+     tighten it substantially; until then, treat 34.129 as a placement-noise
+     bound and not as a sensitivity claim.
 - **The LCh accent gate is compared, not ranked.** Deciding between the HSV and
   LCh gates needs a ground-truth notion of "is this pixel an accent", which no
   synthetic corpus supplies. What is measured is what each gate admits and how

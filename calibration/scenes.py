@@ -520,20 +520,41 @@ def _blade_geometry(size, supersample, angle_deg=None):
     point along it shares one sub-pixel offset, so whatever error that offset
     produces applies uniformly instead of averaging out along the edge.
 
-    Measured on a neutral 5px blade, RGBA-versus-composited saturation delta by
-    angle: 0deg 5.267, 10deg 2.453, 20deg 2.410, 30deg 2.189, 45deg 2.050,
-    60deg 2.274, 75deg 2.285, 90deg 1.724. The axis-aligned case runs roughly
-    twice the off-axis angles; 45 degrees is unremarkable.
+    At ONE fixed placement, RGBA-versus-composited saturation delta by angle on
+    a neutral 5px blade reads: 0deg 5.267, 10deg 2.453, 20deg 2.410, 30deg
+    2.189, 45deg 2.050, 60deg 2.274, 75deg 2.285, 90deg 1.724. Read alone that
+    table says axis-aligned is about twice the off-axis angles and 45 degrees is
+    unremarkable. Read alone it is misleading, because a single placement is a
+    single draw from a distribution -- see ``alpha_blade``'s ``phase_px``.
 
-    Two cautions, both learned by getting this wrong. First, 45 degrees is NOT
-    the worst case: it collapses the fringe onto few distinct alpha values (54
-    here against 84-109 off-axis), which looks alarming and is not, because the
-    magnitude of the bias does not follow that count. Second, the effect is
-    sensitive to sub-pixel PLACEMENT rather than to the nominal angle -- an
-    axis-aligned edge landing on a pixel boundary produces no fringe at all
-    while the same edge on a half-pixel produces the maximum. So read this axis
-    as characterisation, and do not build a threshold or an ordering assertion
-    on the angle alone; it would pin the placement, not the mechanism.
+    What the placement sweep shows is that the two GRID-COMMENSURATE angles, 0
+    and 45 degrees, are the ones whose reading depends on where the edge falls,
+    and the off-axis angles are the ones where it does not. Sweeping a
+    quarter-pixel perpendicular translation of the same blade, the measured
+    foreground luminance moves over a range of 21.56 code values at 0 degrees
+    and 16.70 at 45 degrees, against 0.75 at 20 degrees and 0.94 at 60. The
+    object itself barely moves across the same sweep: alpha-weighted truth
+    ranges 3.82 / 0.06 / 0.79 / 0.07 respectively.
+
+    So the honest statement is neither "45 degrees is the worst case" nor "45
+    degrees is unremarkable". Axis-aligned is the worst STABLE case -- it sits
+    high wherever you put it -- while 45 degrees is the UNSTABLE one: at some
+    placements it reads better than any off-axis angle and at others it is the
+    worst thing in the corpus. Its RGBA-versus-composited luminance delta swings
+    4.063 .. 35.681 across placements, an 8.8x range that crosses the calibrated
+    foreground threshold of 34.129, while off-axis angles swing only 1.1-1.3x.
+
+    That instability, not the magnitude at any one placement, is the finding:
+    it means a half-pixel re-render of an unchanged asset can cross a calibrated
+    threshold, which is the false-positive-on-a-re-render failure this plugin
+    exists to prevent. Diagonal edges are common in exactly the art this
+    measures -- blades, chevrons, isometric tiles, UI carets -- and the sword
+    fixture in tests/conftest.py is itself near-diagonal.
+
+    The caution that follows is unchanged and load-bearing: do NOT build a
+    threshold or an ordering assertion on nominal angle. Any such assertion pins
+    the placement it happened to sample rather than the mechanism. Assert on the
+    SPREAD across placements instead; tests/test_alpha_foreground.py does.
 
     ``angle_deg=None`` reproduces the original endpoints exactly, so every
     pre-existing scene stays byte-identical.
@@ -566,6 +587,7 @@ def alpha_blade(
     accent=None,
     supersample=ALPHA_SUPERSAMPLE,
     angle_deg=None,
+    phase_px=0.0,
 ):
     """A diagonal blade with a vivid gem, on transparent film.
 
@@ -585,8 +607,25 @@ def alpha_blade(
     suppress it, which the angle axis does so that a rotating edge is measured
     against a constant, axis-aligned gem rather than through it.
 
-    ``angle_deg`` rotates the blade axis; see _blade_geometry for why the
-    coherent 45-degree case earns its own axis.
+    ``angle_deg`` rotates the blade axis; see _blade_geometry for what the angle
+    axis does and does not show.
+
+    ``phase_px`` translates the whole blade perpendicular to its own axis by a
+    fraction of a final-image pixel, changing where the edge falls on the grid
+    while changing nothing about the object -- same colour, same width, same
+    length, same angle, same area. It is the axis that separates a property of
+    the object from an accident of its placement, and it is the one that
+    exposes the instability: a quarter-pixel translation moves the measured
+    foreground luminance by 16.70 code values at 45 degrees and 21.56 at 0
+    degrees, while moving alpha-weighted truth by only 0.79 and 3.82. Off-axis
+    the same translation moves the reading by under one code value.
+
+    Translating perpendicular to the axis rather than along it is deliberate:
+    along the axis a straight edge maps onto itself and the phase is unchanged,
+    so only the perpendicular component is a phase at all.
+
+    ``phase_px=0.0`` is a no-op that leaves the endpoints untouched, so every
+    pre-existing scene stays byte-identical.
     """
     if edge not in ("aa", "hard"):
         raise SystemExit(f"unknown edge {edge!r}; expected 'aa' or 'hard'")
@@ -600,6 +639,13 @@ def alpha_blade(
     colour_draw, coverage_draw = ImageDraw.Draw(colour), ImageDraw.Draw(coverage)
 
     (x0, y0), (x1, y1) = _blade_geometry(size, supersample, angle_deg)
+    if phase_px:
+        # Unit normal to the blade axis, then the offset in supersample units.
+        span_x, span_y = x1 - x0, y1 - y0
+        length = math.hypot(span_x, span_y) or 1.0
+        offset = float(phase_px) * supersample
+        shift_x, shift_y = span_y / length * offset, -span_x / length * offset
+        x0, y0, x1, y1 = x0 + shift_x, y0 + shift_y, x1 + shift_x, y1 + shift_y
     line = [x0, y0, x1, y1]
     stroke = max(1, int(round(width * supersample)))
     colour_draw.line(line, fill=blade, width=stroke)
@@ -817,19 +863,55 @@ ALPHA_CORPUS = (
     #      depends on how the edge meets the pixel grid, not only on
     #      perimeter-to-area: an axis-aligned edge shares one sub-pixel offset
     #      along its whole length, so its error applies uniformly rather than
-    #      averaging out. Measured saturation delta 5.267 at 0deg against
-    #      2.050-2.274 at 20/45/60. 45 degrees is NOT special despite collapsing
-    #      the fringe onto fewer distinct alpha values. See _blade_geometry for
-    #      why this is characterisation data and not a threshold.
+    #      averaging out. At one fixed placement the saturation delta reads
+    #      5.267 at 0deg against 2.050-2.274 at 20/45/60, which makes 45 degrees
+    #      look unremarkable. It is not: it is UNSTABLE. Both 0 and 45 degrees
+    #      are commensurate with the pixel grid, and a quarter-pixel translation
+    #      moves their reading by 21.56 and 16.70 luminance code values against
+    #      0.75 and 0.94 off-axis. The single-placement table above is one draw
+    #      from that spread, which is why the axis carries angle_a45_phase as
+    #      well. Characterisation data, never a threshold on nominal angle --
+    #      see _blade_geometry.
     ("angle_a00", "alpha_blade", {"width": 5, "accent": SWORD_BLADE, "angle_deg": 0}),
     ("angle_a20", "alpha_blade", {"width": 5, "accent": SWORD_BLADE, "angle_deg": 20}),
     ("angle_a45", "alpha_blade", {"width": 5, "accent": SWORD_BLADE, "angle_deg": 45}),
     ("angle_a60", "alpha_blade", {"width": 5, "accent": SWORD_BLADE, "angle_deg": 60}),
+    # The same 45-degree blade a quarter pixel over. Identical object, identical
+    # angle -- only the sub-pixel placement differs, and that is enough to move
+    # the measured foreground luminance from 147.203 to 130.504. It is in the
+    # corpus so the inventory records the coherent state of the coin flip and
+    # not only the benign one that angle_a45 happens to draw.
+    (
+        "angle_a45_phase",
+        "alpha_blade",
+        {"width": 5, "accent": SWORD_BLADE, "angle_deg": 45, "phase_px": 0.25},
+    ),
 )
 
 # The blade widths of the perimeter-to-area axis, in the order the sweep reads
 # them. Kept next to ALPHA_CORPUS so the two cannot drift apart.
 ALPHA_BLADE_WIDTHS = (40, 12, 5, 3)
+
+# --- Sub-pixel placement axis -------------------------------------------------
+# Angles split by whether their slope is commensurate with the pixel grid.
+# 0 and 45 degrees repeat one sub-pixel phase along the whole edge, so their
+# per-pixel errors are correlated and the reading depends on placement; 20 and
+# 60 degrees cycle through phases, so the errors average out and the reading
+# does not. That split, not the angle's magnitude, is what the phase sweep
+# measures -- see _blade_geometry.
+ALPHA_COMMENSURATE_ANGLES = (0, 45)
+ALPHA_OFF_AXIS_ANGLES = (20, 60)
+ALPHA_PHASE_ANGLES = tuple(sorted(ALPHA_COMMENSURATE_ANGLES + ALPHA_OFF_AXIS_ANGLES))
+
+# Perpendicular offsets in final-image pixels. Quarter-pixel steps, and three of
+# them is the minimum that reaches both states of the 45-degree case: it reads
+# 147.203 at 0.0, 130.504 at 0.25 and 147.203 again at 0.5.
+ALPHA_PHASE_OFFSETS = (0.0, 0.25, 0.5)
+
+# Blade parameters held fixed across the phase sweep, so the only thing that
+# varies is where the edge lands. Gem suppressed (accent == blade) to keep an
+# axis-aligned rectangle out of a measurement about edge placement.
+ALPHA_PHASE_BLADE = {"width": 5, "accent": SWORD_BLADE}
 
 # The edge-angle axis, in degrees. 0 is the axis-aligned extreme (one shared
 # sub-pixel offset along the whole edge); the rest are the off-axis baseline.
