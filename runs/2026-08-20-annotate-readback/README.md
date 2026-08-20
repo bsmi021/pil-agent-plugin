@@ -62,6 +62,33 @@ truth to grade the transcripts against.
 | `sources/edge_right.png` | `b392414063a90967875f9fd33dd65b6ba6d71984ea8c084e550aff4572fe6afc` | synthetic, 400x300 |
 | `sources/edge_overlap.png` | `135761391807d40b71e936a636ffb454e99d28e84e8256f8729d6a588a40a7fe` | synthetic, 400x300 |
 
+> **Integrity note added by the integrator 2026-08-20, after the polish round.**
+> Two facts a later reader needs, both measured rather than assumed.
+>
+> **The PNGs and transcripts below are unchanged and remain the evidence.** The
+> polish round (outline-ink measurement, symmetric `glyph_hazards`, the
+> `box_interior` hazard kind) altered no rendered pixel: all five digests in the
+> table below still match the files on disk, verified independently by the
+> integrator and at three separate checkpoints by the polish agent.
+>
+> **The `legends/*.json` files are a snapshot, not live output, and they are
+> deliberately NOT regenerated.** The shipped tool now emits three differences
+> against them: a `glyph_overlaps_box_interior` hazard on the numerals that
+> genuinely sit inside a neighbouring box (`light_ui` 4 and 6, `dark_dashboard`
+> 4, `edge_overlap` 1), the reworded byte-identity limit, and a bumped
+> `version`. Regenerating them was attempted and REVERTED, because it makes
+> things worse rather than better: this bundle was produced under the system
+> interpreter's **Pillow 10.4.0**, the project venv carries **12.3.0**, and a
+> re-render under 12.3.0 produces byte-different PNGs with identical pixels — so
+> a regenerated legend would carry an `output.sha256` that contradicts the table
+> above. That is the same fact the corrected `interpretation_limits` item 3 now
+> states: pixel-identical across Pillow versions, byte-identical only across
+> runs in one environment. This bundle demonstrates it rather than merely
+> asserting it.
+>
+> Read the legends as "what the tool emitted at the moment these images were
+> read", which is exactly what a read-back record should preserve.
+
 ### Annotated sha256 — these are the exact bytes that were read
 
 | file | sha256 |

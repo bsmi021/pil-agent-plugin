@@ -10,6 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageDraw
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -65,16 +66,48 @@ def _overlap(first, second):
 def _outline_bands(rect, thickness):
     """Re-derive where Pillow inks a box outline because a glyph must not land on it.
 
-    ``rectangle(..., width=t)`` strokes inward, so the ink is four t-deep bands
-    rather than the whole rect.
+    A prior version of this modelled the ink as four bands clipped strictly to
+    the rect, which is wrong: Pillow's thick-rectangle stroke overshoots
+    outside the rect whenever a side is shorter than about twice the
+    thickness, asymmetrically between edges. Rather than re-derive that same
+    wrong formula independently (and risk making the same mistake twice), this
+    renders the exact call the tool uses onto a scratch canvas and reads back
+    which pixels Pillow actually inked -- an independent check of behaviour,
+    not of the tool's own arithmetic, which is what is on trial here.
     """
     left, top, right, bottom = rect
-    depth = max(1, min(thickness, right - left, bottom - top))
+    width, height = right - left, bottom - top
+    pad = thickness + 2
+    scratch = Image.new("L", (width + 2 * pad, height + 2 * pad), 0)
+    ImageDraw.Draw(scratch).rectangle(
+        [pad, pad, pad + width - 1, pad + height - 1], fill=None, outline=255, width=thickness
+    )
+    mask = np.asarray(scratch) > 0
+    bands = []
+    open_bands = {}
+    for y in range(mask.shape[0]):
+        row = mask[y]
+        runs = set()
+        x = 0
+        while x < len(row):
+            if row[x]:
+                x0 = x
+                while x < len(row) and row[x]:
+                    x += 1
+                runs.add((x0, x))
+            else:
+                x += 1
+        for run in list(open_bands):
+            if run not in runs:
+                bands.append((run[0], open_bands.pop(run), run[1], y))
+        for run in runs:
+            if run not in open_bands:
+                open_bands[run] = y
+    for run, start_y in open_bands.items():
+        bands.append((run[0], start_y, run[1], mask.shape[0]))
     return [
-        (left, top, left + depth, bottom),
-        (right - depth, top, right, bottom),
-        (left, top, right, top + depth),
-        (left, bottom - depth, right, bottom),
+        (left + x0 - pad, top + y0 - pad, left + x1 - pad, top + y1 - pad)
+        for x0, y0, x1, y1 in bands
     ]
 
 
@@ -315,7 +348,14 @@ def test_overlapping_boxes_do_not_superimpose_or_cut_their_numerals(tmp_path):
             for band in _outline_bands(other["pixel_rect"], 2):
                 assert not _overlap(entry["glyph_rect"], band)
         assert _box_colour_pixels_under(annotated, entry["glyph_rect"]) == 0
-    assert payload["flags"] == []
+    # Numeral 1 is disjoint from its own box (asserted above) but its
+    # outside_bottom_right placement lands fully inside box 2's interior --
+    # a real, least-harmful hazard (F4/box_interior) that must be disclosed,
+    # not hidden behind an empty flags list the way glyph_overlaps_box_outline
+    # once was.
+    assert payload["flags"] == ["glyph_overlaps_box_interior"]
+    assert legend[0]["glyph_hazards"] == ["glyph_overlaps_box_interior"]
+    assert legend[1]["glyph_hazards"] == []
 
 
 def test_a_numeral_that_cannot_be_placed_clear_is_flagged_not_hidden(tmp_path):
@@ -335,9 +375,36 @@ def test_a_numeral_that_cannot_be_placed_clear_is_flagged_not_hidden(tmp_path):
     legend = payload["legend"]
     _assert_placement_names_are_geometric_facts(legend)
     assert [entry["glyph_placement"] for entry in legend] == ["clamped", "clamped"]
+    # Symmetric on both sides (F2): the earlier-placed numeral 1 could not see
+    # numeral 2's collision at placement time, and used to report clean.
+    assert "glyph_overlaps_glyph" in legend[0]["glyph_hazards"]
     assert "glyph_overlaps_glyph" in legend[1]["glyph_hazards"]
     # Numerals are painted after every outline, so glyph ink survives the collision.
     assert Image.open(output).convert("RGB").getpixel((7, 0)) == (0, 0, 0)
+
+
+def test_short_box_outline_ink_is_measured_not_modelled(tmp_path):
+    """WHY: a closed-form model of Pillow's stroke under-counted its ink whenever a
+    box side was shorter than about twice the thickness, so a numeral could land on
+    real box-outline ink while glyph_hazards said clean (F1)."""
+    # Arrange: a box 1px tall, pinned near the top edge so outside_top_* placements
+    # are excluded by the frame margin and the algorithm falls through to
+    # outside_bottom_*, which lands inside Pillow's real vertical overshoot below
+    # such a thin box -- overshoot the old depth-clipped-to-the-rect model missed.
+    source = _save_image(tmp_path / "thin.png", Image.new("RGB", (200, 150), (200, 200, 200)))
+    output = tmp_path / "annotated.png"
+
+    # Act
+    result = _run(source, output, "--box", "0.25,0.013333,0.75,0.02")
+
+    # Assert
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    entry = payload["legend"][0]
+    stray = _box_colour_pixels_under(Image.open(output), entry["glyph_rect"])
+    # Whichever candidate the placement algorithm resolves to, the legend must
+    # never claim a glyph is clean of box-outline ink when pixels say otherwise.
+    assert stray == 0 or "glyph_overlaps_box_outline" in entry["glyph_hazards"]
 
 
 def test_module_uses_geometric_digits_without_font_dependency():

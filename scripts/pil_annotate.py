@@ -36,13 +36,17 @@ GLYPH_GAP = 1
 # frame edge reads as truncated and gets transcribed as a different digit --
 # blind readers offered "3" for a complete 2 drawn at x == width - 15. One over
 # a box outline keeps its own ink, since numerals are painted last, and one
-# crossed by a 1px grid line is usually still legible.
-HAZARD_KINDS = ("glyph", "frame_edge", "box_outline", "grid_line")
+# crossed by a 1px grid line is usually still legible. Sitting inside a
+# neighbouring box's interior is last because it damages nothing about the
+# glyph itself, only the reader's sense of which box it is commenting on --
+# see interior occlusion in the read-back bundle, image 5 (edge_overlap.png).
+HAZARD_KINDS = ("glyph", "frame_edge", "box_outline", "grid_line", "box_interior")
 HAZARD_FLAGS = {
     "glyph": "glyph_overlaps_glyph",
     "frame_edge": "glyph_touches_frame_edge",
     "box_outline": "glyph_overlaps_box_outline",
     "grid_line": "glyph_overlaps_grid_line",
+    "box_interior": "glyph_overlaps_box_interior",
 }
 CLAMPED_FLAG = "glyph_clamped_into_frame"
 
@@ -69,7 +73,7 @@ _DIGITS = {
 INTERPRETATION_LIMITS = [
     "The overlay is drawn on a copy. The source file is not modified; its sha256 is recorded here so you can verify that.",
     "Never measure an annotated image. The boxes, grid and numerals are pixels: feeding this output to pil_palette_diff or pil_structure_diff measures the annotation as well as the content.",
-    "Box numbers are geometric glyphs from a table defined in this file, not rendered text, so the output is byte-identical on every machine and every Pillow version. Only digits exist; your labels appear in legend, never in the image.",
+    "Box numbers are geometric glyphs from a table defined in this file, not rendered text, so the drawn pixels are pixel-identical across every machine and every Pillow version. The PNG bytes are only byte-identical across repeated runs in one environment: Pillow's PNG encoder output has changed between versions, so output.sha256 can differ across environments even when every pixel matches -- compare pixels, not the digest, when comparing across machines or Pillow versions. Only digits exist; your labels appear in legend, never in the image.",
     "Numbering is by position (top, then left), not by the order you passed the boxes. requested_index maps each drawn number back to your input. It is unique only within a source: --box numbers its own arguments from 0, and each --from-json region list numbers its own entries from 0, so read (source, requested_index) as the pair that identifies an input.",
     "The boxes are the caller's. This tool asserts nothing about what is inside them.",
 ]
@@ -126,14 +130,14 @@ def _colour_for_mode(image, colour):
     """Adapt a glyph colour to the copied image mode without changing geometry.
 
     It refuses any mode it cannot express the colour in, rather than handing
-    Pillow a tuple that mode would silently reinterpret.
+    Pillow a tuple that mode would silently reinterpret. ``annotate`` always
+    converts its working copy to RGB or RGBA before this is ever called, so
+    only those two modes are handled; there is no third branch to reach.
     """
     if image.mode == "RGBA":
         return (*colour, 255)
     if image.mode == "RGB":
         return colour
-    if image.mode == "L":
-        return int(round(_luminance(np.asarray(image, dtype=np.float32)[..., None])))
     raise ValueError(f"unsupported annotation mode {image.mode!r}")
 
 
@@ -174,20 +178,68 @@ def _rect_contains(outer, inner):
     )
 
 
+def _row_runs(row):
+    """Find contiguous True runs in one boolean row because ink comes in stripes.
+
+    Returns half-open ``(start, end)`` column pairs, vectorised so a tall box
+    does not cost a per-pixel Python loop.
+    """
+    padded = np.concatenate(([False], row, [False]))
+    edges = np.diff(padded.astype(np.int8))
+    starts = np.flatnonzero(edges == 1)
+    ends = np.flatnonzero(edges == -1)
+    return tuple(zip(starts.tolist(), ends.tolist()))
+
+
+def _mask_to_rects(mask):
+    """Cover a boolean pixel mask with an exact set of rectangles.
+
+    Consecutive rows that share the identical set of column runs are merged
+    into one band per run, so the returned rects' union is exactly the True
+    cells -- no more, no less -- whatever shape the ink turns out to be.
+    """
+    rects = []
+    open_bands = {}
+    height = mask.shape[0]
+    for y in range(height):
+        runs = set(_row_runs(mask[y]))
+        for run in list(open_bands):
+            if run not in runs:
+                rects.append((run[0], open_bands.pop(run), run[1], y))
+        for run in runs:
+            if run not in open_bands:
+                open_bands[run] = y
+    for run, start_y in open_bands.items():
+        rects.append((run[0], start_y, run[1], height))
+    return rects
+
+
 def _outline_bands(rect, thickness):
     """List the pixels a box outline actually inks because glyphs must dodge them.
 
-    Pillow strokes ``rectangle(..., width=t)`` inward from the given edges, so
-    the ink is four bands t pixels deep, not the whole rect. A numeral that only
-    avoided the rect would still be cut by the near band.
+    A closed-form model of Pillow's thick-rectangle stroke was tried and was
+    wrong: Pillow overshoots outside the requested rect whenever a side is
+    shorter than about twice the thickness, and the overshoot is asymmetric
+    between edges in a way that resists a clean formula (verified by direct
+    inspection of the rendered pixels). Rather than re-guess the formula, this
+    renders the identical ``draw.rectangle(..., outline=..., width=thickness)``
+    call Pillow itself uses onto a small scratch canvas sized to this rect's
+    own width and height, reads back exactly which pixels got inked, and
+    offsets that mask onto the rect's coordinates. The result is Pillow's own
+    ink, not a model of it, so it cannot drift out of sync with a future
+    Pillow release the way the formula did.
     """
     left, top, right, bottom = rect
-    depth = max(1, min(thickness, right - left, bottom - top))
+    width, height = right - left, bottom - top
+    pad = thickness + 2  # more than the largest overshoot observed at MAX_THICKNESS
+    scratch = Image.new("L", (width + 2 * pad, height + 2 * pad), 0)
+    ImageDraw.Draw(scratch).rectangle(
+        [pad, pad, pad + width - 1, pad + height - 1], fill=None, outline=255, width=thickness
+    )
+    mask = np.asarray(scratch) > 0
     return [
-        (left, top, left + depth, bottom),
-        (right - depth, top, right, bottom),
-        (left, top, right, top + depth),
-        (left, bottom - depth, right, bottom),
+        (left + x0 - pad, top + y0 - pad, left + x1 - pad, top + y1 - pad)
+        for x0, y0, x1, y1 in _mask_to_rects(mask)
     ]
 
 
@@ -456,15 +508,26 @@ def annotate(image, boxes, grid, label_scale, thickness):
     hazards.extend(("grid_line", line) for line in grid_lines)
     for item in prepared:
         hazards.extend(("box_outline", band) for band in _outline_bands(item["rect"], thickness))
+    # Fixed before any glyph is placed, so recomputing a legend entry's
+    # hazards after the loop (below) sees the same frame/grid/outline result
+    # placement time did; only which OTHER glyphs and box interiors count
+    # against each entry changes between the two passes.
+    static_hazards = list(hazards)
+    # Ranked last in HAZARD_KINDS, so a box's own interior never outweighs a
+    # real occlusion risk -- it only breaks ties between candidates that are
+    # otherwise equally good. Per box so each box excludes only its own
+    # interior; sitting inside a NEIGHBOUR's interior still counts against it.
+    box_interiors = [("box_interior", other["rect"]) for other in prepared]
 
     content = _rgb_array(image)
     legend = []
-    flags = set()
-    for number, item in enumerate(prepared, start=1):
+    for index, item in enumerate(prepared):
+        number = index + 1
         left, top, right, bottom = item["rect"]
         glyph_size = _glyph_size(number, label_scale)
-        origin_x, origin_y, placement, unavoidable = _place_glyph(
-            item["rect"], source.size, glyph_size, thickness, frame_margin, hazards
+        own_box_interiors = [h for i, h in enumerate(box_interiors) if i != index]
+        origin_x, origin_y, placement, _unavoidable_at_placement_time = _place_glyph(
+            item["rect"], source.size, glyph_size, thickness, frame_margin, hazards + own_box_interiors
         )
         glyph_rect = (origin_x, origin_y, origin_x + glyph_size[0], origin_y + glyph_size[1])
         local_luma = _glyph_luminance(content, (origin_x, origin_y), glyph_size)
@@ -477,9 +540,6 @@ def annotate(image, boxes, grid, label_scale, thickness):
             _colour_for_mode(source, glyph_rgb),
         )
         hazards.append(("glyph", glyph_rect))
-        flags.update(HAZARD_FLAGS[kind] for kind in unavoidable)
-        if placement == "clamped":
-            flags.add(CLAMPED_FLAG)
         legend.append(
             {
                 "number": number,
@@ -491,9 +551,29 @@ def annotate(image, boxes, grid, label_scale, thickness):
                 "glyph_colour": _hex(glyph_rgb),
                 "glyph_placement": placement,
                 "glyph_rect": list(glyph_rect),
-                "glyph_hazards": [HAZARD_FLAGS[kind] for kind in unavoidable],
+                "glyph_hazards": None,  # filled in below, once every glyph's final rect is known
             }
         )
+
+    # Hazard reporting is symmetric: if numeral A's footprint overlaps
+    # numeral B's, both must say so, not only whichever was placed second.
+    # Recomputed here, once every glyph's final position is fixed, against
+    # every OTHER glyph and every box interior but this entry's own -- this
+    # never revisits a placement decision made above, only what each legend
+    # entry is told about the rect it ended up with.
+    flags = set()
+    for index, entry in enumerate(legend):
+        glyph_rect = tuple(entry["glyph_rect"])
+        other_glyphs = [
+            ("glyph", tuple(other["glyph_rect"])) for other_index, other in enumerate(legend) if other_index != index
+        ]
+        own_box_interiors = [h for i, h in enumerate(box_interiors) if i != index]
+        counts = _hazard_counts(glyph_rect, static_hazards + other_glyphs + own_box_interiors)
+        unavoidable = [kind for kind in HAZARD_KINDS if counts[kind]]
+        entry["glyph_hazards"] = [HAZARD_FLAGS[kind] for kind in unavoidable]
+        flags.update(entry["glyph_hazards"])
+        if entry["glyph_placement"] == "clamped":
+            flags.add(CLAMPED_FLAG)
     return source, legend, lines_drawn, sorted(flags)
 
 
