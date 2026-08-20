@@ -171,7 +171,220 @@ INTERPRETATION_LIMITS = [
     "Aggregation is worst-case per contract item, never a mean: one diverging "
     "pair makes the item VIOLATED. Read aggregate for the decision and the "
     "per-pair items for where it came from.",
+    "geometry.* is UNMEASURABLE by default -- a render carries no polygon or "
+    "vertex count. It becomes SATISFIED/VIOLATED when both sides of a pair "
+    "supply scene-stats JSON via --scene-stats-a / --scene-stats-b (produced by "
+    "scripts/pil_blender_mesh.py, which reads Blender scene data directly). "
+    "Counts read from a scene reflect the base mesh; an unapplied Subdivision "
+    "or Solidify modifier makes render-visible density differ from these "
+    "counts. When only one side supplies scene stats the predicate is "
+    "UNMEASURABLE with that reason cited, not approximated from the side that "
+    "was supplied.",
 ]
+
+# --- geometry predicates (unlocked only when scene stats are supplied) --------
+#
+# The refuse list in REFUSED_FAMILIES below still applies whenever no scene
+# stats are attached to the pair -- see evaluate(). These handlers only run when
+# evidence.scene_stats_a and evidence.scene_stats_b are both present, so a
+# stock run without --scene-stats-{a,b} preserves the existing UNMEASURABLE
+# behaviour byte-for-byte.
+
+GEOMETRY_METRIC = ("poly_count",)  # negative geometry findings read the
+# uncalibrated sentinel: exact scene reads have no probabilistic detection
+# limit to publish. A calibration bundle may still ship a limit for this
+# metric name via the standard --thresholds mechanism.
+
+
+def _mesh_object(stats, name):
+    return (stats.get("mesh_objects") or {}).get(name)
+
+
+def _totals(stats, field):
+    return int((stats.get("totals") or {}).get(field, 0))
+
+
+def _cmp_finding(a_value, b_value, direction, description):
+    """Return truth for {decrease, increase, unchanged} on two integer counts.
+
+    ``direction`` is one of those three strings and reads exactly as the
+    predicate suffix; ``description`` is the evidence field/label spelled by
+    the caller (e.g. ``"polys"`` for a per-object comparison).
+    """
+    if direction == "decrease":
+        truth = b_value < a_value
+        wanted = f"b({b_value}) < a({a_value})"
+    elif direction == "increase":
+        truth = b_value > a_value
+        wanted = f"b({b_value}) > a({a_value})"
+    elif direction == "unchanged":
+        truth = b_value == a_value
+        wanted = f"b({b_value}) == a({a_value})"
+    else:
+        return None, None
+    detail = f"{description}: {wanted}"
+    return truth, detail
+
+
+def _geometry_count_finding(head, argument, stats_a, stats_b, field):
+    """Resolve geometry.{poly,vertex}_count.{decrease,increase,unchanged}[(NAME)].
+
+    Whole-scene form reads ``stats.totals[field]``; parameterised form looks up
+    a single mesh object by name and refuses (UNMEASURABLE) rather than
+    inventing a count when the named object is missing from either side.
+    """
+    parts = head.split(".")
+    if len(parts) != 3:
+        return None
+    direction = parts[2]
+    if direction not in ("decrease", "increase", "unchanged"):
+        return None
+
+    if argument is None:
+        a_value = _totals(stats_a, field)
+        b_value = _totals(stats_b, field)
+        truth, detail = _cmp_finding(a_value, b_value, direction, f"scene {field}")
+        if truth is None:
+            return None
+        return _measured(
+            truth,
+            {
+                f"a_{field}": a_value,
+                f"b_{field}": b_value,
+                "scope": "scene_totals",
+            },
+            GEOMETRY_METRIC,
+            detail,
+        )
+
+    name = argument.strip().strip("\"'")
+    a_obj = _mesh_object(stats_a, name)
+    b_obj = _mesh_object(stats_b, name)
+    if a_obj is None or b_obj is None:
+        missing = []
+        if a_obj is None:
+            missing.append("a")
+        if b_obj is None:
+            missing.append("b")
+        return _unmeasurable(
+            f"mesh object {name!r} is not present in scene stats for side "
+            f"{' and '.join(missing)}; supply a scene whose objects include it, "
+            "or check the exact object name emitted by pil_blender_mesh"
+        )
+    a_value = int(a_obj[field])
+    b_value = int(b_obj[field])
+    truth, detail = _cmp_finding(
+        a_value, b_value, direction, f"{name}.{field}"
+    )
+    if truth is None:
+        return None
+    return _measured(
+        truth,
+        {
+            f"a_{field}": a_value,
+            f"b_{field}": b_value,
+            "object": name,
+            "scope": "mesh_object",
+        },
+        GEOMETRY_METRIC,
+        detail,
+    )
+
+
+def _geometry_topology_finding(argument, stats_a, stats_b):
+    """Resolve geometry.topology_preserved[(NAME)] from scene stats.
+
+    Whole-scene form: same object set AND matching polys/verts on every shared
+    object. Object-name form: matching polys/verts on that one object.
+    A missing object is UNMEASURABLE, not silently VIOLATED, because
+    "the caller named a mesh that this scene does not contain" is a caller
+    error rather than a topology answer.
+    """
+    if argument is None:
+        objs_a = stats_a.get("mesh_objects") or {}
+        objs_b = stats_b.get("mesh_objects") or {}
+        added = sorted(set(objs_b) - set(objs_a))
+        removed = sorted(set(objs_a) - set(objs_b))
+        changed = []
+        for name in sorted(set(objs_a) & set(objs_b)):
+            a = objs_a[name]
+            b = objs_b[name]
+            if int(a["polys"]) != int(b["polys"]) or int(a["verts"]) != int(b["verts"]):
+                changed.append(
+                    {
+                        "object": name,
+                        "a_polys": int(a["polys"]),
+                        "b_polys": int(b["polys"]),
+                        "a_verts": int(a["verts"]),
+                        "b_verts": int(b["verts"]),
+                    }
+                )
+        truth = not (added or removed or changed)
+        return _measured(
+            truth,
+            {
+                "objects_added_in_b": added,
+                "objects_removed_from_b": removed,
+                "objects_with_changed_counts": changed,
+                "scope": "scene_totals",
+            },
+            GEOMETRY_METRIC,
+            f"added {added or '[]'}, removed {removed or '[]'}, "
+            f"changed {len(changed)} object(s)",
+        )
+
+    name = argument.strip().strip("\"'")
+    a_obj = _mesh_object(stats_a, name)
+    b_obj = _mesh_object(stats_b, name)
+    if a_obj is None or b_obj is None:
+        missing = []
+        if a_obj is None:
+            missing.append("a")
+        if b_obj is None:
+            missing.append("b")
+        return _unmeasurable(
+            f"mesh object {name!r} is not present in scene stats for side "
+            f"{' and '.join(missing)}; supply a scene whose objects include it, "
+            "or check the exact object name emitted by pil_blender_mesh"
+        )
+    polys_match = int(a_obj["polys"]) == int(b_obj["polys"])
+    verts_match = int(a_obj["verts"]) == int(b_obj["verts"])
+    truth = polys_match and verts_match
+    return _measured(
+        truth,
+        {
+            "object": name,
+            "a_polys": int(a_obj["polys"]),
+            "b_polys": int(b_obj["polys"]),
+            "a_verts": int(a_obj["verts"]),
+            "b_verts": int(b_obj["verts"]),
+            "scope": "mesh_object",
+        },
+        GEOMETRY_METRIC,
+        f"{name}: polys {a_obj['polys']}->{b_obj['polys']}, "
+        f"verts {a_obj['verts']}->{b_obj['verts']}",
+    )
+
+
+def _resolve_geometry(head, argument, stats_a, stats_b):
+    """Dispatch a geometry.* predicate to its resolver, or return None.
+
+    Returns None to signal "this exact spelling is not something we resolve
+    from scene stats", which lets evaluate() fall back to the same
+    GEOMETRY_REFUSAL used when no stats are supplied at all -- an unknown
+    geometry predicate is still refused, not answered from an unrelated field.
+    """
+    if head in ("geometry.poly_count.decrease",
+                "geometry.poly_count.increase",
+                "geometry.poly_count.unchanged"):
+        return _geometry_count_finding(head, argument, stats_a, stats_b, "polys")
+    if head in ("geometry.vertex_count.decrease",
+                "geometry.vertex_count.increase",
+                "geometry.vertex_count.unchanged"):
+        return _geometry_count_finding(head, argument, stats_a, stats_b, "verts")
+    if head == "geometry.topology_preserved":
+        return _geometry_topology_finding(argument, stats_a, stats_b)
+    return None
 
 
 # --- thresholds and detection limits -----------------------------------------
@@ -269,10 +482,15 @@ class PairEvidence:
     one structure pass per image.
     """
 
-    def __init__(self, path_a, path_b, options):
+    def __init__(self, path_a, path_b, options, scene_stats_a=None, scene_stats_b=None):
         self.path_a = path_a
         self.path_b = path_b
         self.options = options
+        # Scene stats travel with the pair so the geometry predicates can read
+        # them without a second I/O pass. Both default to None, which is the
+        # case that keeps geometry.* on the byte-identical UNMEASURABLE path.
+        self.scene_stats_a = scene_stats_a
+        self.scene_stats_b = scene_stats_b
 
     def _palette(self, path):
         return pil_palette_diff.analyse(
@@ -790,6 +1008,38 @@ def _refusal_for(head):
 def evaluate(name, role, evidence, thresholds):
     head, argument = _split_call(name)
 
+    # Geometry predicates: unlockable to SATISFIED/VIOLATED when the caller
+    # supplied scene stats for both sides. Attempted BEFORE the refuse-list
+    # check so scene stats can override the default refusal, but only for
+    # geometry.* -- the style/identity refusals are unchanged. When exactly one
+    # side supplies stats, the predicate is UNMEASURABLE with that reason
+    # cited; when neither side does, fall through to the refuse-list handling
+    # below unchanged, preserving the load-bearing default refusal exactly.
+    if head == "geometry" or head.startswith("geometry."):
+        stats_a = getattr(evidence, "scene_stats_a", None)
+        stats_b = getattr(evidence, "scene_stats_b", None)
+        if stats_a is not None or stats_b is not None:
+            if stats_a is None or stats_b is None:
+                missing = "a" if stats_a is None else "b"
+                return _item(
+                    name,
+                    role,
+                    _unmeasurable(
+                        f"geometry predicates need scene stats for both sides; "
+                        f"only supplied for {'b' if missing == 'a' else 'a'} "
+                        f"(missing side {missing}). Rerun with "
+                        f"--scene-stats-{missing} pointing at pil_blender_mesh "
+                        "output for that scene."
+                    ),
+                    thresholds,
+                )
+            finding = _resolve_geometry(head, argument, stats_a, stats_b)
+            if finding is not None:
+                return _item(name, role, finding, thresholds)
+            # An unknown geometry.* spelling with stats supplied still refuses,
+            # rather than answering from the wrong field.
+            return _item(name, role, _unmeasurable(GEOMETRY_REFUSAL), thresholds)
+
     # The refuse list is consulted first so no future registry entry can shadow
     # it, and so a parameterised spelling of a refused predicate is refused too.
     reason = _refusal_for(head)
@@ -867,6 +1117,39 @@ def load_contract(path, extra_expect, extra_invariant):
     expect.extend(extra_expect or [])
     invariant.extend(extra_invariant or [])
     return _dedup(expect), _dedup(invariant)
+
+
+def load_scene_stats(path):
+    """Read a pil_blender_mesh payload and return its scene dict.
+
+    A scene-stats file must be JSON with a ``scene`` object carrying
+    ``mesh_objects`` and ``totals``. Anything else is a caller error and turned
+    into a SystemExit with a message, exactly like the --contract loader --
+    stdin remains byte-empty and no partial state is written.
+    """
+    path = Path(path)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise SystemExit(f"cannot read scene stats {path}: {exc}")
+    except ValueError as exc:
+        raise SystemExit(f"invalid JSON in scene stats {path}: {exc}")
+    if not isinstance(data, dict):
+        raise SystemExit(f"scene stats {path} must contain a JSON object")
+    scene = data.get("scene")
+    if not isinstance(scene, dict):
+        raise SystemExit(
+            f"scene stats {path} is missing a 'scene' object; expected the "
+            "payload emitted by scripts/pil_blender_mesh.py"
+        )
+    if not isinstance(scene.get("mesh_objects"), dict) or not isinstance(
+        scene.get("totals"), dict
+    ):
+        raise SystemExit(
+            f"scene stats {path} 'scene' object must carry 'mesh_objects' and "
+            "'totals'; upgrade pil_blender_mesh or regenerate the file"
+        )
+    return scene
 
 
 def load_pairs(path):
@@ -986,6 +1269,18 @@ def main(argv=None):
         "Evaluates the contract per pair and aggregates worst-case.",
     )
     parser.add_argument(
+        "--scene-stats-a",
+        help="path to pil_blender_mesh JSON for image_a's source scene. When "
+        "both --scene-stats-a and --scene-stats-b are supplied, geometry.* "
+        "predicates resolve to SATISFIED/VIOLATED against the scene counts "
+        "instead of the default UNMEASURABLE refusal. Single-pair mode only.",
+    )
+    parser.add_argument(
+        "--scene-stats-b",
+        help="path to pil_blender_mesh JSON for image_b's source scene. See "
+        "--scene-stats-a.",
+    )
+    parser.add_argument(
         "--thresholds",
         help="JSON bundle of calibrated thresholds and detection limits, "
         "mapping metric -> {threshold, detection_limits}. Defaults to "
@@ -1031,6 +1326,11 @@ def main(argv=None):
             parser.error(
                 "--pairs replaces the positional image pair; pass one or the other"
             )
+        if args.scene_stats_a or args.scene_stats_b:
+            parser.error(
+                "--scene-stats-{a,b} is single-pair only; multi-pair scene "
+                "stats are not supported by this tool"
+            )
         pairs = load_pairs(args.pairs)
     else:
         if not args.image_a or not args.image_b:
@@ -1065,9 +1365,18 @@ def main(argv=None):
         "rows": rows,
     }
 
+    scene_stats_a = load_scene_stats(args.scene_stats_a) if args.scene_stats_a else None
+    scene_stats_b = load_scene_stats(args.scene_stats_b) if args.scene_stats_b else None
+
     pair_blocks = []
     for index, (path_a, path_b) in enumerate(pairs):
-        evidence = PairEvidence(path_a, path_b, options)
+        evidence = PairEvidence(
+            path_a,
+            path_b,
+            options,
+            scene_stats_a=scene_stats_a,
+            scene_stats_b=scene_stats_b,
+        )
         items = [evaluate(n, ROLE_EXPECTED, evidence, thresholds) for n in expect]
         items += [evaluate(n, ROLE_INVARIANT, evidence, thresholds) for n in invariant]
         pair_blocks.append(
@@ -1114,6 +1423,14 @@ def main(argv=None):
                     "identity.same_character": STYLE_REFUSAL,
                     "style.*": STYLE_REFUSAL,
                 },
+            },
+            # Scene-stats sources, echoed so a payload self-describes why
+            # geometry.* resolved to a real verdict (or did not). Both null
+            # keeps the default UNMEASURABLE geometry path visible in the
+            # parameters block, not just as a per-item reason.
+            "scene_stats": {
+                "a": args.scene_stats_a,
+                "b": args.scene_stats_b,
             },
             # Both the active numbers and where they came from: a verdict whose
             # threshold cannot be traced is not interpretable.
