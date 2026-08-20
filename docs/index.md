@@ -1,6 +1,6 @@
 # pil-agent-plugin documentation
 
-Last updated: 2026-08-18
+Last updated: 2026-08-19
 
 ## Contents
 
@@ -21,6 +21,10 @@ Last updated: 2026-08-18
 - [Phase 2 research: colour and calibration](research-phase2-colour-and-calibration.md)
   — CIEDE2000 formulation and verification data, LCh versus HSV bucketing, and
   calibration methodology. In progress.
+- [Phase 3 scope](phase3-scope.md) — closed loops between measurement and vision:
+  native-resolution crops, readable overlays, image metadata, region-scoped
+  metrics, discrimination-gated new metrics, and the Blender character-sheet loop.
+  Awaiting sign-off.
 
 ## Summary
 
@@ -65,6 +69,10 @@ Tracked in detail in [phase2-scope.md](phase2-scope.md); summarised here.
   border-median-OKLab masking, bbox registration, support-gated cell scoring,
   and the `background_dominant` / `accent_support_low` flag family — prompted
   by a second production miss (two different swords scoring 0.991 full-frame).
+  **Region cutting is now scoped** as [phase 3](phase3-scope.md) Track A: a
+  `--region FRACTIONAL_BBOX` flag on both tools (WP A4) plus a standalone
+  `pil_crop` (WP A1). Until those ship and pass their gates, the plugin still
+  has no region-cutting capability.
 - **Geometry questions remain unanswerable from pixels.** Agreed to add an
   optional Blender mesh-statistics tool in phase 3; until then `geometry.*`
   predicates must return `UNMEASURABLE` rather than approximate.

@@ -14,9 +14,16 @@ Usage:
     python pil_palette_diff.py "ref.png"
     python pil_palette_diff.py "ref.png" "render.png" --colors 8
     python pil_palette_diff.py "view_a.png" "view_b.png" --foreground
+    python pil_palette_diff.py "ref.png" "render.png" --accent-space lch
 
 Use --foreground for object renders on a shared preview background: full-frame
 statistics on such frames mostly describe the background.
+
+Colour distances are reported twice: as CIEDE2000 over D65 CIELAB, which is the
+signal to read, and as Euclidean RGB, kept for continuity with phase 1 and
+demoted. --accent-space lch switches the accent mask from HSV saturation/value
+to perceptual chroma/lightness floors; it is not yet the default because those
+floors are reasoned inputs awaiting calibration.
 """
 
 from __future__ import annotations
@@ -28,11 +35,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from pil_color import LAB_REFERENCE  # noqa: E402
 from pil_common import (  # noqa: E402
     ACCENT_AREA_SMALL_FRACTION,
+    ACCENT_SPACES,
     ALPHA_FOREGROUND_MIN,
     BACKGROUND_DOMINANT_MAX,
+    DEFAULT_ACCENT_CHROMA_MIN,
+    DEFAULT_ACCENT_LIGHTNESS_MIN,
     DEFAULT_ACCENT_SAT_MIN,
+    DEFAULT_ACCENT_SPACE,
     DEFAULT_ACCENT_VAL_MIN,
     DEFAULT_BACKGROUND_DELTA,
     FOREGROUND_MIN_FRACTION,
@@ -47,6 +59,7 @@ from pil_common import (  # noqa: E402
     luminance_stats,
     masked_strip,
     palette_distance,
+    palette_distance_de2000,
     quantize_palette,
     saturation_stats,
 )
@@ -63,11 +76,27 @@ INTERPRETATION_LIMITS = [
     "Base-palette coverage is area-weighted: a visually dominant accent that "
     "occupies few pixels will rank low or be absent. Read accent_palette for "
     "perceptual identity, base_palette for bulk tone.",
-    "Palette distance is Euclidean in RGB, which is not perceptually uniform; "
-    "treat it as a relative signal between comparable images, not an absolute "
-    "perceptual delta.",
-    "Accent membership is a hard HSV threshold, echoed in accent_thresholds. "
-    "Colours near the boundary may flip between the two palettes.",
+    "base_palette_distance_de2000 and accent_palette_distance_de2000 are the "
+    "primary colour-distance signal: the same coverage-weighted symmetric "
+    "Chamfer construction, but measured with CIEDE2000 over D65 CIELAB. Read "
+    "these first.",
+    "base_palette_distance and accent_palette_distance are Euclidean in RGB, "
+    "which is not perceptually uniform. They are kept for continuity with "
+    "phase 1 and are now demoted to supporting detail; where the two disagree, "
+    "the de2000 figure is the one to trust.",
+    "dE2000 has NO authoritative perceptibility bands. The widely-copied "
+    "0-1 / 1-2 / 2-10 banding table is disclaimed by its own author, and "
+    "'dE 1.0 = just noticeable difference' has no traceable primary source, so "
+    "this tool emits no verbal band. The numbers are raw: dE2000 is not a "
+    "percentage and is not bounded at 100 (black vs white is exactly 100.0, "
+    "but the sRGB maximum measured is 119.22), so never normalise it. A "
+    "decision threshold has to come from calibration, not from this scale.",
+    "Accent membership is a hard threshold in the space named by accent_space, "
+    "with both spaces' thresholds echoed in accent_thresholds; only the pair "
+    "belonging to accent_space is active. Colours near the boundary may flip "
+    "between the two palettes. Hue-family bucketing runs on the HSV hue "
+    "channel in both spaces -- no authoritative CIELAB hue-angle boundaries "
+    "for basic colour names exist to port to.",
     "accent_palette is itself area-weighted, so a dominant accent hue can crowd "
     "out smaller ones. Use hue_families to establish which hues are present at "
     "all, and hue_families_lost/gained to detect a dropped accent -- a hue can "
@@ -105,7 +134,15 @@ def _foreground_analysis(rgb, alpha, background_delta, flags):
     return mask, block
 
 
-def analyse(path, n_colors, sat_min, val_min, foreground, background_delta):
+def analyse(
+    path,
+    n_colors,
+    sat_min,
+    val_min,
+    foreground,
+    background_delta,
+    accent_space=DEFAULT_ACCENT_SPACE,
+):
     rgb, alpha = load_rgb_alpha(path)
     flags = []
     within = None
@@ -134,7 +171,9 @@ def analyse(path, n_colors, sat_min, val_min, foreground, background_delta):
     else:
         base_palette = quantize_palette(masked_strip(rgb, within), n_colors)
 
-    accent_img, accent_fraction = accent_subset(rgb, sat_min, val_min, within=within)
+    accent_img, accent_fraction = accent_subset(
+        rgb, sat_min, val_min, within=within, space=accent_space
+    )
 
     if accent_img is None:
         accent_palette = []
@@ -151,7 +190,9 @@ def analyse(path, n_colors, sat_min, val_min, foreground, background_delta):
         "aspect_ratio": round(rgb.width / rgb.height, 4),
         "base_palette": base_palette,
         "accent_palette": accent_palette,
-        "hue_families": hue_families(rgb, sat_min, val_min, within=within),
+        "hue_families": hue_families(
+            rgb, sat_min, val_min, within=within, space=accent_space
+        ),
         "accent_pixel_fraction": round(accent_fraction, 6),
         "luminance": luminance_stats(rgb, mask=within),
         "saturation": saturation_stats(rgb, mask=within),
@@ -180,6 +221,10 @@ def _supported_families(families):
 def build_diff(a, b):
     base = palette_distance(a["base_palette"], b["base_palette"])
     accent = palette_distance(a["accent_palette"], b["accent_palette"])
+    base_de2000 = palette_distance_de2000(a["base_palette"], b["base_palette"])
+    accent_de2000 = palette_distance_de2000(
+        a["accent_palette"], b["accent_palette"]
+    )
 
     flags = []
     if accent is None:
@@ -234,6 +279,13 @@ def build_diff(a, b):
         (diminished if delta < 0 else amplified).append(name)
 
     return {
+        # The perceptual pair leads: same Chamfer construction as the RGB
+        # distances below, measured with CIEDE2000 over D65 CIELAB. Raw dE00 --
+        # never normalised, never banded.
+        "base_palette_distance_de2000": base_de2000,
+        "accent_palette_distance_de2000": accent_de2000,
+        # Retained for continuity with phase 1 and demoted to supporting
+        # detail: Euclidean RGB is not perceptually uniform.
         "base_palette_distance": base,
         "accent_palette_distance": accent,
         # A hue family with supported presence in the reference but not in the
@@ -290,6 +342,16 @@ def main(argv=None):
         help=f"minimum HSV value for accent pixels (default {DEFAULT_ACCENT_VAL_MIN})",
     )
     parser.add_argument(
+        "--accent-space",
+        choices=ACCENT_SPACES,
+        default=DEFAULT_ACCENT_SPACE,
+        help="space in which 'vivid accent' is defined: hsv uses --accent-sat/"
+        "--accent-val (default, phase-1 behaviour); lch uses the perceptual "
+        f"floors C* >= {DEFAULT_ACCENT_CHROMA_MIN} and "
+        f"L* >= {DEFAULT_ACCENT_LIGHTNESS_MIN}, which are reasoned inputs "
+        "awaiting calibration rather than measured thresholds",
+    )
+    parser.add_argument(
         "--foreground",
         action="store_true",
         help="mask the background out (alpha when present, else border-median "
@@ -316,6 +378,7 @@ def main(argv=None):
             args.accent_val,
             args.foreground,
             args.background_delta,
+            args.accent_space,
         )
 
     images = {"a": run(args.image_a)}
@@ -329,10 +392,20 @@ def main(argv=None):
         "version": TOOL_VERSION,
         "parameters": {
             "colors": args.colors,
+            # Which pair of thresholds is live is decided by accent_space; both
+            # are echoed so a reader can see what the alternative would have
+            # been without re-running the tool.
+            "accent_space": args.accent_space,
             "accent_thresholds": {
                 "saturation_min": args.accent_sat,
                 "value_min": args.accent_val,
+                "chroma_min": DEFAULT_ACCENT_CHROMA_MIN,
+                "lightness_min": DEFAULT_ACCENT_LIGHTNESS_MIN,
             },
+            # dE2000 is meaningless without its illuminant: ICC/Photoshop Lab
+            # and Pillow's own LAB mode are D50, and reading one as the other
+            # is worth up to 7.5 dE00.
+            "lab_reference": LAB_REFERENCE,
             "foreground": args.foreground,
             "background_delta": args.background_delta,
             "alpha_foreground_min": ALPHA_FOREGROUND_MIN,

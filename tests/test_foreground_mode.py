@@ -356,7 +356,8 @@ class TestParameterEcho:
         params = result["parameters"]
         assert params["foreground"] is True
         assert params["background_delta"] == 0.035
-        assert params["cell_min_support_pixels"] == 16
+        # WP2-calibrated value (runs/2026-08-19-phase2-calibration): 64.
+        assert params["cell_min_support_pixels"] == 64
 
     def test_palette_parameters_echo_support_floors(self, tool, tmp_img):
         a = tmp_img(preview_render(), "a.png")
