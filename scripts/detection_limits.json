@@ -1,6 +1,5 @@
 {
   "accent_fraction_delta_abs": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "16 sigma code values",
       "exposure_down@extent=1": "not resolved at any tested magnitude",
@@ -16,23 +15,64 @@
       "saturation_up@extent=1": "0.25 saturation_gain (factor - 1)",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.076661,
+          "n": 20,
+          "next_family_median": 0.000132
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.002283,
+          "n": 80,
+          "next_family_median": 0.000841
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 0.016402,
     "threshold_foreground": 0.08922175
   },
   "accent_hue_shift_detected": {
-    "alpha": 0.01,
     "detection_limits": {
       "hue_rotation@extent=0.05": "60 degrees",
       "hue_rotation@extent=0.25": "15 degrees",
       "hue_rotation@extent=1": "15 degrees"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": null,
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": null,
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": null,
     "threshold_foreground": null
   },
   "accent_palette_distance": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "not resolved at any tested magnitude",
       "exposure_down@extent=1": "64 code values (-)",
@@ -48,12 +88,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "subthreshold_saturation",
+          "median": 2.1913,
+          "n": 10,
+          "next_family_median": 1.6718
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 4.9788,
+          "n": 80,
+          "next_family_median": 4.1141
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 56.6137,
     "threshold_foreground": 3.574945
   },
   "accent_palette_distance_de2000": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "16 sigma code values",
       "exposure_down@extent=1": "32 code values (-)",
@@ -69,12 +138,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "subthreshold_saturation",
+          "median": 0.87035,
+          "n": 10,
+          "next_family_median": 0.57
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 1.3886,
+          "n": 100,
+          "next_family_median": 1.24555
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 9.8104,
     "threshold_foreground": 1.013265
   },
   "ahash_distance": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "not resolved at any tested magnitude",
       "exposure_down@extent=1": "64 code values (-)",
@@ -90,12 +188,41 @@
       "saturation_up@extent=1": "0.1 saturation_gain (factor - 1)",
       "translation@extent=1": "0.041667 fraction of width"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 5,
+          "next_family_median": 0.0
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 20,
+          "next_family_median": 0.0
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 1.0,
     "threshold_foreground": 1.0
   },
   "base_palette_distance": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "not resolved at any tested magnitude",
       "exposure_down@extent=1": "32 code values (-)",
@@ -111,12 +238,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 21.2897,
+          "n": 20,
+          "next_family_median": 6.6533
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 2.884,
+          "n": 100,
+          "next_family_median": 1.9137
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 36.0039,
     "threshold_foreground": 28.40933
   },
   "base_palette_distance_de2000": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "not resolved at any tested magnitude",
       "exposure_down@extent=1": "64 code values (-)",
@@ -132,12 +288,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 4.6275,
+          "n": 20,
+          "next_family_median": 1.0379
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 1.04405,
+          "n": 100,
+          "next_family_median": 0.5924
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 10.8691,
     "threshold_foreground": 6.22336
   },
   "changed_area_fraction": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "16 sigma code values",
       "exposure_down@extent=1": "16 code values (-)",
@@ -153,12 +338,41 @@
       "saturation_up@extent=1": "0.1 saturation_gain (factor - 1)",
       "translation@extent=1": "0.002604 fraction of width"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0189475,
+          "n": 20,
+          "next_family_median": 1.9e-05
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 9.15e-05,
+          "n": 80,
+          "next_family_median": 0.0
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 0.012533,
     "threshold_foreground": 0.02420125
   },
   "dhash_distance": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "not resolved at any tested magnitude",
       "exposure_down@extent=1": "not resolved at any tested magnitude",
@@ -174,12 +388,41 @@
       "saturation_up@extent=1": "2 saturation_gain (factor - 1)",
       "translation@extent=1": "0.020833 fraction of width"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 5,
+          "next_family_median": 0.0
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "hsv_roundtrip",
+          "median": 0.0,
+          "n": 20,
+          "next_family_median": 0.0
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 5.0,
     "threshold_foreground": 1.0
   },
   "entropy_delta": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "16 sigma code values",
       "exposure_down@extent=1": "not resolved at any tested magnitude",
@@ -195,12 +438,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 3.85935,
+          "n": 20,
+          "next_family_median": 1.5601
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 0.6439,
+          "n": 100,
+          "next_family_median": 0.3614
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 2.3772,
     "threshold_foreground": 5.284525
   },
   "entropy_delta_abs": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "16 sigma code values",
       "exposure_down@extent=1": "not resolved at any tested magnitude",
@@ -216,12 +488,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 3.85935,
+          "n": 20,
+          "next_family_median": 1.5601
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 0.6439,
+          "n": 100,
+          "next_family_median": 0.3614
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 2.3772,
     "threshold_foreground": 5.284525
   },
   "hue_family_delta_l1": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "16 sigma code values",
       "exposure_down@extent=1": "64 code values (-)",
@@ -237,12 +538,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.024302,
+          "n": 20,
+          "next_family_median": 0.0
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.0182265,
+          "n": 80,
+          "next_family_median": 0.0037465
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 0.097987,
     "threshold_foreground": 0.06197365
   },
   "hue_family_delta_max": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "16 sigma code values",
       "exposure_down@extent=1": "64 code values (-)",
@@ -258,12 +588,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.012151,
+          "n": 20,
+          "next_family_median": 0.0
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.007239,
+          "n": 80,
+          "next_family_median": 0.001379
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 0.041354,
     "threshold_foreground": 0.0309873
   },
   "luminance_mean_delta_abs": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "32 sigma code values (non-monotonic response)",
       "exposure_down@extent=1": "4 code values (-)",
@@ -279,12 +638,41 @@
       "saturation_up@extent=1": "0.1 saturation_gain (factor - 1)",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 27.46,
+          "n": 20,
+          "next_family_median": 1.452
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_exposure",
+          "median": 0.9975,
+          "n": 40,
+          "next_family_median": 0.3605
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 1.243,
     "threshold_foreground": 34.12895
   },
   "saturation_mean_delta_abs": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "4 sigma code values",
       "exposure_down@extent=1": "8 code values (-)",
@@ -300,12 +688,41 @@
       "saturation_up@extent=1": "0.25 saturation_gain (factor - 1)",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 4.3085,
+          "n": 20,
+          "next_family_median": 0.957
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 1.1175,
+          "n": 80,
+          "next_family_median": 0.964
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 8.679,
     "threshold_foreground": 4.8875
   },
   "structural_dissimilarity": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "4 sigma code values",
       "exposure_down@extent=1": "64 code values (-)",
@@ -321,12 +738,41 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.174158,
+          "n": 20,
+          "next_family_median": 0.005873
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 0.015769,
+          "n": 100,
+          "next_family_median": 0.0022555
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 0.037263,
     "threshold_foreground": 0.20622785
   },
   "structural_similarity": {
-    "alpha": 0.01,
     "detection_limits": {
       "additive_noise@extent=1": "4 sigma code values",
       "exposure_down@extent=1": "64 code values (-)",
@@ -342,7 +788,37 @@
       "saturation_up@extent=1": "not resolved at any tested magnitude",
       "translation@extent=1": "not resolved at any tested magnitude"
     },
-    "n": 400,
+    "provenance": {
+      "foreground": {
+        "alpha": 0.05,
+        "dominant_control_family": {
+          "family": "rescale_roundtrip",
+          "median": 0.174158,
+          "n": 20,
+          "next_family_median": 0.005873
+        },
+        "n": 100,
+        "scenes": [
+          "thin_object"
+        ]
+      },
+      "full_frame": {
+        "alpha": 0.01,
+        "dominant_control_family": {
+          "family": "subthreshold_noise",
+          "median": 0.015769,
+          "n": 100,
+          "next_family_median": 0.0022555
+        },
+        "n": 400,
+        "scenes": [
+          "busy",
+          "dark_accent",
+          "structured",
+          "thin_object"
+        ]
+      }
+    },
     "threshold": 0.962737,
     "threshold_foreground": 0.793772
   }

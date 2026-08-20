@@ -274,26 +274,46 @@ perturbation curves at *any* tested magnitude.
   The RGBA corpus added on 2026-08-20 (`calibration/scenes.py` `ALPHA_CORPUS`,
   `tests/test_alpha_foreground.py`) exercises it and documents what it gets
   wrong; the constants here are still derived from opaque input only.
-- **The foreground luminance threshold is set by one control family, and that
-  family perturbs placement.** Read the by-family breakdown for
-  `luminance_mean_delta_abs` in foreground mode: `rescale_roundtrip` has median
-  **27.460** and max 34.998, while *every* other family sits at or under
-  **1.564** (`subthreshold_blur` 1.452, exposure 1.000, saturation 0.330, noise
-  0.237, hue 0.125, identical and re-encode 0.000). The published threshold of
-  **34.12895 is therefore a statement about resampling a thin object, not about
-  foreground measurement noise in general**, and it is roughly 20x looser than
-  the same metric's floor for any change that does not move the object on the
-  pixel grid. Two consequences, both open:
-  1. A foreground luminance verdict that clears 34.129 today has been graded
-     against the most permissive possible bound. Non-placement changes below
-     ~20 code values are inside the noise floor of one family only.
-  2. That looseness is not merely conservative — the 2026-08-20 corpus shows a
-     *sub-pixel* re-render of an unchanged object moving the reported foreground
-     luminance by up to 21.56 code values while the object itself moves 3.82.
-     The threshold appears to have absorbed a measurement defect rather than
-     measured around it. Re-deriving it after the alpha/coverage fix should
-     tighten it substantially; until then, treat 34.129 as a placement-noise
-     bound and not as a sensitivity claim.
+- **Every foreground threshold carries weaker provenance than the headline
+  numbers suggest, and most are set by a single placement-perturbing family.**
+  Three defects compound here; all were found on 2026-08-20 and none is fixed by
+  re-reading this bundle.
+
+  1. **Weaker sampling, not advertised as such.** The full-frame thresholds are
+     n=400, α=0.01, over all four scenes. *Every* foreground threshold is
+     **n=100, α=0.05, from `thin_object` alone** — a quarter of the sample, five
+     times the false-alarm budget, one scene. `scripts/detection_limits.json`
+     originally emitted a single flat `n`/`alpha` pair taken from the full-frame
+     record and sat it next to *both* thresholds, so the file advertised
+     n=400/α=0.01 over foreground numbers that had neither. That file now
+     records provenance **per mode** (`calibration/distill_detection_limits.py`).
+
+  2. **One control family sets most of them, and it perturbs placement.**
+     `rescale_roundtrip` is the dominant family for most foreground metrics, by
+     margins that leave the rest of the control set irrelevant — ratio of its
+     median to the next family's: `changed_area_fraction` **997x**,
+     `accent_fraction_delta_abs` **581x**, `structural_dissimilarity` **29.7x**,
+     `luminance_mean_delta_abs` **18.9x** (27.460 against 1.452), and
+     `hue_family_delta_l1`/`_max` unbounded because no other family moves them at
+     all. So these thresholds are largely statements about **resampling a thin
+     object**, not about foreground measurement noise in general.
+     `dominant_control_family` is now emitted per metric per mode so a reader can
+     see this next to the number. (Hash metrics report an unbounded ratio for the
+     opposite reason — no control family moves them — which is degenerate rather
+     than contaminated.)
+
+  3. **The dominance is a symptom, not just conservatism.** The 2026-08-20 RGBA
+     corpus shows a *sub-pixel* re-render of an unchanged object moving reported
+     foreground luminance by up to 21.56 code values while the object itself
+     moves 3.82 (`tests/test_alpha_foreground.py::TestSubPixelPlacement`). The
+     thresholds appear to have **absorbed a measurement defect rather than
+     measured around it**.
+
+  Consequence for reading 0.3.0 output: a foreground verdict that clears its
+  threshold today has been graded against a placement-noise bound. Treat those
+  thresholds as upper bounds on resampling noise, not as sensitivity claims, and
+  re-derive them after the alpha/coverage fix — the non-placement floors sit one
+  to two orders of magnitude lower.
 - **The LCh accent gate is compared, not ranked.** Deciding between the HSV and
   LCh gates needs a ground-truth notion of "is this pixel an accent", which no
   synthetic corpus supplies. What is measured is what each gate admits and how
