@@ -36,7 +36,20 @@ Last updated: 2026-08-19
 - [Phase 3 scope](phase3-scope.md) — closed loops between measurement and vision:
   native-resolution crops, readable overlays, image metadata, region-scoped
   metrics, discrimination-gated new metrics, and the Blender character-sheet loop.
-  Awaiting sign-off.
+  Track A landed in 0.4.0; Track A5 and Track B1 landed in this build (Track B2/B3
+  not started).
+- [Phase 3 build plan](phase3-build-plan.md) — the architect plan this build
+  executed: file-ownership register, per-candidate calibration design, and the
+  definition of done.
+- Track A5 evidence bundles: [connected components](../runs/2026-08-20-components-discrimination/derived-thresholds.json)
+  (demoted), [silhouette descriptors](../runs/2026-08-20-silhouette-discrimination/bundle.json)
+  (demoted), [projection alignment](../runs/2026-08-20-alignment-discrimination/derived-thresholds.json)
+  (demoted; WCAG contrast half shipped, no gate needed).
+- [Track B1 evidence bundle](../runs/2026-08-20-blender-mesh-validation/README.md)
+  — Blender mesh statistics verified against the real swordsman corpus,
+  including a resolved discrepancy in the corpus's own tracked-parts sidecar
+  and a round-trip pair found scene-VIOLATED despite per-object topology
+  matching exactly.
 
 ## Summary
 
@@ -92,8 +105,48 @@ recalibration, built to [`aaa-build-plan.md`](aaa-build-plan.md):
   on both diff tools. Every one of them failed its first critic on something its
   own green suite did not test; the findings and fixes are in the commit log.
 
-Phase 3 Track A landed; Track B (Blender mesh statistics, matched-view
-rendering) remains scoped and unstarted.
+Phase 3 Track A landed in 0.4.0.
+
+**Track A5 and Track B1** (this build, [build plan](phase3-build-plan.md)):
+
+- All three A5 candidates ran their discrimination gate for real, and the gate
+  worked as designed — it demoted, honestly, exactly the candidates
+  `phase3-scope.md`'s own open questions flagged as at risk. Connected-component
+  counting (`pil_components.py`): n=180, signal-to-floor ratio ~4.5×, short of
+  the gate's 10× ship criterion. Silhouette descriptors (`pil_silhouette.py`,
+  all three — fill ratio, perimeter²/area, orientation histogram): n=60, none
+  cleared a useful noise floor. Projection-profile alignment
+  (`pil_alignment.py alignment`): n=160, 65px noise floor against an 8px useful
+  ceiling, and it fails to detect real shifts on cluttered/dark scenes. **WCAG
+  contrast** (`pil_alignment.py contrast`), the other half of the same tool,
+  needed no gate — verified against the standard's published worked examples —
+  and ships as a real capability. All four tools exist, are tested, and degrade
+  honestly (demoted candidates still emit real diagnostic numbers with an
+  explicit `demoted`/low-confidence flag, never a silently-overconfident
+  verdict); only the contrast half is advertised as a validated discrimination
+  capability.
+- **Track B1 landed**: `pil_blender_mesh.py` wraps headless Blender to report
+  polygon/vertex counts, materials and bounding dimensions straight from scene
+  data, and `pil_contract_verdict.py`'s `geometry.*` predicates now resolve to
+  real verdicts when scene stats are supplied — refusing exactly as before when
+  they are not. Verified against the real swordsman acceptance corpus: the
+  tabard's −42% polycount decrease reproduces exactly, the no-change control
+  holds at 362 polys across three revisions, and — a genuine finding, not
+  assumed — the "topology-preserving" round-trip pair is actually **scene-level
+  VIOLATED** (`SKS_Donor_BodyBelowChin_01` is dropped) even though every
+  surviving object's own topology matches exactly. Full reconciliation,
+  including why `docs/phase3-handoff.md`'s quoted whole-model figures
+  (6,643→14,033) differ from the live scene's totals (9,120→16,276) — the
+  handoff's numbers are a correct sum of `parts.json`, which is a stale subset
+  of the actual scene — is in the
+  [evidence bundle](../runs/2026-08-20-blender-mesh-validation/README.md).
+- **Track B2/B3 not started.** Per `phase3-scope.md`'s own sequencing, B2
+  (matched-view render orchestration) depends on B1 and was not attempted in
+  this build; B3 depends on B2. This is a scheduling gap, not a technical
+  blocker — B1 passed its gate and both remain buildable.
+- No manifest version bump in this build; all new tools declare
+  `TOOL_VERSION = "0.4.0"` to match the current manifest, per the plan's own
+  scope decision — the release step owns version bumps.
 
 ## Open items
 
@@ -134,6 +187,27 @@ rendering) remains scoped and unstarted.
   `--region FRACTIONAL_BBOX` flag on both tools (WP A4) plus a standalone
   `pil_crop` (WP A1). Until those ship and pass their gates, the plugin still
   has no region-cutting capability.
-- **Geometry questions remain unanswerable from pixels.** Agreed to add an
-  optional Blender mesh-statistics tool in phase 3; until then `geometry.*`
-  predicates must return `UNMEASURABLE` rather than approximate.
+- ~~**Geometry questions remain unanswerable from pixels.**~~ **Closed for the
+  scene-stats-supplied case in this build.** `pil_blender_mesh.py` + the
+  `geometry.*` unlock in `pil_contract_verdict.py` resolve real verdicts from
+  Blender scene data when the caller supplies `--scene-stats-a`/`-b`; the
+  default refusal is unchanged and still load-bearing when they are not
+  supplied. Geometry inferred from pixels remains permanently refused. See the
+  [evidence bundle](../runs/2026-08-20-blender-mesh-validation/README.md).
+- **Track A5's three new-metric candidates are demoted; only WCAG contrast
+  shipped.** Connected-component counting, silhouette shape descriptors, and
+  projection-profile alignment each ran a real discrimination gate and none
+  cleared it — numbers and gate bundles above. This is the gate working as
+  designed, not a build failure: `phase3-scope.md`'s own open question 3 named
+  "silhouette shape to vision" as an acceptable outcome, and phase 1's
+  precedent was 4 of 11 metrics surviving. If a future field trial demands one
+  of these, the calibration gates and their honest failure numbers are the
+  starting point for re-evaluating the noise floor, not a reason to lower the
+  bar.
+- **Track B2 (matched-view render orchestration) and B3 (the revision loop)
+  are not started.** B1 passed its gate, so both are unblocked and buildable —
+  this is a scheduling gap this build ran out of scope for, not a technical
+  block. Whoever picks this up next should also settle B2's render-determinism
+  question before implementing: Blender renders are not byte-deterministic
+  cross-machine, and this repo's core contract is byte determinism, so B2's
+  determinism claim needs to be scoped explicitly in writing before code.

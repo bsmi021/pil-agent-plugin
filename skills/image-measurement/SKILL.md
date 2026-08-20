@@ -161,9 +161,12 @@ the deciding fields. Three rules make the output trustworthy:
   means "no change bigger than X detected" — X comes from the WP2 calibration
   bundle (`scripts/detection_limits.json`, regenerable via
   `calibration/distill_detection_limits.py`).
-- **`UNMEASURABLE` is never approximated.** `geometry.*` (needs scene mesh
-  statistics), `style.*` and `identity.same_character` (not reducible to pixel
-  statistics) always refuse rather than guess.
+- **`UNMEASURABLE` is never approximated.** `style.*` and `identity.same_character`
+  (not reducible to pixel statistics) always refuse rather than guess.
+  `geometry.*` refuses the same way **unless** the caller supplies real scene
+  statistics via `--scene-stats-a`/`--scene-stats-b` (see `pil_blender_mesh.py`
+  below) — with no scene stats supplied, the default is still unconditional
+  refusal, never an approximation from pixels.
 - **Multi-pair aggregation is worst-case.** With `--pairs`, one diverging view
   fails the item; it cannot be averaged away.
 
@@ -227,6 +230,27 @@ stale or wrong. Metadata has three states, not two: absent is `null`,
 unreadable file never aborts a batch — it reports `readable: false` with a
 reason while its siblings still report.
 
+## `pil_alignment.py --colors` — WCAG contrast ratio
+
+```bash
+... pil_alignment.py contrast --colors "#RRGGBB" "#RRGGBB"
+```
+
+WCAG 2.x relative luminance and contrast-ratio arithmetic, verified against the
+standard's own published worked examples (black-vs-white = 21.0 exactly,
+`#767676`-vs-white = 4.54, and further landmarks), not statistically calibrated
+— it is a fixed public formula, the same way `pil_color.py`'s CIEDE2000 is
+verified against published reference values rather than derived from a corpus.
+
+The tool's other half — `pil_alignment.py alignment`, projection-profile edge
+detection for "aligned within N px" verdicts — exists but is **demoted**: its
+own discrimination gate found a 65px noise floor against an 8px useful ceiling,
+and it fails to detect real shifts on cluttered or dark-background scenes. It
+still emits real diagnostic baselines/margins/pixel deltas, carries an explicit
+`demoted` flag and cites its evidence bundle, but is not advertised as a
+validated alignment-verdict capability. See
+[`runs/2026-08-20-alignment-discrimination/`](../../runs/2026-08-20-alignment-discrimination/derived-thresholds.json).
+
 ## `--region` on the measurement tools
 
 ```bash
@@ -243,20 +267,47 @@ Composed with `--foreground`, the region crops first and the mask (and, on the
 border-median path, the background estimate) is re-derived from the crop's own
 borders rather than inherited from the frame.
 
-## These tools do not measure geometry
+## `pil_blender_mesh.py` — real geometry, from the scene, never from pixels
 
-`edge_mean` and `entropy` are 2D image-complexity proxies. They are **not**
-polygon counts, mesh density, or topology, and must never be used as a proxy for
-them. Shading, normal maps, lighting and camera angle all move these numbers
-independently of the underlying model — a smooth-shaded low-poly render can score
-as more complex than a flat-shaded high-poly one.
+```bash
+... pil_blender_mesh.py "<scene.blend>" [--blender-executable path\to\blender.exe]
+```
+
+The one sanctioned route to a geometry answer. It shells out to Blender headless
+(`blender.exe --background <scene> --python <embedded probe>`, since `bpy` is not
+importable outside Blender's own bundled interpreter) and reports, per mesh
+object, straight from Blender's scene data: polygon count, vertex count,
+material slot count/names, and scene-level bounding dimensions. Never renders,
+never touches a pixel. Blender's install path is not assumed to be on `PATH`; if
+it cannot be found, the tool exits 2 with empty stdout and a named reason — a
+clean `UNMEASURABLE` upstream, never a traceback.
+
+Feed its output to `pil_contract_verdict.py` via `--scene-stats-a`/
+`--scene-stats-b` to resolve `geometry.poly_count.*`, `geometry.vertex_count.*`
+and `geometry.topology_preserved` predicates to real `SATISFIED`/`VIOLATED`
+verdicts. Without scene stats, those predicates still refuse exactly as before.
+Verified against a real production asset's revision history — see
+[`runs/2026-08-20-blender-mesh-validation/`](../../runs/2026-08-20-blender-mesh-validation/README.md),
+which also caught and resolved a real discrepancy in that corpus's own
+tracked-parts sidecar, and found a "topology-preserving" round-trip pair was
+actually scene-level `VIOLATED` (one object silently dropped) even though every
+surviving object's own topology matched exactly.
+
+## These tools do not measure geometry from pixels
+
+`edge_mean` and `entropy` (in `pil_structure_diff`) are 2D image-complexity
+proxies. They are **not** polygon counts, mesh density, or topology, and must
+never be used as a proxy for them. Shading, normal maps, lighting and camera
+angle all move these numbers independently of the underlying model — a
+smooth-shaded low-poly render can score as more complex than a flat-shaded
+high-poly one.
 
 For polygon count, mesh density, topology or "is this lower-poly than that",
-query the 3D scene's own mesh statistics directly — e.g. the Blender MCP server's
-object/mesh summary tools — rather than analysing a rendered image. Analysing a
-render to infer geometry produces confident, wrong answers.
+use `pil_blender_mesh.py` above (or the 3D scene's own tooling directly, e.g. a
+Blender MCP server) — never infer it from a rendered image, which produces
+confident, wrong answers.
 
-Every `pil_structure_diff` payload repeats this under `interpretation_limits`.
+Every `pil_structure_diff` payload repeats this limit under `interpretation_limits`.
 
 ## Other limits worth stating to the user
 

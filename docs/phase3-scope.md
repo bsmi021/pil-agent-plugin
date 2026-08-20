@@ -209,16 +209,16 @@ Refused, not deferred:
 
 ## Sequencing and gates
 
-| WP | Depends on | Gate to proceed |
-|---|---|---|
-| A1 crop | nothing | Byte-determinism; fractional→pixel rect exact at odd sizes; documented |
-| A2 annotate | A1 (shared bbox parsing) | Byte-determinism across machines with different fonts; source file unmodified |
-| A3 image info | nothing | Byte-determinism; alpha rule matches `load_rgb_alpha` |
-| A4 `--region` | A1 | Region metrics equal pre-cropped-file metrics; existing determinism test unbroken; `--region` × `--foreground` semantics documented |
-| A5 new metrics | phase 2 WP2 | Each candidate independently passes WP2's methodology: response curves, published detection limit, demotion accepted |
-| B1 mesh stats | phase 2 WP3 landing; Blender scene access | `geometry.*` resolves with scene data, stays `UNMEASURABLE` without it |
-| B2 view matching | B1 | Matched views register without `aspect_ratio_mismatch` / `resolution_mismatch` |
-| B3 revision loop | B2, phase 2 WP4 | A single diverging view cannot be averaged away |
+| WP | Depends on | Gate to proceed | Status |
+|---|---|---|---|
+| A1 crop | nothing | Byte-determinism; fractional→pixel rect exact at odd sizes; documented | **Shipped 0.4.0** |
+| A2 annotate | A1 (shared bbox parsing) | Byte-determinism across machines with different fonts; source file unmodified | **Shipped 0.4.0** |
+| A3 image info | nothing | Byte-determinism; alpha rule matches `load_rgb_alpha` | **Shipped 0.4.0** |
+| A4 `--region` | A1 | Region metrics equal pre-cropped-file metrics; existing determinism test unbroken; `--region` × `--foreground` semantics documented | **Shipped 0.4.0** |
+| A5 new metrics | phase 2 WP2 | Each candidate independently passes WP2's methodology: response curves, published detection limit, demotion accepted | **Gate run for real on all three candidates; all three demoted** (connected components, silhouette descriptors, projection alignment). WCAG contrast — no gate needed — shipped. See [`docs/index.md`](index.md) and the per-candidate `runs/2026-08-20-*-discrimination/` bundles. |
+| B1 mesh stats | phase 2 WP3 landing; Blender scene access | `geometry.*` resolves with scene data, stays `UNMEASURABLE` without it | **Shipped**, verified against the real swordsman corpus. See [`runs/2026-08-20-blender-mesh-validation/`](../runs/2026-08-20-blender-mesh-validation/README.md). |
+| B2 view matching | B1 | Matched views register without `aspect_ratio_mismatch` / `resolution_mismatch` | **Not started.** B1 passed its gate, so this is unblocked but out of this build's scope. Settle the render-determinism question (Blender renders are not byte-deterministic cross-machine) before implementing. |
+| B3 revision loop | B2, phase 2 WP4 | A single diverging view cannot be averaged away | **Not started** (depends on B2). |
 
 A1–A4 gate only on determinism and documentation, so they are shippable while phase
 2 is in flight. A5 cannot start before WP2's calibration harness exists, because its
