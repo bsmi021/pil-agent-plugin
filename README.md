@@ -240,6 +240,8 @@ A caller reading only a similarity score or a hash would have concluded "identic
 | Same **object**, ignoring the backdrop? | both, `--foreground` | same fields, foreground-masked |
 | Did the colour change *perceptually*? | palette | `base_palette_distance_de2000`, `accent_palette_distance_de2000` |
 | Did my *intended* change land, and nothing else? | contract | per-predicate `verdict` + `detection_limit` |
+| Is polygon/vertex count, material or bounding-box geometry different? | `pil_blender_mesh` + `pil_contract_verdict`'s `geometry.*` | real scene stats, never inferred from pixels |
+| Does this colour pair meet WCAG contrast? | `pil_alignment contrast` | `contrast_ratio`, verified against the standard's own worked examples |
 
 **Consult both tools for any "do these match?" question.** They are blind to
 different things. And **read `flags` before any score**: `background_dominant`,
@@ -298,13 +300,18 @@ uv sync
 uv run pytest -v
 ```
 
-**473 tests.** Fixtures are generated synthetically in-process, so no binary test
+**615 tests.** Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
-Six tests additionally confirm results against a real reference image and **skip
-when it is absent** — so a fresh clone reports `467 passed, 6 skipped`, which is
-expected. Their strongest assertions are duplicated unskipped against a synthetic
-stand-in, so a clean checkout still guards every known regression.
+Six tests confirm results against a real reference image and **skip when it is
+absent** — so a fresh clone reports `609 passed, 6 skipped`, which is expected.
+Their strongest assertions are duplicated unskipped against a synthetic
+stand-in, so a clean checkout still guards every known regression. A further six tests in `tests/test_blender_mesh.py` run only when an external
+corpus and a Blender install are both present — `PIL_AGENT_BLENDER_CORPUS`
+overrides the default search path, mirroring `PIL_AGENT_REFERENCE_IMAGE` (see
+[`runs/2026-08-20-blender-mesh-validation/`](runs/2026-08-20-blender-mesh-validation/README.md));
+they are already counted as passing above on a machine that has both, and skip
+cleanly otherwise.
 
 To run those six, point the env var at any complex, predominantly dark image with
 small vivid accents:
@@ -344,6 +351,28 @@ measured.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**Phase 3 Track A5 + Track B1** (unreleased; manifests still read 0.4.0 —
+version bumps are a release-step decision, not a build-step one).
+
+Track A5's three new-metric candidates each ran a real discrimination gate,
+and it did its job: connected-component counting, silhouette shape descriptors
+and projection-profile alignment were all **demoted** — each tool still exists,
+is tested, and degrades honestly (a demoted candidate reports real diagnostic
+numbers with an explicit low-confidence flag, never a silent overclaim), but
+none is advertised as a validated discrimination capability. The one A5
+candidate that ships is `pil_alignment`'s **WCAG contrast** half, which needed
+no gate — verified against the standard's own published worked examples.
+
+Track B1 ships: `pil_blender_mesh.py` reads real polygon/vertex/material
+counts and bounding dimensions from a Blender scene headlessly, and
+`pil_contract_verdict.py`'s `geometry.*` predicates now resolve real verdicts
+when scene stats are supplied (refusing exactly as before when they are not).
+Verified against a real production asset's revision history — including
+resolving a genuine discrepancy between two sources of "ground truth" and
+finding a claimed "topology-preserving" pair was actually scene-level
+violated. Full numbers: [`docs/index.md`](docs/index.md#status),
+[`docs/phase3-scope.md`](docs/phase3-scope.md#sequencing-and-gates).
 
 **0.4.0 — coverage-weighted foreground, three new tools, region scoping.**
 
