@@ -1,0 +1,14 @@
+{
+  "structural_similarity": {
+    "threshold": 0.75,
+    "detection_limits": {
+      "app_tuning": "0.75 chosen after measuring matched brute renders (ssim 0.767-0.810) vs a deliberate swap (ssim 0.711); the calibrated 0.962737 default is stricter than what an auto-framed Workbench render vs an externally-authored turnaround-sheet crop clears in this corpus"
+    }
+  },
+  "silhouette_iou": {
+    "threshold": 0.55,
+    "detection_limits": {
+      "app_tuning": "0.55 chosen after measuring matched brute renders (iou 0.620-0.708) vs a deliberate swap (iou 0.444)"
+    }
+  }
+}

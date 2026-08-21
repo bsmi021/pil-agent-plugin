@@ -83,7 +83,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.4.0"
+TOOL_VERSION = "0.5.0"
 
 # Default fraction of the projection-profile maximum a row/column must reach to
 # count as a baseline. Fixed here rather than left to the caller because the

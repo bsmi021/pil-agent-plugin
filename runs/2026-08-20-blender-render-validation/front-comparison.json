@@ -1,0 +1,154 @@
+{
+  "comparison": {
+    "ahash_distance": 5,
+    "changed_area_fraction": 0.386499,
+    "changed_region_bbox_fractional": [
+      0.0,
+      0.0,
+      1.0,
+      1.0
+    ],
+    "dhash_distance": 16,
+    "diff_flags": [
+      "foreground_source_mismatch"
+    ],
+    "reference": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\tmp9u2cqwok\\tl_front.png",
+    "reference_image": {
+      "flags": [],
+      "foreground": {
+        "applied": true,
+        "background_estimate": "#b4aeab",
+        "bbox_aspect_ratio": 1.2046,
+        "bbox_fractional": [
+          0.1068,
+          0.0645,
+          0.8581,
+          1.0
+        ],
+        "fraction_of_frame": 0.294851,
+        "source": "background_estimate"
+      },
+      "size": [
+        768,
+        512
+      ]
+    },
+    "refused": false,
+    "refused_reason": null,
+    "render": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\tmp9u2cqwok\\renders\\front.png",
+    "render_image": {
+      "flags": [],
+      "foreground": {
+        "applied": true,
+        "background_estimate": null,
+        "bbox_aspect_ratio": 1.103,
+        "bbox_fractional": [
+          0.1654,
+          0.0449,
+          0.8346,
+          0.9551
+        ],
+        "coverage_fraction_of_frame": 0.249313,
+        "coverage_weighted": true,
+        "fraction_of_frame": 0.254183,
+        "partial_coverage_share": 0.048885,
+        "source": "alpha"
+      },
+      "size": [
+        768,
+        512
+      ]
+    },
+    "structural_similarity": 0.8103
+  },
+  "interpretation_limits": [
+    "Render determinism is scoped: two renders of the same (.blend, view) pair on this machine, this Blender install, produce byte-identical PNGs. Cross-machine or cross-install byte-identical rendering is NOT claimed -- Blender version, OS PNG codec, and Workbench studio-light bundling can all shift bytes across installs. Comparison metrics on a fixed image pair remain fully deterministic everywhere, as they do for every other tool in this repository -- what is scoped is only the render step that produces one side of the pair.",
+    "Camera convention: the scene is treated as standard Z-up (character stands along +Z, world +Z is up) with the character facing -Y. 'front' puts an orthographic camera at -Y looking +Y (aimed at the character's face); 'back' at +Y looking -Y (aimed at the back/cape); 'side' at +X looking -X (wearer's-right profile -- camera on the wearer's right hand side, looking across the body). Verified empirically against the brute corpus: after filtering hide_render=True donor meshes, the visible geometry has X range 2.37 (T-pose shoulders), Y range 0.94 (cape at +Y), Z range 2.14 (feet Z=0 to head Z=2.14). If a scene is authored with a different up axis or facing direction, front/back/side will not match the caller's expectation -- verify against a known-good reference before trusting the labelling. The framing flags (aspect_ratio_mismatch, resolution_mismatch) cannot catch this because they depend only on image size.",
+    "The auto-frame reads world-space vertex positions from the DEPSGRAPH-EVALUATED mesh of every render-visible object (hide_render=False), computes the axis-aligned bounding box, then fits it into the render frame with a 10% margin. hide_render=True meshes (donor/reference geometry) are excluded -- otherwise their transforms can dominate the bbox and shrink the visible character to a speck. Orthographic projection means no perspective foreshortening.",
+    "When aspect_ratio_mismatch or resolution_mismatch appears in the diff's own flags on a non-refused comparison, those flags describe framing and pose -- not the model. This is quoting the field trial's own finding (a T-pose render vs an A-pose reference scored structural_similarity 0.900 with both flags firing, correctly discarded). --reference pins the render size to the reference's size, so these two flags should not fire from this tool's own output.",
+    "Refusal semantics: a scene with no mesh geometry, or a comparison whose diff reports foreground_mask_empty or foreground_too_small on either image (in images.a.flags or images.b.flags), is reported as comparison.refused=true with numeric fields nulled -- never as a fabricated similarity number. Missing Blender, missing .blend, or a missing reference file is a rejection (exit 2, empty stdout, stderr reason). This mirrors pil_contract_verdict's UNMEASURABLE pattern at the render-orchestration layer."
+  ],
+  "parameters": {
+    "blend": "C:\\Projects\\tms-heim\\art\\skeleton-crusaders\\brute\\source\\SM_Chr_Skeleton_CrusaderBrute_01.blend",
+    "blender_executable": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+    "blender_version": "5.1.2",
+    "camera_convention": {
+      "character_facing": "-Y",
+      "views": {
+        "back": {
+          "camera_axis": "+Y",
+          "description": "camera at +Y looking -Y (faces character's back/cape)"
+        },
+        "front": {
+          "camera_axis": "-Y",
+          "description": "camera at -Y looking +Y (faces character's face)"
+        },
+        "side": {
+          "camera_axis": "+X",
+          "description": "camera at +X looking -X (wearer's-right profile)"
+        }
+      },
+      "world_up": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    "device": "CPU",
+    "engine": "BLENDER_WORKBENCH",
+    "margin": 0.1,
+    "out_path": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\tmp9u2cqwok\\renders\\front.png",
+    "reference": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\tmp9u2cqwok\\tl_front.png",
+    "resolution_default": 1024,
+    "resolution_source": "reference_pinned",
+    "resolution_used": [
+      768,
+      512
+    ],
+    "view": "front"
+  },
+  "render": {
+    "bounding_box_world_visible": {
+      "max": [
+        1.1826188564300537,
+        0.7029999494552612,
+        2.144699811935425
+      ],
+      "min": [
+        -1.1826190948486328,
+        -0.236454039812088,
+        -0.00015317814541049302
+      ],
+      "visible_mesh_count": 16
+    },
+    "camera": {
+      "camera_axis": "-Y",
+      "location": [
+        -1.1920928955078125e-07,
+        -19.697405844926834,
+        1.0722733168950072
+      ],
+      "ortho_scale": 3.5390074336333788,
+      "target": [
+        -1.1920928955078125e-07,
+        0.2332729548215866,
+        1.0722733168950072
+      ],
+      "type": "ORTHO",
+      "world_up": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    "output_path": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\tmp9u2cqwok\\renders\\front.png",
+    "refused_reason": null,
+    "render_resolution": [
+      768,
+      512
+    ],
+    "rendered": true
+  },
+  "tool": "pil_blender_render",
+  "version": "0.4.0"
+}

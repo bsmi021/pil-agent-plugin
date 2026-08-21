@@ -224,9 +224,9 @@ def test_marketplace_declares_its_schema(listing):
 
 # --- Tool versions must agree with the manifests -----------------------------
 #
-# Added for the 0.4.0 release. The version string lives in ELEVEN places: five
-# across the manifests and pyproject.toml (marketplace.json carries it twice),
-# and one TOOL_VERSION per shipped CLI. The manifest trio was already guarded
+# Added for the 0.4.0 release. The version string lives across the manifests,
+# pyproject.toml (marketplace.json carries it twice), and one TOOL_VERSION per
+# shipped CLI; the exact count grows as tools land. The manifest trio was guarded
 # above; TOOL_VERSION was guarded nowhere, so a tool could ship announcing a
 # version the package had never released and nothing would notice.
 #

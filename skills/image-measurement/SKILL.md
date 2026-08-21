@@ -293,6 +293,47 @@ tracked-parts sidecar, and found a "topology-preserving" round-trip pair was
 actually scene-level `VIOLATED` (one object silently dropped) even though every
 surviving object's own topology matched exactly.
 
+## `pil_blender_render.py` and `pil_character_sheet_review.py` — the character-sheet loop
+
+```bash
+... pil_blender_render.py "<scene.blend>" --view front --out render.png [--reference concept_front.png]
+... pil_character_sheet_review.py "<scene.blend>" --contract contract.json --view front:REF_FRONT.png --view side:REF_SIDE.png --view back:REF_BACK.png
+```
+
+`pil_blender_render.py` renders one named view (`front`/`side`/`back`) headless
+(Blender Workbench, orthographic, auto-framed from the scene's mesh bounding
+box) and, with `--reference`, registers it against that image via
+`pil_structure_diff --foreground` — the same bbox-based registration the field
+trial itself used, so the render does not need to reproduce the reference's
+exact camera framing. It **refuses** rather than fabricates a comparison
+(`comparison.refused = true`) when the scene is empty or either side's
+foreground mask comes up empty/too-small.
+
+`pil_character_sheet_review.py` composes several matched views (one
+`pil_blender_render.py` call per `--view NAME:REFERENCE`) into a single
+`pil_contract_verdict --pairs` evaluation, so a whole character sheet is one
+contract over N registered pairs. A view whose render hard-fails is
+represented by a sentinel pair rather than dropped — WP4's worst-case
+aggregation still applies, so a single hard-failed or divergent view is never
+silently averaged away by good ones.
+
+**Render determinism is scoped narrowly, state this precisely if asked:** two
+renders of the same scene/view on the *same machine, same Blender install*
+are byte-identical (tested). Cross-machine render determinism is **not**
+claimed. Comparison metrics on a fixed pair of images remain fully
+deterministic everywhere, exactly like every other tool in this repository —
+only the render step itself has the narrower claim.
+
+**Threshold caveat, read before trusting a VIOLATED verdict from either
+tool:** Phase 2's calibrated `structural_similarity`/`silhouette_iou`
+thresholds were derived from synthetic perturbations, and correctly-matched
+render-vs-concept-art pairs measurably fail them (a Workbench render's true
+alpha vs. a baked-shading reference differ enough to matter at that bar). Both
+tools accept `--thresholds` for a caller-supplied bundle; without one, a
+VIOLATED verdict on an otherwise-good match may reflect this gap rather than
+a real problem with the asset. See
+[`runs/2026-08-20-character-sheet-loop/`](../../runs/2026-08-20-character-sheet-loop/README.md).
+
 ## These tools do not measure geometry from pixels
 
 `edge_mean` and `entropy` (in `pil_structure_diff`) are 2D image-complexity

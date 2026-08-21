@@ -135,7 +135,7 @@ def test_payload_has_the_tool_contract_fields(tmp_img):
     path = _circle_on_backdrop(tmp_img)
     payload, _stdout = _ok(path)
     assert payload["tool"] == "pil_silhouette"
-    assert payload["version"] == "0.4.0"
+    assert payload["version"] == "0.5.0"
     assert "parameters" in payload
     assert "image" in payload
     assert "interpretation_limits" in payload

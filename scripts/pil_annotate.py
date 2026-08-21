@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pil_region import RegionError, parse_fractional_bbox, resolve_pixel_rect  # noqa: E402
 
 
-TOOL_VERSION = "0.4.0"
+TOOL_VERSION = "0.5.0"
 DEFAULT_LABEL_SCALE = 3
 DEFAULT_THICKNESS = 2
 MAX_LABEL_SCALE = 20
