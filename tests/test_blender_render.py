@@ -258,6 +258,50 @@ class TestBuildComparisonRefusal:
             "foreground_aspect_mismatch",
         ]
 
+    def test_foreground_support_insufficient_forces_refusal(self, tmp_path):
+        payload = self._diff_payload([], [])
+        payload["diff"]["structural_similarity"] = None
+        payload["diff"]["flags"] = ["foreground_support_insufficient"]
+        c = pil_blender_render.build_comparison(
+            payload, tmp_path / "ref.png", tmp_path / "render.png"
+        )
+        assert c["refused"] is True
+        assert c["structural_similarity"] is None
+        assert "foreground_support_insufficient" in c["refused_reason"]
+
+
+class TestAtomicOutput:
+    def test_render_failure_preserves_existing_output_and_removes_stage(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        blend = tmp_path / "scene.blend"
+        blend.write_bytes(b"placeholder")
+        out = tmp_path / "render.png"
+        original = b"pre-existing caller output"
+        out.write_bytes(original)
+
+        monkeypatch.setattr(
+            pil_blender_render, "resolve_blender_executable", lambda _explicit: "blender"
+        )
+
+        def fail_after_partial_write(
+            _blender, _blend, _view, staged, _width, _height, _margin, timeout
+        ):
+            staged.write_bytes(b"partial render")
+            return None, "synthetic render failure"
+
+        monkeypatch.setattr(pil_blender_render, "run_render", fail_after_partial_write)
+        rc = pil_blender_render.main([
+            str(blend), "--view", "front", "--out", str(out)
+        ])
+        captured = capsys.readouterr()
+
+        assert rc == 2
+        assert captured.out == ""
+        assert "synthetic render failure" in captured.err
+        assert out.read_bytes() == original
+        assert list(tmp_path.glob(f".{out.name}.*.png")) == []
+
 
 # --- corpus-gated: real Blender against real .blend + real turnaround sheet -
 

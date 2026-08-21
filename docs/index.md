@@ -119,7 +119,8 @@ recalibration, built to [`aaa-build-plan.md`](aaa-build-plan.md):
 
 Phase 3 Track A landed in 0.4.0.
 
-**Track A5 and Track B1** (this build, [build plan](phase3-build-plan.md)):
+**0.5.0 — Track A5 and Track B1-B3** ([A5/B1 build plan](phase3-build-plan.md),
+[B2/B3 build plan](phase3-b2-b3-build-plan.md)):
 
 - All three A5 candidates ran their discrimination gate for real, and the gate
   worked as designed — it demoted, honestly, exactly the candidates
@@ -187,9 +188,13 @@ Phase 3 Track A landed in 0.4.0.
     crop, not a bug. The tool accepts `--thresholds` and ships no opinion
     about the right bar for a given workflow. See the
     [evidence bundle](../runs/2026-08-20-character-sheet-loop/README.md).
-- No manifest version bump in this build; all new tools declare
-  `TOOL_VERSION = "0.4.0"` to match the current manifest, per the plan's own
-  scope decision — the release step owns version bumps.
+- **PR #7 critic fixes are included in 0.5.0.** Hard-failed views override
+  every contract item to `UNMEASURABLE` rather than allowing identical
+  sentinel pixels to satisfy layout/palette predicates; public review JSON
+  uses stable `render://VIEW` / `hard-fail://VIEW` identifiers and is
+  byte-identical across repeated invocations; support-insufficient foreground
+  comparisons refuse; and render output is staged atomically so a failed run
+  leaves neither a partial artifact nor destroys a pre-existing caller file.
 
 ## Open items
 

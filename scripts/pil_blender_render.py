@@ -46,7 +46,7 @@ from pil_blender_mesh import (  # noqa: E402
     resolve_blender_executable,
 )
 
-TOOL_VERSION = "0.4.0"
+TOOL_VERSION = "0.5.0"
 
 # Named view → which world axis the camera sits on relative to the character.
 # Verified against the brute corpus's own render-visible bbox (16 meshes with
@@ -598,35 +598,43 @@ def run_structure_diff(reference: Path, render: Path, timeout: int = 60):
 
 
 REFUSAL_IMAGE_FLAGS = frozenset({"foreground_mask_empty", "foreground_too_small"})
+REFUSAL_DIFF_FLAGS = frozenset({"foreground_support_insufficient"})
 
 
 def build_comparison(diff_payload: dict, reference: Path, render: Path) -> dict:
     """Fold pil_structure_diff's payload into a comparison block.
 
     Refusal rule: if EITHER image's flags list contains foreground_mask_empty
-    or foreground_too_small, the comparison is refused (`refused=true`,
-    numeric fields nulled). Those flags live in `images.a.flags` /
-    `images.b.flags`, NOT in `diff.flags` -- reading diff.flags alone would
-    silently miss the refusal.
+    or foreground_too_small, or diff.flags contains
+    foreground_support_insufficient, the comparison is refused
+    (`refused=true`, numeric fields nulled). The mask-quality flags live in
+    `images.a.flags` / `images.b.flags`; the support flag lives in diff.flags.
     """
     a_flags = diff_payload["images"]["a"].get("flags", [])
     b_flags = diff_payload["images"]["b"].get("flags", [])
-    triggering = sorted(
-        set(a_flags + b_flags) & REFUSAL_IMAGE_FLAGS
-    )
-    if triggering:
+    diff_flags = diff_payload["diff"].get("flags", [])
+    triggering = sorted(set(a_flags + b_flags) & REFUSAL_IMAGE_FLAGS)
+    support_triggering = sorted(set(diff_flags) & REFUSAL_DIFF_FLAGS)
+    if triggering or support_triggering:
         which = []
         for label, flags in (("reference", a_flags), ("render", b_flags)):
             hit = sorted(set(flags) & REFUSAL_IMAGE_FLAGS)
             if hit:
                 which.append(f"{label}:{','.join(hit)}")
+        reason_parts = []
+        if which:
+            reason_parts.append(
+                "foreground mask is empty or too small (" + "; ".join(which) + ")"
+            )
+        if support_triggering:
+            reason_parts.append(
+                "foreground support is insufficient ("
+                + ",".join(support_triggering)
+                + ")"
+            )
         return {
             "refused": True,
-            "refused_reason": (
-                "foreground mask is empty or too small ("
-                + "; ".join(which)
-                + ")"
-            ),
+            "refused_reason": "; ".join(reason_parts),
             "reference": str(reference),
             "render": str(render),
             "structural_similarity": None,
@@ -831,38 +839,58 @@ def main(argv=None):
     else:
         width = height = int(args.resolution)
 
-    render_payload, error = run_render(
-        blender,
-        blend_path,
-        args.view,
-        out_path.resolve(),
-        width,
-        height,
-        DEFAULT_MARGIN,
-        timeout=args.timeout,
-    )
-    if render_payload is None:
-        return _reject(error)
+    # Render into a sibling staging file. A failed invocation must not leave a
+    # partial PNG, and it must not destroy a caller's pre-existing output.
+    #
+    # The staging name is DERIVED from --out, not randomised. Uniqueness is not
+    # what this file needs -- two concurrent renders to the same --out are
+    # already a conflict over the destination itself -- but DETERMINISM is:
+    # pil_character_sheet_review renders into a temporary workdir and must emit
+    # a byte-identical payload across invocations, so a random component here
+    # would become nondeterminism there the moment any diagnostic quoted the
+    # staging path. Same directory as --out keeps the publish step a rename
+    # within one filesystem, which cannot fail cross-device.
+    staged_path = out_path.parent / f".{out_path.name}.staging.png"
+    try:
+        staged_path.unlink(missing_ok=True)
+    except OSError as exc:
+        return _reject(f"cannot stage output beside {out_path}: {exc}")
 
-    if render_payload["rendered"] and out_path.is_file():
-        _strip_png_metadata(out_path)
+    try:
+        render_payload, error = run_render(
+            blender,
+            blend_path,
+            args.view,
+            staged_path.resolve(),
+            width,
+            height,
+            DEFAULT_MARGIN,
+            timeout=args.timeout,
+        )
+        if render_payload is None:
+            return _reject(error)
 
-    comparison = None
-    if reference_path is not None:
-        if not render_payload["rendered"]:
-            comparison = build_scene_refusal_comparison(reference_path)
-        else:
-            diff_payload, diff_error = run_structure_diff(reference_path, out_path)
-            if diff_payload is None:
-                # Rejection hygiene (docs/phase3-handoff.md §3): the whole
-                # invocation is about to reject, so the PNG left on disk
-                # would be a partial artefact of a failed run. Remove it.
-                try:
-                    out_path.unlink(missing_ok=True)
-                except OSError:
-                    pass
-                return _reject(diff_error)
-            comparison = build_comparison(diff_payload, reference_path, out_path)
+        if render_payload["rendered"] and staged_path.is_file():
+            _strip_png_metadata(staged_path)
+
+        comparison = None
+        if reference_path is not None:
+            if not render_payload["rendered"]:
+                comparison = build_scene_refusal_comparison(reference_path)
+            else:
+                diff_payload, diff_error = run_structure_diff(reference_path, staged_path)
+                if diff_payload is None:
+                    return _reject(diff_error)
+                comparison = build_comparison(diff_payload, reference_path, out_path)
+
+        if render_payload["rendered"]:
+            try:
+                os.replace(staged_path, out_path)
+            except OSError as exc:
+                return _reject(f"cannot publish rendered output to {out_path}: {exc}")
+            render_payload["output_path"] = str(out_path.resolve())
+    finally:
+        staged_path.unlink(missing_ok=True)
 
     payload = build_payload(
         blend_path=blend_path,

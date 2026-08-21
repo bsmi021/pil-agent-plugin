@@ -302,11 +302,11 @@ uv sync
 uv run pytest -v
 ```
 
-**660 tests.** Fixtures are generated synthetically in-process, so no binary test
+**663 tests.** Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
 Six tests confirm results against a real reference image and **skip when it is
-absent** — so a fresh clone reports `654 passed, 6 skipped`, which is expected.
+absent** — so a fresh clone reports `657 passed, 6 skipped`, which is expected.
 Their strongest assertions are duplicated unskipped against a synthetic
 stand-in, so a clean checkout still guards every known regression. A further
 nineteen tests across `tests/test_blender_mesh.py`, `tests/test_blender_render.py`
@@ -359,9 +359,12 @@ measured.
 
 ## Status
 
-**Phase 3 complete** — all of Track A (0.4.0) and Track A5/B1/B2/B3 (this and
-a follow-up build; unreleased, manifests still read 0.4.0 — version bumps are
-a release-step decision, not a build-step one).
+**0.5.0 — Phase 3 complete.** All of Track A5 and Track B1/B2/B3 now ships
+alongside Track A1-A4 from 0.4.0. The release also closes the first PR #7
+critic round: hard-failed views make every contract predicate UNMEASURABLE,
+character-sheet JSON contains stable logical render identifiers rather than
+deleted temporary paths, support-insufficient comparisons refuse, and Blender
+renders are staged atomically so failure preserves any caller-owned output.
 
 **Track B2 + B3 — the character-sheet loop ships.** `pil_blender_render.py`
 renders front/side/back from a `.blend` scene (headless Blender Workbench,

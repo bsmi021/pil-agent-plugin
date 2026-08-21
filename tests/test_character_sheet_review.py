@@ -251,7 +251,7 @@ def _entry_ok(view, ref_path, render_path):
         "reference": str(ref_path),
         "render_payload": {
             "tool": "pil_blender_render",
-            "version": "0.4.0",
+            "version": "0.5.0",
             "render": {"rendered": True, "output_path": str(render_path)},
             "comparison": {"refused": False, "structural_similarity": 0.85},
         },
@@ -336,7 +336,7 @@ class TestManifestAndPayloadComposition:
         ]
         verdict = {
             "tool": "pil_contract_verdict",
-            "version": "0.4.0",
+            "version": "0.5.0",
             "aggregate": [
                 {"predicate": "layout.composition_preserved", "verdict": "VIOLATED"}
             ],
@@ -362,7 +362,7 @@ class TestManifestAndPayloadComposition:
         s2 = json.dumps(p2, indent=2, sort_keys=True, allow_nan=False)
         assert _sha256(s1.encode()) == _sha256(s2.encode())
         assert p1["tool"] == "pil_character_sheet_review"
-        assert p1["version"] == "0.4.0"
+        assert p1["version"] == "0.5.0"
         assert p1["verdict"] is verdict
         assert set(p1["per_view_renders"].keys()) == {"front", "side", "back"}
         assert p1["parameters"]["views"] == ["back", "front", "side"]
@@ -510,7 +510,7 @@ class TestCorpusMatchedViews:
         )
         payload = json.loads(proc.stdout)
         assert payload["tool"] == "pil_character_sheet_review"
-        assert payload["version"] == "0.4.0"
+        assert payload["version"] == "0.5.0"
 
         # Aggregate: every predicate SATISFIED, no view dropped from the
         # manifest, no hard_fail block in any per-view entry.
@@ -521,12 +521,26 @@ class TestCorpusMatchedViews:
             )
             assert agg[pred]["pairs_violated"] == 0
             assert agg[pred]["pairs_unmeasurable"] == 0
+            # Exactly three pair verdicts per predicate. A SATISFIED aggregate
+            # over two pairs would also pass every assertion above, so the
+            # count is what separates "all three views cleared the bar" from
+            # "one view quietly went missing on the way to the verdict".
+            assert len(agg[pred]["pair_verdicts"]) == 3, agg[pred]
+            assert sorted(p["index"] for p in agg[pred]["pair_verdicts"]) == [0, 1, 2]
 
         assert len(payload["verdict"]["pairs"]) == 3
+        assert [pair["index"] for pair in payload["verdict"]["pairs"]] == [0, 1, 2]
+        assert len(payload["parameters"]["manifest"]) == 3
+        assert set(payload["per_view_renders"]) == {"front", "side", "back"}
         assert all(
             block["hard_fail"] is None
             for block in payload["per_view_renders"].values()
         )
+        # Every rendered side of the manifest is a stable logical identifier,
+        # never a path inside the deleted workdir.
+        assert [row["b"] for row in payload["parameters"]["manifest"]] == [
+            "render://front", "render://side", "render://back",
+        ]
 
 
 @CORPUS_MISSING
@@ -695,22 +709,51 @@ class TestCorpusHardFailedRefStillCounts:
         assert side_block["manifest_pair"]["a"] == sentinel_a
         assert side_block["manifest_pair"]["b"] == sentinel_a
 
-        # identity.silhouette_preserved must have exactly one UNMEASURABLE
-        # pair (the sentinel-substituted side view), NOT zero -- the
-        # essential criterion-3 assertion. The other two matched views
-        # SATISFY under the tuned thresholds.
+        # Every predicate must have exactly one UNMEASURABLE pair. Identical
+        # sentinel pixels are transport scaffolding, never evidence that a
+        # layout or palette invariant holds.
         agg = {row["predicate"]: row for row in payload["verdict"]["aggregate"]}
-        sil = agg["identity.silhouette_preserved"]
-        assert sil["pairs_unmeasurable"] == 1, sil
-        # Aggregate itself becomes UNMEASURABLE (worst-case: UNMEASURABLE
-        # beats SATISFIED) rather than being silently swept away.
-        assert sil["verdict"] == "UNMEASURABLE", sil
-        # The offending pair index is 1 (side is the second --view).
-        unmeasurable_pairs = [
-            p for p in sil["pair_verdicts"] if p["verdict"] == "UNMEASURABLE"
+        for row in agg.values():
+            assert row["pairs_unmeasurable"] == 1, row
+            assert row["verdict"] == "UNMEASURABLE", row
+            unmeasurable_pairs = [
+                p for p in row["pair_verdicts"] if p["verdict"] == "UNMEASURABLE"
+            ]
+            assert [p["index"] for p in unmeasurable_pairs] == [1]
+
+        assert sentinel_a == "hard-fail://side"
+        assert "pil_char_sheet_" not in proc.stdout
+
+
+class TestEndToEndDeterminism:
+    def test_two_hard_fail_invocations_emit_byte_identical_live_path_free_json(
+        self, tmp_path
+    ):
+        blend = tmp_path / "placeholder.blend"
+        blend.write_bytes(b"not opened because references reject first")
+        contract = tmp_path / "contract.json"
+        contract.write_text(json.dumps({"invariant": ["layout.composition_preserved"]}))
+        missing = tmp_path / "missing.png"
+        args = [
+            REVIEW_TOOL, blend, "--contract", contract,
+            "--view", f"front:{missing}",
+            "--view", f"side:{missing}",
+            "--view", f"back:{missing}",
         ]
-        assert len(unmeasurable_pairs) == 1
-        assert unmeasurable_pairs[0]["index"] == 1
+
+        first = _run(*args)
+        second = _run(*args)
+        assert first.returncode == second.returncode == 0
+        assert first.stdout.encode() == second.stdout.encode()
+        assert "pil_char_sheet_" not in first.stdout
+
+        payload = json.loads(first.stdout)
+        row = payload["verdict"]["aggregate"][0]
+        assert row["verdict"] == "UNMEASURABLE"
+        assert row["pairs_unmeasurable"] == 3
+        for manifest_row in payload["parameters"]["manifest"]:
+            assert manifest_row["a"].startswith("hard-fail://")
+            assert manifest_row["a"] == manifest_row["b"]
 
 
 @CORPUS_MISSING

@@ -34,12 +34,12 @@ still count in the aggregate:
     scene): no rendered file exists to hand to the verdict tool, so we cannot
     silently drop the view -- that would let two good views out-vote a
     broken one. Instead the view is represented in the manifest by a small
-    grey sentinel pair (``sentinel.png``, ``sentinel.png``) that
-    ``pil_structure_diff``'s own foreground gating flags as empty on both
-    sides, forcing ``identity.silhouette_preserved`` to UNMEASURABLE and
-    keeping the pair count honest. The sentinel path is echoed into
-    ``per_view_renders[NAME].hard_fail`` so a reader can see exactly which
-    pair was substituted and why.
+    grey sentinel pair (``sentinel.png``, ``sentinel.png``) so the downstream
+    tool can construct its normal schema. Before emission, every contract item
+    for that pair is overridden to UNMEASURABLE, keeping the pair count honest
+    without allowing identical sentinel pixels to satisfy another predicate.
+    A stable ``hard-fail://NAME`` identifier is echoed into
+    ``per_view_renders[NAME].hard_fail``; internal temporary paths never leak.
 
 Rejection paths (exit 2, byte-empty stdout, one-line stderr): unreadable or
 missing contract file, ``--view`` name not in ``{front, side, back}``,
@@ -56,7 +56,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-TOOL_VERSION = "0.4.0"
+TOOL_VERSION = "0.5.0"
 
 _HERE = Path(__file__).resolve().parent
 RENDER_TOOL = _HERE / "pil_blender_render.py"
@@ -73,10 +73,8 @@ VALID_VIEWS = frozenset(VIEW_ORDER)
 # A small opaque grey square. Substituted for the render side when the
 # render step hard-fails and no PNG exists to hand to pil_contract_verdict.
 # 128x128 is arbitrary but small enough to keep the extra pil_structure_diff
-# pass essentially free; the sentinel's purpose is to trigger
-# foreground_mask_empty in the diff's own images.*.flags, which makes
-# identity.silhouette_preserved return UNMEASURABLE (verified empirically:
-# a solid-grey pair yields foreground mask 0px on both sides).
+# pass essentially free. Its pixels are only downstream schema scaffolding;
+# apply_hard_fail_overrides makes every contract item UNMEASURABLE.
 _SENTINEL_SIZE = 128
 _SENTINEL_COLOR = (180, 180, 180)
 
@@ -90,17 +88,11 @@ INTERPRETATION_LIMITS = [
     "A view whose render step hard-fails (Blender missing, subprocess "
     "non-zero, or a scene with no render-visible mesh geometry) is NOT "
     "silently dropped from the manifest. It is represented by a small grey "
-    "sentinel pair which pil_structure_diff's own foreground gating flags as "
-    "empty on both sides, forcing identity.silhouette_preserved to "
-    "UNMEASURABLE for that pair. WP4's worst-case aggregation then keeps the "
-    "broken view visible in the aggregate rather than letting other good "
-    "views average it away. per_view_renders[NAME].hard_fail explains which "
-    "pair was substituted and why. Callers whose contract does NOT include "
-    "identity.silhouette_preserved should be aware that the sentinel pair "
-    "may SATISFY other predicates (two identical solid-grey images have "
-    "structural_similarity 1.0 and identical palettes) -- a hard-fail is "
-    "only guaranteed to surface via a predicate the sentinel forces to "
-    "UNMEASURABLE.",
+    "sentinel pair for the downstream schema, then every contract item for "
+    "that pair is overridden to UNMEASURABLE before aggregation is emitted. "
+    "This keeps the broken view visible for every predicate rather than "
+    "allowing identical sentinel pixels to satisfy layout or palette checks. "
+    "per_view_renders[NAME].hard_fail explains which view failed and why.",
     "A view whose render succeeded but whose comparison the render layer "
     "REFUSED (e.g. reference foreground was empty or too small) is NOT "
     "substituted with a sentinel: the render file exists, and the real "
@@ -320,6 +312,182 @@ def build_payload(
         "per_view_renders": build_per_view_block(entries),
         "interpretation_limits": INTERPRETATION_LIMITS,
     }
+
+
+def apply_hard_fail_overrides(verdict_payload: dict, entries: list[dict]) -> None:
+    """Make upstream render failures UNMEASURABLE for every contract item.
+
+    The sentinel files exist only to let the downstream verdict tool build its
+    normal schema. Their identical pixels are not evidence that any invariant
+    holds, so replace every item for a failed view and recompute aggregates.
+    """
+    failed = {
+        index: entry for index, entry in enumerate(entries)
+        if entry["hard_fail"] is not None
+    }
+    if not failed:
+        return
+
+    for pair in verdict_payload["pairs"]:
+        entry = failed.get(pair["index"])
+        if entry is None:
+            continue
+        pair["flags"] = sorted(set(pair.get("flags", [])) | {"upstream_render_failed"})
+        reason = f"{entry['view']} render failed upstream: {entry['hard_fail']['reason']}"
+        for item in pair["items"]:
+            item["verdict"] = "UNMEASURABLE"
+            item["reason"] = reason
+            item["evidence"] = {}
+            item["detection_limit"] = None
+            item["caveats"] = sorted(set(item.get("caveats", [])) | {"upstream_render_failed"})
+
+    for aggregate in verdict_payload["aggregate"]:
+        for pair_verdict in aggregate["pair_verdicts"]:
+            if pair_verdict["index"] in failed:
+                pair_verdict["verdict"] = "UNMEASURABLE"
+        verdicts = [row["verdict"] for row in aggregate["pair_verdicts"]]
+        aggregate["pairs_violated"] = verdicts.count("VIOLATED")
+        aggregate["pairs_unmeasurable"] = verdicts.count("UNMEASURABLE")
+        aggregate["verdict"] = (
+            "VIOLATED" if "VIOLATED" in verdicts
+            else "UNMEASURABLE" if "UNMEASURABLE" in verdicts
+            else "SATISFIED"
+        )
+
+
+class TemporaryPathLeak(RuntimeError):
+    """A workdir path survived redaction and would have reached stdout."""
+
+
+def _map_strings(value, transform):
+    """Rebuild a JSON-shaped tree with `transform` applied to every string."""
+    if isinstance(value, dict):
+        return {key: _map_strings(item, transform) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_map_strings(item, transform) for item in value]
+    if isinstance(value, str):
+        return transform(value)
+    return value
+
+
+def _path_spellings(raw: str) -> set[str]:
+    """Every spelling of one path a downstream payload might echo.
+
+    pil_blender_render reports its `--out` argument verbatim in
+    `parameters.out_path` but the RESOLVED path in `render.output_path`. Those
+    two strings are equal only when the temporary root is already a long path;
+    where %TEMP% resolves through an 8.3 short name (C:\\Users\\BSMI0~1\\...)
+    they differ, and a redaction keyed on one spelling silently ships the
+    other. Redact both.
+    """
+    spellings = {raw}
+    try:
+        spellings.add(str(Path(raw).resolve()))
+    except OSError:
+        pass
+    return spellings
+
+
+def _workdir_prefixes(workdir: Path) -> tuple[str, ...]:
+    """Both spellings of the ephemeral workdir, longest first."""
+    spellings = {str(workdir)}
+    try:
+        spellings.add(str(workdir.resolve()))
+    except OSError:
+        pass
+    return tuple(sorted(spellings, key=len, reverse=True))
+
+
+def _find_workdir_leak(value, prefixes: tuple[str, ...], where: str = ""):
+    """First (location, string) still naming the workdir, or None.
+
+    Walks the OBJECT tree, not the serialised text. Searching the JSON text
+    cannot work on Windows: `json.dumps` escapes every backslash, so a literal
+    `C:\\Temp\\pil_char_sheet_x` never appears as a substring of the encoded
+    payload and a text-level guard passes while the path ships intact.
+    """
+    if isinstance(value, dict):
+        for key, item in value.items():
+            found = _find_workdir_leak(item, prefixes, f"{where}.{key}")
+            if found is not None:
+                return found
+        return None
+    if isinstance(value, list):
+        for index, item in enumerate(value):
+            found = _find_workdir_leak(item, prefixes, f"{where}[{index}]")
+            if found is not None:
+                return found
+        return None
+    if isinstance(value, str):
+        lowered = value.lower()
+        for prefix in prefixes:
+            if prefix and prefix.lower() in lowered:
+                return where or "<root>", value
+    return None
+
+
+def publicise_temporary_paths(
+    entries: list[dict], verdict_payload: dict, workdir: Path
+) -> tuple[list[dict], dict]:
+    """Replace ephemeral workdir paths with stable logical identifiers.
+
+    Per-view renders and the hard-fail sentinel live in a TemporaryDirectory
+    that is removed when this process exits, so echoing their real paths makes
+    stdout both nondeterministic (the directory name is randomised per run) and
+    useless for traceability (every path is already dead when a caller reads
+    it). Each is replaced by an identifier naming the view it belongs to:
+    `render://VIEW` for a real render, `hard-fail://VIEW` for a substituted
+    sentinel. Caller-owned paths -- reference images, the contract, the
+    thresholds bundle, the .blend -- are real, stable and left untouched.
+
+    Raises TemporaryPathLeak if any string still names the workdir after
+    redaction. That is a tripwire for a payload shape this function does not
+    know about, and it is deliberately fatal: a rejection is honest, whereas
+    shipping a dead randomised path is exactly the defect being fixed.
+    """
+    replacements: dict[str, str] = {}
+    tokens: dict[int, tuple[str, str]] = {}
+    for index, entry in enumerate(entries):
+        if entry["hard_fail"] is not None:
+            token = f"hard-fail://{entry['view']}"
+            public_a = public_b = token
+        else:
+            token = f"render://{entry['view']}"
+            public_a = entry["pair_a"]
+            public_b = token
+        tokens[index] = (public_a, public_b)
+        for source in (entry["pair_b"], entry["rendered_path"]):
+            if source:
+                for spelling in _path_spellings(source):
+                    replacements[spelling] = token
+
+    def transform(text: str) -> str:
+        return replacements.get(text, text)
+
+    public_entries = _map_strings(entries, transform)
+    public_verdict = _map_strings(verdict_payload, transform)
+
+    for index, (public_a, public_b) in tokens.items():
+        public_entry = public_entries[index]
+        public_entry["pair_a"] = public_a
+        public_entry["pair_b"] = public_b
+        if public_entry["hard_fail"] is not None:
+            public_entry["hard_fail"]["sentinel_pair"] = [public_b, public_b]
+
+        pair = public_verdict["pairs"][index]
+        pair["a"], pair["b"] = public_a, public_b
+        for aggregate in public_verdict["aggregate"]:
+            for pair_verdict in aggregate["pair_verdicts"]:
+                if pair_verdict["index"] == index:
+                    pair_verdict["a"], pair_verdict["b"] = public_a, public_b
+
+    prefixes = _workdir_prefixes(workdir)
+    for label, tree in (("per_view_renders", public_entries), ("verdict", public_verdict)):
+        leak = _find_workdir_leak(tree, prefixes, label)
+        if leak is not None:
+            where, text = leak
+            raise TemporaryPathLeak(f"{where} still names the render workdir: {text}")
+    return public_entries, public_verdict
 
 
 def _make_entry(
@@ -554,11 +722,22 @@ def main(argv=None):
         if verdict_payload is None:
             return _reject(verdict_error)
 
+        apply_hard_fail_overrides(verdict_payload, entries)
+        try:
+            public_entries, public_verdict = publicise_temporary_paths(
+                entries, verdict_payload, workdir
+            )
+        except TemporaryPathLeak as exc:
+            # Rejection hygiene: exit 2, byte-empty stdout, one-line stderr.
+            # Refusing beats emitting a payload carrying a path that will not
+            # exist by the time anyone reads it.
+            return _reject(str(exc))
+
         payload = build_payload(
             blend=blend,
             contract_path=contract_path,
-            entries=entries,
-            verdict_payload=verdict_payload,
+            entries=public_entries,
+            verdict_payload=public_verdict,
             blender_executable=args.blender_executable,
             thresholds_path=thresholds_path,
         )
