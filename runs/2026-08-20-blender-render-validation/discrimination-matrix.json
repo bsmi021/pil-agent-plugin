@@ -1,0 +1,76 @@
+{
+  "back": {
+    "back": {
+      "dhash": 12,
+      "flags": [
+        "foreground_source_mismatch"
+      ],
+      "ssim": 0.766538
+    },
+    "front": {
+      "dhash": 13,
+      "flags": [
+        "foreground_source_mismatch"
+      ],
+      "ssim": 0.788407
+    },
+    "side": {
+      "dhash": 29,
+      "flags": [
+        "foreground_source_mismatch",
+        "foreground_aspect_mismatch"
+      ],
+      "ssim": 0.710599
+    }
+  },
+  "front": {
+    "back": {
+      "dhash": 13,
+      "flags": [
+        "foreground_source_mismatch"
+      ],
+      "ssim": 0.793176
+    },
+    "front": {
+      "dhash": 16,
+      "flags": [
+        "foreground_source_mismatch"
+      ],
+      "ssim": 0.8103
+    },
+    "side": {
+      "dhash": 32,
+      "flags": [
+        "foreground_source_mismatch",
+        "foreground_aspect_mismatch"
+      ],
+      "ssim": 0.737988
+    }
+  },
+  "side": {
+    "back": {
+      "dhash": 28,
+      "flags": [
+        "foreground_source_mismatch",
+        "foreground_aspect_mismatch"
+      ],
+      "ssim": 0.734971
+    },
+    "front": {
+      "dhash": 23,
+      "flags": [
+        "foreground_source_mismatch",
+        "foreground_aspect_mismatch"
+      ],
+      "ssim": 0.701392
+    },
+    "side": {
+      "dhash": 15,
+      "flags": [
+        "foreground_source_mismatch",
+        "foreground_aspect_mismatch"
+      ],
+      "ssim": 0.80607
+    }
+  }
+}
