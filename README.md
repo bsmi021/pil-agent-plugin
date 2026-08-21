@@ -242,6 +242,8 @@ A caller reading only a similarity score or a hash would have concluded "identic
 | Did my *intended* change land, and nothing else? | contract | per-predicate `verdict` + `detection_limit` |
 | Is polygon/vertex count, material or bounding-box geometry different? | `pil_blender_mesh` + `pil_contract_verdict`'s `geometry.*` | real scene stats, never inferred from pixels |
 | Does this colour pair meet WCAG contrast? | `pil_alignment contrast` | `contrast_ratio`, verified against the standard's own worked examples |
+| Render a Blender scene's front/side/back and check it registers against a reference | `pil_blender_render` | matched-view render + `pil_structure_diff --foreground` comparison, refuses rather than warps |
+| Review a whole character sheet (multiple matched views) as one contract | `pil_character_sheet_review` | `pil_contract_verdict --pairs` aggregate over B2's rendered views; a single diverging view forces the aggregate |
 
 **Consult both tools for any "do these match?" question.** They are blind to
 different things. And **read `flags` before any score**: `background_dominant`,
@@ -300,16 +302,21 @@ uv sync
 uv run pytest -v
 ```
 
-**615 tests.** Fixtures are generated synthetically in-process, so no binary test
+**660 tests.** Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
 Six tests confirm results against a real reference image and **skip when it is
-absent** — so a fresh clone reports `609 passed, 6 skipped`, which is expected.
+absent** — so a fresh clone reports `654 passed, 6 skipped`, which is expected.
 Their strongest assertions are duplicated unskipped against a synthetic
-stand-in, so a clean checkout still guards every known regression. A further six tests in `tests/test_blender_mesh.py` run only when an external
-corpus and a Blender install are both present — `PIL_AGENT_BLENDER_CORPUS`
-overrides the default search path, mirroring `PIL_AGENT_REFERENCE_IMAGE` (see
-[`runs/2026-08-20-blender-mesh-validation/`](runs/2026-08-20-blender-mesh-validation/README.md));
+stand-in, so a clean checkout still guards every known regression. A further
+nineteen tests across `tests/test_blender_mesh.py`, `tests/test_blender_render.py`
+and `tests/test_character_sheet_review.py` run only when an external corpus
+and a Blender install are both present — the corpus path defaults to a known
+location and can be overridden per test file, mirroring
+`PIL_AGENT_REFERENCE_IMAGE` (see
+[`runs/2026-08-20-blender-mesh-validation/`](runs/2026-08-20-blender-mesh-validation/README.md),
+[`runs/2026-08-20-blender-render-validation/`](runs/2026-08-20-blender-render-validation/README.md),
+[`runs/2026-08-20-character-sheet-loop/`](runs/2026-08-20-character-sheet-loop/README.md));
 they are already counted as passing above on a machine that has both, and skip
 cleanly otherwise.
 
@@ -352,8 +359,29 @@ measured.
 
 ## Status
 
-**Phase 3 Track A5 + Track B1** (unreleased; manifests still read 0.4.0 —
-version bumps are a release-step decision, not a build-step one).
+**Phase 3 complete** — all of Track A (0.4.0) and Track A5/B1/B2/B3 (this and
+a follow-up build; unreleased, manifests still read 0.4.0 — version bumps are
+a release-step decision, not a build-step one).
+
+**Track B2 + B3 — the character-sheet loop ships.** `pil_blender_render.py`
+renders front/side/back from a `.blend` scene (headless Blender Workbench,
+auto-framed from the mesh bounding box) and registers each against a
+caller-supplied reference via `pil_structure_diff --foreground`;
+`pil_character_sheet_review.py` composes those matched views into one
+`pil_contract_verdict --pairs` call, so a whole character-sheet review is a
+single contract evaluated over N registered pairs — worst-case aggregated,
+proven end to end on real renders (a deliberately swapped view is not
+averaged away by two good ones; a hard-failed view is represented, not
+dropped). Verified against a real production character
+(`C:\Projects\tms-heim\art\skeleton-crusaders\brute\`): the camera-axis
+convention was verified two independent ways rather than assumed, a real
+render-determinism defect (Blender's per-render PNG metadata) was found and
+fixed, and matched real renders VIOLATE Phase 2's calibrated similarity
+thresholds — an honest content-difference finding, not a defect; both new
+tools accept `--thresholds` for callers who need a different bar. Cross-machine
+render determinism is not claimed, only same-machine/same-install; comparison
+metrics on a fixed image pair remain fully deterministic everywhere. Full
+numbers: [`docs/index.md`](docs/index.md#status).
 
 Track A5's three new-metric candidates each ran a real discrimination gate,
 and it did its job: connected-component counting, silhouette shape descriptors

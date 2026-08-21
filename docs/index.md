@@ -36,11 +36,23 @@ Last updated: 2026-08-19
 - [Phase 3 scope](phase3-scope.md) — closed loops between measurement and vision:
   native-resolution crops, readable overlays, image metadata, region-scoped
   metrics, discrimination-gated new metrics, and the Blender character-sheet loop.
-  Track A landed in 0.4.0; Track A5 and Track B1 landed in this build (Track B2/B3
-  not started).
-- [Phase 3 build plan](phase3-build-plan.md) — the architect plan this build
-  executed: file-ownership register, per-candidate calibration design, and the
-  definition of done.
+  All work packages (A1–A5, B1–B3) have now landed or run their gate.
+- [Phase 3 build plan: Track A5 + B1](phase3-build-plan.md) — the architect
+  plan for the discrimination-gated metrics and Blender mesh statistics: file
+  ownership register, per-candidate calibration design, definition of done.
+- [Phase 3 build plan: Track B2 + B3](phase3-b2-b3-build-plan.md) — the
+  architect plan for matched-view rendering and the revision loop, including
+  the render-determinism question scoped in writing before any code.
+- [Track B2 evidence bundle](../runs/2026-08-20-blender-render-validation/README.md)
+  — matched-view rendering verified against the real brute character corpus:
+  camera-axis convention verified two independent ways, a real determinism
+  defect found and fixed (Blender's PNG metadata chunks), full discrimination
+  matrix.
+- [Track B3 evidence bundle](../runs/2026-08-20-character-sheet-loop/README.md)
+  — the revision loop verified end to end on real renders: a deliberately
+  swapped view is not averaged away, a hard-failed view is not silently
+  dropped, and an honest finding that Phase 2's calibrated thresholds are too
+  strict for render-vs-concept-art comparison.
 - Track A5 evidence bundles: [connected components](../runs/2026-08-20-components-discrimination/derived-thresholds.json)
   (demoted), [silhouette descriptors](../runs/2026-08-20-silhouette-discrimination/bundle.json)
   (demoted), [projection alignment](../runs/2026-08-20-alignment-discrimination/derived-thresholds.json)
@@ -140,10 +152,41 @@ Phase 3 Track A landed in 0.4.0.
   handoff's numbers are a correct sum of `parts.json`, which is a stale subset
   of the actual scene — is in the
   [evidence bundle](../runs/2026-08-20-blender-mesh-validation/README.md).
-- **Track B2/B3 not started.** Per `phase3-scope.md`'s own sequencing, B2
-  (matched-view render orchestration) depends on B1 and was not attempted in
-  this build; B3 depends on B2. This is a scheduling gap, not a technical
-  blocker — B1 passed its gate and both remain buildable.
+- **Track B2 and B3 have now landed** (separate build,
+  [plan](phase3-b2-b3-build-plan.md)), closing out Phase 3 in full:
+  - `pil_blender_render.py` (B2) renders front/side/back headless (Blender
+    Workbench, CPU rasterization, orthographic, auto-framed from the scene's
+    mesh bounding box) and registers each against a caller-supplied reference
+    via `pil_structure_diff --foreground`. Verified against the real
+    "Crusader Brute" character corpus (`C:\Projects\tms-heim\art\skeleton-crusaders\brute\`):
+    the camera-axis convention (faces −Y, Z-up, right hand at +X) was verified
+    two independent ways — bounding-box asymmetry and visual comparison
+    against a known-good prior render — rather than assumed. None of the
+    three real views fire `aspect_ratio_mismatch`/`resolution_mismatch`,
+    closing the specific field-trial failure (T-pose vs A-pose framing
+    mismatch) on a real asset. A real determinism defect was found and fixed
+    during the build: Blender's PNG writer embeds per-render metadata
+    (timestamp, render time) that varied byte-for-byte even when pixels were
+    identical; the tool strips it so two same-machine renders are now
+    byte-identical. Cross-machine render determinism is explicitly **not**
+    claimed — only same-machine/same-install. Comparison metrics on a fixed
+    image pair remain fully deterministic everywhere, unaffected. See the
+    [evidence bundle](../runs/2026-08-20-blender-render-validation/README.md).
+  - `pil_character_sheet_review.py` (B3) composes B2's renders into one
+    `pil_contract_verdict --pairs` call, so a character-sheet review is a
+    single contract evaluated over N registered view pairs. Proven end to end
+    on real renders, not just the existing unit-tested aggregation logic: a
+    deliberately swapped view forces the aggregate `VIOLATED` rather than
+    being averaged away by two matched views, and a view whose render
+    hard-fails is represented by a sentinel pair (not dropped), preserving the
+    pair count and surfacing the failure as `UNMEASURABLE`. **Honest finding,
+    not a defect:** at Phase 2's calibrated WP2 thresholds
+    (`structural_similarity 0.962737`, `silhouette_iou 0.85`), correctly
+    matched brute renders VIOLATE both invariants — a real content difference
+    between a Workbench render's true alpha and a baked-shading reference
+    crop, not a bug. The tool accepts `--thresholds` and ships no opinion
+    about the right bar for a given workflow. See the
+    [evidence bundle](../runs/2026-08-20-character-sheet-loop/README.md).
 - No manifest version bump in this build; all new tools declare
   `TOOL_VERSION = "0.4.0"` to match the current manifest, per the plan's own
   scope decision — the release step owns version bumps.
@@ -204,10 +247,20 @@ Phase 3 Track A landed in 0.4.0.
   of these, the calibration gates and their honest failure numbers are the
   starting point for re-evaluating the noise floor, not a reason to lower the
   bar.
-- **Track B2 (matched-view render orchestration) and B3 (the revision loop)
-  are not started.** B1 passed its gate, so both are unblocked and buildable —
-  this is a scheduling gap this build ran out of scope for, not a technical
-  block. Whoever picks this up next should also settle B2's render-determinism
-  question before implementing: Blender renders are not byte-deterministic
-  cross-machine, and this repo's core contract is byte determinism, so B2's
-  determinism claim needs to be scoped explicitly in writing before code.
+- ~~**Track B2 (matched-view render orchestration) and B3 (the revision
+  loop) are not started.**~~ **Closed.** Both shipped in a follow-up build —
+  see the Status section above and the
+  [B2](../runs/2026-08-20-blender-render-validation/README.md)/[B3](../runs/2026-08-20-character-sheet-loop/README.md)
+  evidence bundles. Phase 3 (A1–A5, B1–B3) is now complete in full, with A5's
+  three new-metric candidates honestly demoted and every other work package
+  shipped.
+- **Correctly-matched Blender renders VIOLATE Phase 2's calibrated
+  similarity thresholds.** A real, load-bearing finding from Track B3: a
+  Workbench render's true-alpha PNG and a baked-shading reference-sheet crop
+  differ enough (structural_similarity 0.77–0.81 vs. the calibrated 0.962737
+  bar, silhouette IoU 0.62–0.71 vs. 0.85) that render-vs-concept-art
+  comparisons need their own threshold bundle, not WP2's synthetic-image
+  calibration. `pil_character_sheet_review.py` and `pil_contract_verdict.py`
+  both accept `--thresholds` for exactly this; a future work package could
+  calibrate a render-vs-reference-specific bundle the way WP2 did for
+  synthetic perturbations, but none exists yet.
