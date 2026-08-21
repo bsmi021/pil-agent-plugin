@@ -1,0 +1,650 @@
+{
+  "interpretation_limits": [
+    "Pair convention: every --pairs manifest entry is {'a': REFERENCE, 'b': RENDER}. Directional fields in the downstream palette/structure reporting (hue_families_gained, hue_families_lost, changed_area_fraction growth direction) therefore read consistently as 'render minus reference' across the whole review. This matches pil_blender_render's own run_structure_diff argument order.",
+    "A view whose render step hard-fails (Blender missing, subprocess non-zero, or a scene with no render-visible mesh geometry) is NOT silently dropped from the manifest. It is represented by a small grey sentinel pair which pil_structure_diff's own foreground gating flags as empty on both sides, forcing identity.silhouette_preserved to UNMEASURABLE for that pair. WP4's worst-case aggregation then keeps the broken view visible in the aggregate rather than letting other good views average it away. per_view_renders[NAME].hard_fail explains which pair was substituted and why. Callers whose contract does NOT include identity.silhouette_preserved should be aware that the sentinel pair may SATISFY other predicates (two identical solid-grey images have structural_similarity 1.0 and identical palettes) -- a hard-fail is only guaranteed to surface via a predicate the sentinel forces to UNMEASURABLE.",
+    "A view whose render succeeded but whose comparison the render layer REFUSED (e.g. reference foreground was empty or too small) is NOT substituted with a sentinel: the render file exists, and the real (reference, render) pair goes into the manifest so pil_contract_verdict runs its own foreground gating on the real images. per_view_renders carries the render layer's own comparison.refused reason for that view so the refusal is visible without cross-referencing pair verdicts.",
+    "Aggregation is delegated wholesale to pil_contract_verdict --pairs, which is worst-case per contract item (any VIOLATED pair -> VIOLATED, else any UNMEASURABLE -> UNMEASURABLE, else SATISFIED). This tool does not re-implement aggregation; it composes the manifest and echoes the verdict.",
+    "Per-view render determinism follows pil_blender_render's scoped claim: same-machine, same-install byte-identical PNGs; cross-machine is not claimed. This tool's own JSON payload is fully deterministic given the same set of already-rendered input images -- the render step's scoped determinism applies underneath, but does not extend to this composition layer."
+  ],
+  "parameters": {
+    "blend": "C:\\Projects\\tms-heim\\art\\skeleton-crusaders\\brute\\source\\SM_Chr_Skeleton_CrusaderBrute_01.blend",
+    "blender_executable": null,
+    "contract": "C:\\temp\\pil_b3_iter\\app_contract.json",
+    "foreground": true,
+    "manifest": [
+      {
+        "a": "C:\\temp\\pil_b3_iter\\front_ref.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\front.png"
+      },
+      {
+        "a": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png"
+      },
+      {
+        "a": "C:\\temp\\pil_b3_iter\\back_ref.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\back.png"
+      }
+    ],
+    "thresholds": "C:\\temp\\pil_b3_iter\\th_bundle.json",
+    "views": [
+      "back",
+      "front",
+      "side"
+    ]
+  },
+  "per_view_renders": {
+    "back": {
+      "hard_fail": null,
+      "manifest_pair": {
+        "a": "C:\\temp\\pil_b3_iter\\back_ref.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\back.png"
+      },
+      "reference": "C:\\temp\\pil_b3_iter\\back_ref.png",
+      "render_payload": {
+        "comparison": {
+          "ahash_distance": 7,
+          "changed_area_fraction": 0.298704,
+          "changed_region_bbox_fractional": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "dhash_distance": 12,
+          "diff_flags": [
+            "foreground_source_mismatch"
+          ],
+          "reference": "C:\\temp\\pil_b3_iter\\back_ref.png",
+          "reference_image": {
+            "flags": [],
+            "foreground": {
+              "applied": true,
+              "background_estimate": "#b4aeaa",
+              "bbox_aspect_ratio": 1.166,
+              "bbox_fractional": [
+                0.1146,
+                0.0,
+                0.8555,
+                0.9531
+              ],
+              "fraction_of_frame": 0.278107,
+              "source": "background_estimate"
+            },
+            "size": [
+              768,
+              512
+            ]
+          },
+          "refused": false,
+          "refused_reason": null,
+          "render": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\back.png",
+          "render_image": {
+            "flags": [],
+            "foreground": {
+              "applied": true,
+              "background_estimate": null,
+              "bbox_aspect_ratio": 1.103,
+              "bbox_fractional": [
+                0.1654,
+                0.0449,
+                0.8346,
+                0.9551
+              ],
+              "coverage_fraction_of_frame": 0.249309,
+              "coverage_weighted": true,
+              "fraction_of_frame": 0.254173,
+              "partial_coverage_share": 0.048867,
+              "source": "alpha"
+            },
+            "size": [
+              768,
+              512
+            ]
+          },
+          "structural_similarity": 0.766538
+        },
+        "interpretation_limits": [
+          "Render determinism is scoped: two renders of the same (.blend, view) pair on this machine, this Blender install, produce byte-identical PNGs. Cross-machine or cross-install byte-identical rendering is NOT claimed -- Blender version, OS PNG codec, and Workbench studio-light bundling can all shift bytes across installs. Comparison metrics on a fixed image pair remain fully deterministic everywhere, as they do for every other tool in this repository -- what is scoped is only the render step that produces one side of the pair.",
+          "Camera convention: the scene is treated as standard Z-up (character stands along +Z, world +Z is up) with the character facing -Y. 'front' puts an orthographic camera at -Y looking +Y (aimed at the character's face); 'back' at +Y looking -Y (aimed at the back/cape); 'side' at +X looking -X (wearer's-right profile -- camera on the wearer's right hand side, looking across the body). Verified empirically against the brute corpus: after filtering hide_render=True donor meshes, the visible geometry has X range 2.37 (T-pose shoulders), Y range 0.94 (cape at +Y), Z range 2.14 (feet Z=0 to head Z=2.14). If a scene is authored with a different up axis or facing direction, front/back/side will not match the caller's expectation -- verify against a known-good reference before trusting the labelling. The framing flags (aspect_ratio_mismatch, resolution_mismatch) cannot catch this because they depend only on image size.",
+          "The auto-frame reads world-space vertex positions from the DEPSGRAPH-EVALUATED mesh of every render-visible object (hide_render=False), computes the axis-aligned bounding box, then fits it into the render frame with a 10% margin. hide_render=True meshes (donor/reference geometry) are excluded -- otherwise their transforms can dominate the bbox and shrink the visible character to a speck. Orthographic projection means no perspective foreshortening.",
+          "When aspect_ratio_mismatch or resolution_mismatch appears in the diff's own flags on a non-refused comparison, those flags describe framing and pose -- not the model. This is quoting the field trial's own finding (a T-pose render vs an A-pose reference scored structural_similarity 0.900 with both flags firing, correctly discarded). --reference pins the render size to the reference's size, so these two flags should not fire from this tool's own output.",
+          "foreground_source_mismatch is EXPECTED in comparison.diff_flags whenever the render has an alpha channel (film_transparent=True, which this tool sets unconditionally) and the reference does not. The render's alpha is true coverage information; the reference's foreground is derived from its own border-median colour. Both are valid definitions of foreground; they are just not the same one. The flag surfaces the source difference for honest reporting -- it does not cause refusal, and comparison metrics remain deterministic. Callers who want to eliminate this flag can render their references with matching alpha, or accept the small colour-comparison drift it signals.",
+          "Refusal semantics: a scene with no mesh geometry, or a comparison whose diff reports foreground_mask_empty or foreground_too_small on either image (in images.a.flags or images.b.flags), is reported as comparison.refused=true with numeric fields nulled -- never as a fabricated similarity number. Missing Blender, missing .blend, or a missing reference file is a rejection (exit 2, empty stdout, stderr reason). This mirrors pil_contract_verdict's UNMEASURABLE pattern at the render-orchestration layer."
+        ],
+        "parameters": {
+          "blend": "C:\\Projects\\tms-heim\\art\\skeleton-crusaders\\brute\\source\\SM_Chr_Skeleton_CrusaderBrute_01.blend",
+          "blender_executable": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+          "blender_version": "5.1.2",
+          "camera_convention": {
+            "character_facing": "-Y",
+            "views": {
+              "back": {
+                "camera_axis": "+Y",
+                "description": "camera at +Y looking -Y (faces character's back/cape)"
+              },
+              "front": {
+                "camera_axis": "-Y",
+                "description": "camera at -Y looking +Y (faces character's face)"
+              },
+              "side": {
+                "camera_axis": "+X",
+                "description": "camera at +X looking -X (wearer's-right profile)"
+              }
+            },
+            "world_up": [
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "device": "CPU",
+          "engine": "BLENDER_WORKBENCH",
+          "margin": 0.1,
+          "out_path": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\back.png",
+          "reference": "C:\\temp\\pil_b3_iter\\back_ref.png",
+          "resolution_default": 1024,
+          "resolution_source": "reference_pinned",
+          "resolution_used": [
+            768,
+            512
+          ],
+          "view": "back"
+        },
+        "render": {
+          "bounding_box_world_visible": {
+            "max": [
+              1.1826188564300537,
+              0.7029999494552612,
+              2.144699811935425
+            ],
+            "min": [
+              -1.1826190948486328,
+              -0.236454039812088,
+              -0.00015317814541049302
+            ],
+            "visible_mesh_count": 16
+          },
+          "camera": {
+            "camera_axis": "+Y",
+            "location": [
+              -1.1920928955078125e-07,
+              20.163951754570007,
+              1.0722733168950072
+            ],
+            "ortho_scale": 3.5390074336333788,
+            "target": [
+              -1.1920928955078125e-07,
+              0.2332729548215866,
+              1.0722733168950072
+            ],
+            "type": "ORTHO",
+            "world_up": [
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "output_path": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\back.png",
+          "refused_reason": null,
+          "render_resolution": [
+            768,
+            512
+          ],
+          "rendered": true
+        },
+        "tool": "pil_blender_render",
+        "version": "0.4.0"
+      }
+    },
+    "front": {
+      "hard_fail": null,
+      "manifest_pair": {
+        "a": "C:\\temp\\pil_b3_iter\\front_ref.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\front.png"
+      },
+      "reference": "C:\\temp\\pil_b3_iter\\front_ref.png",
+      "render_payload": {
+        "comparison": {
+          "ahash_distance": 5,
+          "changed_area_fraction": 0.386499,
+          "changed_region_bbox_fractional": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "dhash_distance": 16,
+          "diff_flags": [
+            "foreground_source_mismatch"
+          ],
+          "reference": "C:\\temp\\pil_b3_iter\\front_ref.png",
+          "reference_image": {
+            "flags": [],
+            "foreground": {
+              "applied": true,
+              "background_estimate": "#b4aeab",
+              "bbox_aspect_ratio": 1.2046,
+              "bbox_fractional": [
+                0.1068,
+                0.0645,
+                0.8581,
+                1.0
+              ],
+              "fraction_of_frame": 0.294851,
+              "source": "background_estimate"
+            },
+            "size": [
+              768,
+              512
+            ]
+          },
+          "refused": false,
+          "refused_reason": null,
+          "render": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\front.png",
+          "render_image": {
+            "flags": [],
+            "foreground": {
+              "applied": true,
+              "background_estimate": null,
+              "bbox_aspect_ratio": 1.103,
+              "bbox_fractional": [
+                0.1654,
+                0.0449,
+                0.8346,
+                0.9551
+              ],
+              "coverage_fraction_of_frame": 0.249313,
+              "coverage_weighted": true,
+              "fraction_of_frame": 0.254183,
+              "partial_coverage_share": 0.048885,
+              "source": "alpha"
+            },
+            "size": [
+              768,
+              512
+            ]
+          },
+          "structural_similarity": 0.8103
+        },
+        "interpretation_limits": [
+          "Render determinism is scoped: two renders of the same (.blend, view) pair on this machine, this Blender install, produce byte-identical PNGs. Cross-machine or cross-install byte-identical rendering is NOT claimed -- Blender version, OS PNG codec, and Workbench studio-light bundling can all shift bytes across installs. Comparison metrics on a fixed image pair remain fully deterministic everywhere, as they do for every other tool in this repository -- what is scoped is only the render step that produces one side of the pair.",
+          "Camera convention: the scene is treated as standard Z-up (character stands along +Z, world +Z is up) with the character facing -Y. 'front' puts an orthographic camera at -Y looking +Y (aimed at the character's face); 'back' at +Y looking -Y (aimed at the back/cape); 'side' at +X looking -X (wearer's-right profile -- camera on the wearer's right hand side, looking across the body). Verified empirically against the brute corpus: after filtering hide_render=True donor meshes, the visible geometry has X range 2.37 (T-pose shoulders), Y range 0.94 (cape at +Y), Z range 2.14 (feet Z=0 to head Z=2.14). If a scene is authored with a different up axis or facing direction, front/back/side will not match the caller's expectation -- verify against a known-good reference before trusting the labelling. The framing flags (aspect_ratio_mismatch, resolution_mismatch) cannot catch this because they depend only on image size.",
+          "The auto-frame reads world-space vertex positions from the DEPSGRAPH-EVALUATED mesh of every render-visible object (hide_render=False), computes the axis-aligned bounding box, then fits it into the render frame with a 10% margin. hide_render=True meshes (donor/reference geometry) are excluded -- otherwise their transforms can dominate the bbox and shrink the visible character to a speck. Orthographic projection means no perspective foreshortening.",
+          "When aspect_ratio_mismatch or resolution_mismatch appears in the diff's own flags on a non-refused comparison, those flags describe framing and pose -- not the model. This is quoting the field trial's own finding (a T-pose render vs an A-pose reference scored structural_similarity 0.900 with both flags firing, correctly discarded). --reference pins the render size to the reference's size, so these two flags should not fire from this tool's own output.",
+          "foreground_source_mismatch is EXPECTED in comparison.diff_flags whenever the render has an alpha channel (film_transparent=True, which this tool sets unconditionally) and the reference does not. The render's alpha is true coverage information; the reference's foreground is derived from its own border-median colour. Both are valid definitions of foreground; they are just not the same one. The flag surfaces the source difference for honest reporting -- it does not cause refusal, and comparison metrics remain deterministic. Callers who want to eliminate this flag can render their references with matching alpha, or accept the small colour-comparison drift it signals.",
+          "Refusal semantics: a scene with no mesh geometry, or a comparison whose diff reports foreground_mask_empty or foreground_too_small on either image (in images.a.flags or images.b.flags), is reported as comparison.refused=true with numeric fields nulled -- never as a fabricated similarity number. Missing Blender, missing .blend, or a missing reference file is a rejection (exit 2, empty stdout, stderr reason). This mirrors pil_contract_verdict's UNMEASURABLE pattern at the render-orchestration layer."
+        ],
+        "parameters": {
+          "blend": "C:\\Projects\\tms-heim\\art\\skeleton-crusaders\\brute\\source\\SM_Chr_Skeleton_CrusaderBrute_01.blend",
+          "blender_executable": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+          "blender_version": "5.1.2",
+          "camera_convention": {
+            "character_facing": "-Y",
+            "views": {
+              "back": {
+                "camera_axis": "+Y",
+                "description": "camera at +Y looking -Y (faces character's back/cape)"
+              },
+              "front": {
+                "camera_axis": "-Y",
+                "description": "camera at -Y looking +Y (faces character's face)"
+              },
+              "side": {
+                "camera_axis": "+X",
+                "description": "camera at +X looking -X (wearer's-right profile)"
+              }
+            },
+            "world_up": [
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "device": "CPU",
+          "engine": "BLENDER_WORKBENCH",
+          "margin": 0.1,
+          "out_path": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\front.png",
+          "reference": "C:\\temp\\pil_b3_iter\\front_ref.png",
+          "resolution_default": 1024,
+          "resolution_source": "reference_pinned",
+          "resolution_used": [
+            768,
+            512
+          ],
+          "view": "front"
+        },
+        "render": {
+          "bounding_box_world_visible": {
+            "max": [
+              1.1826188564300537,
+              0.7029999494552612,
+              2.144699811935425
+            ],
+            "min": [
+              -1.1826190948486328,
+              -0.236454039812088,
+              -0.00015317814541049302
+            ],
+            "visible_mesh_count": 16
+          },
+          "camera": {
+            "camera_axis": "-Y",
+            "location": [
+              -1.1920928955078125e-07,
+              -19.697405844926834,
+              1.0722733168950072
+            ],
+            "ortho_scale": 3.5390074336333788,
+            "target": [
+              -1.1920928955078125e-07,
+              0.2332729548215866,
+              1.0722733168950072
+            ],
+            "type": "ORTHO",
+            "world_up": [
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "output_path": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\front.png",
+          "refused_reason": null,
+          "render_resolution": [
+            768,
+            512
+          ],
+          "rendered": true
+        },
+        "tool": "pil_blender_render",
+        "version": "0.4.0"
+      }
+    },
+    "side": {
+      "hard_fail": {
+        "reason": "pil_blender_render exited 2: pil_blender_render: reference file not found: C:\\temp\\pil_b3_iter\\does_not_exist.png",
+        "sentinel_pair": [
+          "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+          "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png"
+        ]
+      },
+      "manifest_pair": {
+        "a": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png"
+      },
+      "reference": "C:\\temp\\pil_b3_iter\\does_not_exist.png",
+      "render_payload": null
+    }
+  },
+  "tool": "pil_character_sheet_review",
+  "verdict": {
+    "aggregate": [
+      {
+        "pair_verdicts": [
+          {
+            "a": "C:\\temp\\pil_b3_iter\\front_ref.png",
+            "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\front.png",
+            "index": 0,
+            "verdict": "SATISFIED"
+          },
+          {
+            "a": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+            "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+            "index": 1,
+            "verdict": "SATISFIED"
+          },
+          {
+            "a": "C:\\temp\\pil_b3_iter\\back_ref.png",
+            "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\back.png",
+            "index": 2,
+            "verdict": "SATISFIED"
+          }
+        ],
+        "pairs_unmeasurable": 0,
+        "pairs_violated": 0,
+        "predicate": "layout.composition_preserved",
+        "role": "invariant",
+        "verdict": "SATISFIED"
+      },
+      {
+        "pair_verdicts": [
+          {
+            "a": "C:\\temp\\pil_b3_iter\\front_ref.png",
+            "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\front.png",
+            "index": 0,
+            "verdict": "SATISFIED"
+          },
+          {
+            "a": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+            "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+            "index": 1,
+            "verdict": "UNMEASURABLE"
+          },
+          {
+            "a": "C:\\temp\\pil_b3_iter\\back_ref.png",
+            "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\back.png",
+            "index": 2,
+            "verdict": "SATISFIED"
+          }
+        ],
+        "pairs_unmeasurable": 1,
+        "pairs_violated": 0,
+        "predicate": "identity.silhouette_preserved",
+        "role": "invariant",
+        "verdict": "UNMEASURABLE"
+      }
+    ],
+    "contract": {
+      "expect_change": [],
+      "invariant": [
+        "layout.composition_preserved",
+        "identity.silhouette_preserved"
+      ]
+    },
+    "interpretation_limits": [
+      "A verdict is only as good as the threshold behind it. Until a calibration bundle is supplied via --thresholds, every threshold here is a shipped default -- reasoned, echoed in parameters, but not derived from measured false-alarm rates. Read detection_limit before trusting any negative.",
+      "SATISFIED on an invariant is NOT a guarantee that nothing changed. It means no change was detected by the deciding metric, which cannot resolve changes below its detection limit. The detection_limit field bounds what the verdict actually rules out; when it reads 'uncalibrated', the verdict bounds nothing and should be read as 'no evidence of change'.",
+      "VIOLATED on an expect_change item means the requested change was not observed -- not that something broke. The same detection-limit caveat applies: a change smaller than the metric can resolve is indistinguishable from no change at all.",
+      "UNMEASURABLE is a refusal, not a failure. geometry.* needs scene mesh statistics that no render carries; style.* and identity.same_character are not reducible to pixel statistics at all. These are never approximated, and their items carry no numeric evidence, because a plausible number is how an eager tool does damage.",
+      "detail.* is a 2D image-complexity proxy (luminance entropy and edge magnitude), NOT geometry: it does not measure polygon count, mesh density or topology, and shading, lighting and camera angle move it independently of the underlying model. Never read this item as a geometry verdict.",
+      "identity.silhouette_preserved is restricted to cleanly maskable frames. Each foreground mask is cropped to its own bounding box and normalised to a common canvas before IoU, so the comparison is translation and scale invariant but NOT pose invariant. An empty mask on either side returns UNMEASURABLE rather than a fabricated score.",
+      "Predicate truth does not depend on role. role decides only how the finding is phrased and whether a detection limit is attached, so the same predicate declared as both an expectation and an invariant will always return opposite-reading verdicts of the same measurement.",
+      "Aggregation is worst-case per contract item, never a mean: one diverging pair makes the item VIOLATED. Read aggregate for the decision and the per-pair items for where it came from.",
+      "geometry.* is UNMEASURABLE by default -- a render carries no polygon or vertex count. It becomes SATISFIED/VIOLATED when both sides of a pair supply scene-stats JSON via --scene-stats-a / --scene-stats-b (produced by scripts/pil_blender_mesh.py, which reads Blender scene data directly). Counts read from a scene reflect the base mesh; an unapplied Subdivision or Solidify modifier makes render-visible density differ from these counts. When only one side supplies scene stats the predicate is UNMEASURABLE with that reason cited, not approximated from the side that was supplied."
+    ],
+    "pairs": [
+      {
+        "a": "C:\\temp\\pil_b3_iter\\front_ref.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\front.png",
+        "flags": [],
+        "index": 0,
+        "items": [
+          {
+            "caveats": [],
+            "detection_limit": "structural_similarity / app_tuning: brute-corpus matched vs swap",
+            "evidence": {
+              "structural_similarity": 0.8103,
+              "structural_similarity_threshold": 0.75
+            },
+            "predicate": "layout.composition_preserved",
+            "reason": "invariant holds -- structural_similarity 0.8103 (needs >= 0.75)",
+            "role": "invariant",
+            "verdict": "SATISFIED"
+          },
+          {
+            "caveats": [],
+            "detection_limit": "silhouette_iou / app_tuning: brute-corpus matched vs swap",
+            "evidence": {
+              "silhouette_iou": 0.708172,
+              "silhouette_iou_threshold": 0.55,
+              "silhouette_working_edge": 256
+            },
+            "predicate": "identity.silhouette_preserved",
+            "reason": "invariant holds -- silhouette_iou 0.708172 (needs >= 0.55), measured on bbox-cropped foreground masks normalised to a 256px canvas",
+            "role": "invariant",
+            "verdict": "SATISFIED"
+          }
+        ]
+      },
+      {
+        "a": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\hard_fail_sentinel.png",
+        "flags": [
+          "accent_comparison_unavailable",
+          "accent_support_low",
+          "foreground_mask_empty",
+          "no_accent_pixels"
+        ],
+        "index": 1,
+        "items": [
+          {
+            "caveats": [],
+            "detection_limit": "structural_similarity / app_tuning: brute-corpus matched vs swap",
+            "evidence": {
+              "structural_similarity": 1.0,
+              "structural_similarity_threshold": 0.75
+            },
+            "predicate": "layout.composition_preserved",
+            "reason": "invariant holds -- structural_similarity 1.0 (needs >= 0.75)",
+            "role": "invariant",
+            "verdict": "SATISFIED"
+          },
+          {
+            "caveats": [],
+            "detection_limit": null,
+            "evidence": {},
+            "predicate": "identity.silhouette_preserved",
+            "reason": "foreground mask is empty on image a and b: no silhouette to compare. Supply a render with real alpha, or a frame whose subject separates from the background.",
+            "role": "invariant",
+            "verdict": "UNMEASURABLE"
+          }
+        ]
+      },
+      {
+        "a": "C:\\temp\\pil_b3_iter\\back_ref.png",
+        "b": "C:\\Users\\bsmi0\\AppData\\Local\\Temp\\pil_char_sheet_fl4r_tmk\\back.png",
+        "flags": [],
+        "index": 2,
+        "items": [
+          {
+            "caveats": [],
+            "detection_limit": "structural_similarity / app_tuning: brute-corpus matched vs swap",
+            "evidence": {
+              "structural_similarity": 0.766538,
+              "structural_similarity_threshold": 0.75
+            },
+            "predicate": "layout.composition_preserved",
+            "reason": "invariant holds -- structural_similarity 0.766538 (needs >= 0.75)",
+            "role": "invariant",
+            "verdict": "SATISFIED"
+          },
+          {
+            "caveats": [],
+            "detection_limit": "silhouette_iou / app_tuning: brute-corpus matched vs swap",
+            "evidence": {
+              "silhouette_iou": 0.619966,
+              "silhouette_iou_threshold": 0.55,
+              "silhouette_working_edge": 256
+            },
+            "predicate": "identity.silhouette_preserved",
+            "reason": "invariant holds -- silhouette_iou 0.619966 (needs >= 0.55), measured on bbox-cropped foreground masks normalised to a 256px canvas",
+            "role": "invariant",
+            "verdict": "SATISFIED"
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "accent_space": "hsv",
+      "accent_thresholds": {
+        "chroma_min": 20.0,
+        "lightness_min": 20.0,
+        "saturation_min": 100,
+        "value_min": 60
+      },
+      "background_delta": 0.035,
+      "colors": 8,
+      "foreground": true,
+      "grid": {
+        "cols": 4,
+        "rows": 3
+      },
+      "hue_families": {
+        "cool": [
+          "cyan",
+          "blue",
+          "purple"
+        ],
+        "warm": [
+          "red",
+          "orange",
+          "yellow"
+        ]
+      },
+      "hue_presence_min": {
+        "fraction": 0.0002,
+        "pixels": 10
+      },
+      "predicates": {
+        "measurable": [
+          "detail.decreased",
+          "detail.increased",
+          "exact.unchanged",
+          "identity.silhouette_preserved",
+          "layout.composition_preserved",
+          "layout.region_changed",
+          "palette.cooler",
+          "palette.hue_present",
+          "palette.scheme_preserved",
+          "palette.warmer"
+        ],
+        "parameterised": [
+          "layout.region_changed([left,top,right,bottom])",
+          "palette.hue_present(NAME)"
+        ],
+        "refused": {
+          "geometry.*": "needs scene mesh statistics; a render cannot answer this",
+          "identity.same_character": "not reducible to pixel statistics",
+          "style.*": "not reducible to pixel statistics"
+        }
+      },
+      "scene_stats": {
+        "a": null,
+        "b": null
+      },
+      "thresholds": {
+        "changed_area_fraction": {
+          "detection_limits": {},
+          "threshold": 0.001
+        },
+        "edge_mean_delta": {
+          "detection_limits": {},
+          "threshold": 0.5
+        },
+        "entropy_delta": {
+          "detection_limits": {},
+          "threshold": 0.05
+        },
+        "hue_family_mass_shift": {
+          "detection_limits": {},
+          "threshold": 0.02
+        },
+        "silhouette_iou": {
+          "detection_limits": {
+            "app_tuning": "brute-corpus matched vs swap"
+          },
+          "threshold": 0.55
+        },
+        "structural_similarity": {
+          "detection_limits": {
+            "app_tuning": "brute-corpus matched vs swap"
+          },
+          "threshold": 0.75
+        }
+      },
+      "thresholds_source": "C:\\temp\\pil_b3_iter\\th_bundle.json"
+    },
+    "tool": "pil_contract_verdict",
+    "version": "0.4.0"
+  },
+  "version": "0.4.0"
+}
