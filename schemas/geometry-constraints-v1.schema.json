@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bsmi021/pil-agent-plugin/schemas/geometry-constraints-v1.schema.json",
+  "title": "PIL Agent geometry constraints v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema"],
+  "properties": {
+    "schema": {"const": "geometry-constraints-v1"},
+    "template_weight": {"type": "number", "minimum": 0},
+    "edge_weight": {"type": "number", "minimum": 0},
+    "symmetry_weight": {"type": "number", "minimum": 0},
+    "max_landmark_rmse": {"type": "number", "minimum": 0},
+    "max_nfev": {"type": "integer", "minimum": 1},
+    "fixed_vertices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["vertex", "position"],
+        "properties": {
+          "vertex": {"type": "integer", "minimum": 0},
+          "position": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}},
+          "weight": {"type": "number", "exclusiveMinimum": 0}
+        }
+      }
+    },
+    "symmetry_pairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["left", "right"],
+        "properties": {
+          "left": {"type": "integer", "minimum": 0},
+          "right": {"type": "integer", "minimum": 0},
+          "axis": {"enum": ["x", "y", "z"]},
+          "center": {"type": "number"},
+          "weight": {"type": "number", "exclusiveMinimum": 0}
+        }
+      }
+    }
+  }
+}

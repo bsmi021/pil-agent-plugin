@@ -45,7 +45,7 @@ CORPUS_ROOT = Path(
         r"C:/Projects/tms-heim/art/skeleton-crusaders/swordsman",
     )
 )
-DEFAULT_BLENDER = Path("C:/Program Files/Blender Foundation/Blender 5.1/blender.exe")
+DEFAULT_BLENDER = Path("C:/Program Files/Blender Foundation/Blender 5.2/blender.exe")
 
 
 # --- helpers -----------------------------------------------------------------

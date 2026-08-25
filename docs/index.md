@@ -1,6 +1,6 @@
 # pil-agent-plugin documentation
 
-Last updated: 2026-08-19
+Last updated: 2026-08-25
 
 ## Contents
 
@@ -43,6 +43,14 @@ Last updated: 2026-08-19
 - [Phase 3 build plan: Track B2 + B3](phase3-b2-b3-build-plan.md) — the
   architect plan for matched-view rendering and the revision loop, including
   the render-determinism question scoped in writing before any code.
+- [Phase 4 scope](phase4-scope.md) — optional OpenCV/SciPy multi-view
+  preparation and template fitting, Blender BVH clearance, arbitrary locked
+  renders, refusal states, and versioned schemas.
+- [Phase 4 handoff](phase4-handoff.md) — capability boundary, status vocabulary,
+  and safe extension points for reconstruction consumers.
+- [`image-analysis` combined skill](../skills/image-analysis/SKILL.md) — routes
+  pixel-only, calibrated reconstruction, and combined concept-to-model analysis
+  while keeping image and Blender geometry evidence distinct.
 - [Track B2 evidence bundle](../runs/2026-08-20-blender-render-validation/README.md)
   — matched-view rendering verified against the real brute character corpus:
   camera-axis convention verified two independent ways, a real determinism
@@ -65,9 +73,10 @@ Last updated: 2026-08-19
 
 ## Summary
 
-Six Pillow-backed CLI tools give a coding agent quantitative, diffable
+The core Pillow-backed CLI tools give a coding agent quantitative, diffable
 measurements of an image, complementing rather than replacing native multimodal
-vision:
+vision. Optional Phase 4 tools add constrained multi-view template fitting and
+Blender geometry checks without treating pixels as hidden-geometry proof:
 
 - `pil_palette_diff` — colour palettes (CIEDE2000 + hue census), colour-scheme
   comparison
@@ -195,6 +204,23 @@ Phase 3 Track A landed in 0.4.0.
   byte-identical across repeated invocations; support-insufficient foreground
   comparisons refuse; and render output is staged atomically so a failed run
   leaves neither a partial artifact nor destroys a pre-existing caller file.
+
+**0.6.0 — constrained multi-view reconstruction:**
+
+- `pil_multiview_prepare.py` traces deterministic ordered foreground contours
+  with OpenCV while reusing the plugin's alpha/border foreground definition.
+- `pil_multiview_solve.py` fits an existing template with SciPy, counts only
+  observation/fixed-coordinate rank, and returns explicit
+  `UNDERDETERMINED`/`VIEW_CONFLICT` states.
+- `pil_blender_fit.py` measures nearest-surface signed clearance with Blender
+  BVH and can save one bounded fitted copy without overwriting either source or
+  an existing destination.
+- `pil_multiview_render.py` accepts arbitrary direction/up views and shared
+  orthographic framing; `pil_multiview_review.py` preserves every named pair in
+  the existing worst-case verdict path.
+- The sibling `multiview-reconstruction` skill and seven versioned JSON schemas
+  make the workflow discoverable and machine-checkable. Core installs remain
+  Pillow + NumPy; OpenCV and SciPy are an opt-in extra.
 
 ## Open items
 

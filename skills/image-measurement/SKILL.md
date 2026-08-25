@@ -9,6 +9,11 @@ Native vision already reads images well — text, layout, objects, style. Use th
 tools when the answer needs to be a **number**: an exact hex value, a reproducible
 similarity score, or coordinates of what changed.
 
+If the request also needs calibrated multi-view fitting, Blender clearance, or
+seven-view concept-to-model evaluation, route through the sibling
+`image-analysis` umbrella skill, which composes this skill with
+`multiview-reconstruction` while preserving their evidence boundaries.
+
 Both tools emit JSON on stdout, are deterministic (repeated runs are
 byte-identical), and take one image (analyse) or two (analyse and diff).
 
@@ -347,6 +352,12 @@ For polygon count, mesh density, topology or "is this lower-poly than that",
 use `pil_blender_mesh.py` above (or the 3D scene's own tooling directly, e.g. a
 Blender MCP server) — never infer it from a rendered image, which produces
 confident, wrong answers.
+
+For an explicitly calibrated several-view template fit, route to the sibling
+`multiview-reconstruction` skill. It treats contours and landmarks as
+constraints, checks independent observation rank, and uses Blender BVH for
+clearance; it does not weaken this skill's prohibition on inferring hidden
+topology or metric depth from pixels alone.
 
 Every `pil_structure_diff` payload repeats this limit under `interpretation_limits`.
 

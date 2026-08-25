@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bsmi021/pil-agent-plugin/schemas/reconstruction-job-v1.schema.json",
+  "title": "PIL Agent reconstruction job v1",
+  "type": "object",
+  "required": ["schema", "spec", "template", "correspondences", "constraints"],
+  "properties": {
+    "schema": {"const": "reconstruction-job-v1"},
+    "spec": {"type": "string", "minLength": 1},
+    "template": {"type": "string", "minLength": 1},
+    "correspondences": {"type": "string", "minLength": 1},
+    "constraints": {"type": "string", "minLength": 1},
+    "fit": {"type": "object"},
+    "render": {"type": "object"},
+    "review": {"type": "object"}
+  }
+}

@@ -63,7 +63,7 @@ BRUTE_TURNAROUND = (
     / "references"
     / "skeletal-brute-tpose-turnaround-lowpoly-2026-08-15.png"
 )
-DEFAULT_BLENDER = Path("C:/Program Files/Blender Foundation/Blender 5.1/blender.exe")
+DEFAULT_BLENDER = Path("C:/Program Files/Blender Foundation/Blender 5.2/blender.exe")
 
 
 def _run(*args, cwd=None):
@@ -251,7 +251,7 @@ def _entry_ok(view, ref_path, render_path):
         "reference": str(ref_path),
         "render_payload": {
             "tool": "pil_blender_render",
-            "version": "0.5.0",
+            "version": "0.6.0",
             "render": {"rendered": True, "output_path": str(render_path)},
             "comparison": {"refused": False, "structural_similarity": 0.85},
         },
@@ -336,7 +336,7 @@ class TestManifestAndPayloadComposition:
         ]
         verdict = {
             "tool": "pil_contract_verdict",
-            "version": "0.5.0",
+            "version": "0.6.0",
             "aggregate": [
                 {"predicate": "layout.composition_preserved", "verdict": "VIOLATED"}
             ],
@@ -362,7 +362,7 @@ class TestManifestAndPayloadComposition:
         s2 = json.dumps(p2, indent=2, sort_keys=True, allow_nan=False)
         assert _sha256(s1.encode()) == _sha256(s2.encode())
         assert p1["tool"] == "pil_character_sheet_review"
-        assert p1["version"] == "0.5.0"
+        assert p1["version"] == "0.6.0"
         assert p1["verdict"] is verdict
         assert set(p1["per_view_renders"].keys()) == {"front", "side", "back"}
         assert p1["parameters"]["views"] == ["back", "front", "side"]
@@ -510,7 +510,7 @@ class TestCorpusMatchedViews:
         )
         payload = json.loads(proc.stdout)
         assert payload["tool"] == "pil_character_sheet_review"
-        assert payload["version"] == "0.5.0"
+        assert payload["version"] == "0.6.0"
 
         # Aggregate: every predicate SATISFIED, no view dropped from the
         # manifest, no hard_fail block in any per-view entry.

@@ -1,11 +1,17 @@
 [project]
 name = "pil-agent-plugin"
-version = "0.5.0"
+version = "0.6.0"
 description = "Quantitative image measurement and diffing tools for coding agents, complementing native multimodal vision"
 requires-python = ">=3.11"
 dependencies = [
     "pillow>=10.0",
     "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+reconstruction = [
+    "opencv-python-headless>=4.10,<5",
+    "scipy>=1.14,<2",
 ]
 
 [dependency-groups]
@@ -17,4 +23,4 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Tests import fixtures from conftest by module name.
-pythonpath = ["tests"]
+pythonpath = ["tests", "scripts"]
