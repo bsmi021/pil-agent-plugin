@@ -70,7 +70,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.5.0"
+TOOL_VERSION = "0.6.0"
 
 # Feature scales used to normalise each per-cell statistic into roughly 0..1
 # before differencing, so no single feature dominates the similarity score.

@@ -62,7 +62,7 @@ BRUTE_TURNAROUND = (
     / "references"
     / "skeletal-brute-tpose-turnaround-lowpoly-2026-08-15.png"
 )
-DEFAULT_BLENDER = Path("C:/Program Files/Blender Foundation/Blender 5.1/blender.exe")
+DEFAULT_BLENDER = Path("C:/Program Files/Blender Foundation/Blender 5.2/blender.exe")
 
 
 # --- helpers -----------------------------------------------------------------

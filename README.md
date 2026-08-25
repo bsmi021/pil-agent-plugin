@@ -1,8 +1,9 @@
 # pil-agent-plugin
 
-An agent plugin that gives coding agents
-**quantitative** image measurement — exact colour palettes, per-hue census, layout
-statistics, perceptual hashes, and changed-region localisation.
+An agent plugin that gives coding agents **quantitative** image measurement —
+exact colour palettes, per-hue census, layout statistics, perceptual hashes, and
+changed-region localisation — plus an optional constrained multi-view layer for
+template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
@@ -37,12 +38,13 @@ portable and Claude Code-native layouts side by side:
 | Path | Role | Read by |
 |---|---|---|
 | `plugin.json` | Portable manifest, `$schema` pinned to [`schemas/1.0.0/plugin.schema.json`](https://agent-plugins.org/schemas/1.0.0/plugin.schema.json) | Any Agent Plugins client |
+| `.codex-plugin/plugin.json` | Codex-native manifest and interface metadata | Codex |
 | `skills/image-measurement/SKILL.md` | Portable skill, per the [Agent Skills spec](https://agentskills.io/specification) | Any Agent Plugins client |
 | `.claude-plugin/plugin.json` | Claude Code's native manifest | Claude Code |
 | `agents/` | Claude Code subagent — no portable equivalent in 1.0.0 | Claude Code |
 | `.claude-plugin/marketplace.json` | Single-plugin marketplace, so the CLI can install this repo; declares Claude Code's own `$schema` | Claude Code |
 
-All three manifests describe the same package. `agents/` and `.claude-plugin/` are
+All four manifests describe the same package. `agents/`, `.codex-plugin/`, and `.claude-plugin/` are
 undefined top-level directories under Agent Plugins, which the specification
 requires clients to ignore rather than reject, so their presence does not affect
 portability. No `mcp.json` is shipped — this plugin exposes CLI tools and a skill,
@@ -77,7 +79,9 @@ print('valid')"
 
 - **Claude Code** (for plugin installation; the scripts also run standalone)
 - **Python 3.11+**
-- **Pillow** and **numpy** — no other runtime dependencies
+- **Pillow** and **numpy** for the core image tools
+- Optional reconstruction extra: **OpenCV** and **SciPy**
+- Optional Blender tools: a local Blender executable (tested with Blender 5.2)
 - **[uv](https://docs.astral.sh/uv/)** recommended, for a pinned environment
 
 ## Installation
@@ -86,6 +90,7 @@ print('valid')"
 git clone https://github.com/bsmi021/pil-agent-plugin.git
 cd pil-agent-plugin
 uv sync                        # installs Pillow + numpy into a local venv
+uv sync --extra reconstruction # also installs OpenCV + SciPy
 ```
 
 Then install it as a plugin. The Claude Code CLI installs from *marketplaces*, not
@@ -143,6 +148,12 @@ request calls for it. Its description triggers on questions like:
 - *"Did this render keep the reference's colour scheme?"*
 - *"What exactly changed between these two versions?"*
 - *"What are the exact colours in this logo?"*
+
+For work that crosses from images into calibrated multi-view constraints or
+Blender geometry, the `image-analysis` umbrella skill composes
+`image-measurement` with `multiview-reconstruction`. It keeps visual
+interpretation, pixel measurement, reconstruction residuals, and scene geometry
+as separate evidence layers, then combines them in one report.
 
 ### 2. The comparison agent
 
@@ -244,6 +255,11 @@ A caller reading only a similarity score or a hash would have concluded "identic
 | Does this colour pair meet WCAG contrast? | `pil_alignment contrast` | `contrast_ratio`, verified against the standard's own worked examples |
 | Render a Blender scene's front/side/back and check it registers against a reference | `pil_blender_render` | matched-view render + `pil_structure_diff --foreground` comparison, refuses rather than warps |
 | Review a whole character sheet (multiple matched views) as one contract | `pil_character_sheet_review` | `pil_contract_verdict --pairs` aggregate over B2's rendered views; a single diverging view forces the aggregate |
+| Extract ordered contours from several reference views | `pil_multiview_prepare` | normalized contour, bbox, foreground provenance, per-view refusal |
+| Fit template vertices to calibrated multi-view constraints | `pil_multiview_solve` | `SOLVED`, `UNDERDETERMINED`, or `VIEW_CONFLICT`, rank and per-view residuals |
+| Measure or correct garment/body clearance | `pil_blender_fit` | Blender BVH signed clearance; read-only probe or bounded new-file fit |
+| Render a locked-framing seven-view or arbitrary-view set | `pil_multiview_render` | one render record per requested view |
+| Review arbitrary named views without averaging away a failure | `pil_multiview_review` | existing worst-case contract aggregate |
 
 **Consult both tools for any "do these match?" question.** They are blind to
 different things. And **read `flags` before any score**: `background_dominant`,
@@ -358,6 +374,14 @@ measured.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.6.0 — constrained multi-view reconstruction.** The optional
+`multiview-reconstruction` skill adds OpenCV contour preparation, a SciPy
+least-squares template solver with full-rank and conflict refusal states,
+Blender BVH clearance probing/bounded copy fitting, arbitrary locked-framing
+Workbench renders, and worst-case review over every named view. The core
+Pillow/NumPy install and existing `image-measurement` behavior are unchanged.
+See [`docs/phase4-scope.md`](docs/phase4-scope.md).
 
 **0.5.0 — Phase 3 complete.** All of Track A5 and Track B1/B2/B3 now ships
 alongside Track A1-A4 from 0.4.0. The release also closes the first PR #7

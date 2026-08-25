@@ -1,6 +1,6 @@
 """Packaging conformance.
 
-The plugin ships two manifests on purpose:
+The plugin ships four manifests on purpose:
 
 - ``plugin.json``               — the portable Agent Plugins 1.0.0 manifest
                                   (https://agent-plugins.org/specification)
@@ -8,8 +8,9 @@ The plugin ships two manifests on purpose:
 - ``.claude-plugin/marketplace.json`` — a single-plugin marketplace, because the
                                   Claude Code CLI installs from marketplaces and
                                   cannot install from a bare directory path
+- ``.codex-plugin/plugin.json`` — Codex-native manifest and interface metadata
 
-Both describe the same package, so they will drift unless something checks them.
+They describe the same package, so they will drift unless something checks them.
 These tests encode the parts of Agent Plugins 1.0.0 that a plugin author can
 violate, so the conformance claim in the README travels with the code rather
 than being a one-time assertion.
@@ -25,6 +26,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PORTABLE_MANIFEST = REPO_ROOT / "plugin.json"
 NATIVE_MANIFEST = REPO_ROOT / ".claude-plugin" / "plugin.json"
+CODEX_MANIFEST = REPO_ROOT / ".codex-plugin" / "plugin.json"
 MARKETPLACE = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 
 SCHEMA_ID = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
@@ -60,6 +62,11 @@ def portable():
 @pytest.fixture(scope="module")
 def native():
     return json.loads(NATIVE_MANIFEST.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def codex():
+    return json.loads(CODEX_MANIFEST.read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="module")
@@ -133,6 +140,12 @@ def test_mcp_configuration_is_absent_not_misplaced():
     assert "mcpServers" not in json.loads(PORTABLE_MANIFEST.read_text(encoding="utf-8"))
 
 
+def test_codex_manifest_discovers_the_shared_skills(codex):
+    assert codex["name"] == "pil-agent-plugin"
+    assert codex["skills"] == "./skills/"
+    assert codex["interface"]["displayName"] == "PIL Image Measurement"
+
+
 # --- Agent Skills specification --------------------------------------------
 
 
@@ -162,7 +175,7 @@ def test_skill_frontmatter_conforms(skill_dir):
     assert 1 <= len(description) <= 1024
 
 
-# --- The two manifests must agree ------------------------------------------
+# --- Portable and client-native manifests must agree -----------------------
 
 
 @pytest.mark.parametrize(
@@ -179,6 +192,15 @@ def test_manifests_agree_on_author_and_keywords(portable, native):
     assert portable["keywords"] == native["keywords"]
 
 
+@pytest.mark.parametrize("field", ["name", "version", "homepage", "repository", "license"])
+def test_codex_manifest_agrees_on_shared_identity(portable, native, codex, field):
+    assert codex[field] == portable[field] == native[field]
+
+
+def test_codex_manifest_agrees_on_author(portable, codex):
+    assert codex["author"] == portable["author"]
+
+
 # --- the marketplace listing must agree with both manifests -----------------
 
 
@@ -191,9 +213,12 @@ def test_marketplace_source_points_at_this_repository(listing):
 
 @pytest.mark.parametrize("field", ["name", "version", "description", "license", "homepage"])
 def test_marketplace_listing_matches_manifests(listing, portable, native, field):
-    """Version now lives in three files. `claude plugin tag` refuses to tag a
-    release when plugin.json and the marketplace entry disagree, so drift here
-    breaks releases rather than merely being untidy."""
+    """Portable, Claude-native, and marketplace metadata must not drift.
+
+    `claude plugin tag` refuses to tag when plugin.json and the marketplace
+    entry disagree, so drift here breaks releases rather than merely being
+    untidy. Codex-native identity is checked separately above.
+    """
     assert listing[field] == portable[field] == native[field], (
         f"{field} differs between marketplace.json and the plugin manifests"
     )

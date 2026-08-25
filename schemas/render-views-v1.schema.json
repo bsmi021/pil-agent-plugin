@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bsmi021/pil-agent-plugin/schemas/render-views-v1.schema.json",
+  "title": "PIL Agent Blender render views v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "views"],
+  "properties": {
+    "schema": {"const": "render-views-v1"},
+    "views": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "direction"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+          "direction": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}},
+          "up": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}}
+        }
+      }
+    }
+  }
+}

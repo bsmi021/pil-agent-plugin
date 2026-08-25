@@ -33,13 +33,14 @@ import sys
 import tempfile
 from pathlib import Path
 
-TOOL_VERSION = "0.5.0"
+TOOL_VERSION = "0.6.0"
 
 # Default search order for the Blender executable. `--blender-executable` wins;
 # the Windows install path used to build this tool is second; then a bare
 # ``blender`` on PATH. Kept explicit so a missing Blender surfaces as one clear
 # reason rather than a cryptic FileNotFoundError.
 DEFAULT_BLENDER_SEARCH = (
+    "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe",
     "C:/Program Files/Blender Foundation/Blender 5.1/blender.exe",
     "C:/Program Files/Blender Foundation/Blender/blender.exe",
     "blender",

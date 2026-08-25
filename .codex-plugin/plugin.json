@@ -1,0 +1,38 @@
+{
+  "name": "pil-agent-plugin",
+  "version": "0.6.0",
+  "description": "Quantitative image measurement plus optional constrained multi-view reconstruction and Blender geometry checks.",
+  "author": {
+    "name": "bsmi021",
+    "url": "https://github.com/bsmi021"
+  },
+  "homepage": "https://github.com/bsmi021/pil-agent-plugin",
+  "repository": "https://github.com/bsmi021/pil-agent-plugin",
+  "license": "MIT",
+  "keywords": [
+    "image-analysis",
+    "pillow",
+    "computer-vision",
+    "multiview-reconstruction",
+    "blender"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "PIL Image Measurement",
+    "shortDescription": "Measure images and constrain multi-view mesh fits",
+    "longDescription": "Deterministic image metrics, calibrated multi-view template fitting, Blender BVH clearance checks, and matched-view review.",
+    "developerName": "bsmi021",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Image analysis",
+      "3D reconstruction",
+      "Blender validation"
+    ],
+    "websiteURL": "https://github.com/bsmi021/pil-agent-plugin",
+    "defaultPrompt": [
+      "Measure these images and explain the differences.",
+      "Fit this template mesh from calibrated views.",
+      "Check garment clearance and render seven views."
+    ]
+  }
+}
