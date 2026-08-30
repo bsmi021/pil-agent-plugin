@@ -33,10 +33,13 @@ source alone would have missed a real change.
    image is an **object on a backdrop** (an asset render, a product shot, a
    sprite on a preview background) or **full-frame content** (a screenshot, a
    painting, a UI).
-2. **Measure.** Invoke the `image-measurement` skill's tools on both images —
-   both `pil_palette_diff` and `pil_structure_diff`. Run them on the pair, not
-   just individually. If step 1 identified an object on a backdrop, run both
-   tools **with `--foreground`** as well; the full-frame run then tells you
+2. **Measure.** Invoke the `image-measurement` skill's tools on the pair.
+   One `pil_image_analyze.py "<a>" "<b>"` call returns both images' full
+   profiles (file facts, colour, structure, fingerprints, tonal and channel
+   statistics) plus the complete colour and structure diffs — prefer it over
+   separate `pil_palette_diff` and `pil_structure_diff` invocations, whose
+   diffs it contains verbatim. Run it on the pair, not just individually. If step 1 identified an object on a backdrop, run it
+   **with `--foreground`** as well; the full-frame run then tells you
    about the frames, the foreground run about the objects. For colour distance
    read the `*_de2000` fields, not the RGB ones. When the user stated an
    *intent* ("make it warmer, keep the layout"), also run

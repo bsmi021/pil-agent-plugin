@@ -1,6 +1,6 @@
 ---
 name: image-measurement
-description: Measures images numerically and compares two images with Pillow — exact hex colour palettes with coverage, per-hue census, luminance/saturation/entropy statistics, per-region grid statistics, perceptual hash distance, and changed-region bounding boxes. Use when asked whether two images match, whether a render or screenshot kept a reference's colour scheme or layout, what specifically changed between two versions, what the exact colours of an image are, or to compare a generated image against a reference. Does NOT measure 3D geometry or polygon count.
+description: Measures images numerically and compares two images with Pillow — a one-call maximal profile per image (file facts, exact hex colour palettes with coverage, per-hue census, luminance/saturation/entropy statistics, tonal percentiles and clipping, per-region grid statistics, persistable perceptual-hash fingerprints) plus pairwise hash distance and changed-region bounding boxes. Use when asked whether two images match, whether a render or screenshot kept a reference's colour scheme or layout, what specifically changed between two versions, what the exact colours of an image are, to fingerprint or identify an image, or to compare a generated image against a reference. Does NOT measure 3D geometry or polygon count.
 ---
 
 # Image measurement
@@ -14,8 +14,17 @@ seven-view concept-to-model evaluation, route through the sibling
 `image-analysis` umbrella skill, which composes this skill with
 `multiview-reconstruction` while preserving their evidence boundaries.
 
-Both tools emit JSON on stdout, are deterministic (repeated runs are
+All tools emit JSON on stdout, are deterministic (repeated runs are
 byte-identical), and take one image (analyse) or two (analyse and diff).
+
+**Default entry point: `pil_image_analyze.py`.** One invocation returns the
+maximal profile — file facts, full colour analysis, full structure analysis,
+persistable perceptual-hash fingerprints, tonal percentiles/clipping, channel
+statistics, and detail diagnostics — and, with two images, the complete
+pairwise diff of every layer. Reach for the individual tools below when you
+need only one layer, a smaller payload, or their extra modes
+(`pil_contract_verdict`'s declared-intent contracts, `pil_crop`/`pil_annotate`
+for vision hand-off).
 
 ## Running the tools
 
@@ -42,6 +51,11 @@ Always quote image paths: they frequently contain spaces or parentheses.
 
 | Question | Tool | Field to read |
 |---|---|---|
+| Everything measurable about this image, in one call | analyze | the full profile: `file`, `colour`, `structure`, `fingerprints`, `tonal`, `channels`, `detail` |
+| Fingerprint this image so I can identify it later | analyze | `fingerprints.full_frame.dhash`/`ahash` — hex, comparable across runs by Hamming distance |
+| Full two-image comparison, one call | analyze | `diff.colour` + `diff.structure` + `diff.fingerprints` + `diff.file` |
+| Exposure, contrast, clipping | analyze | `tonal.percentiles`, `tonal.clipped_black_fraction`/`clipped_white_fraction` |
+| Is this file arithmetically greyscale? How many distinct colours? | analyze | `channels.all_channels_equal`, `channels.unique_colours` |
 | Is this the same image? | structure | `dhash_distance`, `changed_area_fraction` |
 | Same layout/composition? | structure | `structural_similarity` |
 | What changed, and where? | structure | `changed_region_bbox_fractional`, `most_divergent_cells` |
@@ -95,6 +109,45 @@ how the mask was derived.
 One caveat: thin objects lose edge fidelity across resolutions (most of their
 pixels are edge-blended), so compare like-resolution renders where possible and
 rely on relative ranking otherwise.
+
+## `pil_image_analyze.py` — the one-call maximal profile
+
+```bash
+... pil_image_analyze.py "<image>" ["<candidate>"] [--foreground] [--region L,T,R,B] [--grid 4x3] [--colors 8]
+```
+
+Composes `pil_image_info`, `pil_palette_diff` and `pil_structure_diff`
+through their own analysis functions — the `file`, `colour` and `structure`
+blocks are content-identical to running those tools standalone with the same
+options, and every flag and interpretation limit they publish is carried
+through — then adds what none of them emitted for a single image:
+
+- **`fingerprints`** — dhash/ahash as 16-hex-character strings, for
+  `full_frame` and for `subject` (the foreground-masked, bbox-cropped object
+  in `--foreground` mode). The pairwise tools only ever report hash
+  *distances*; these are the hashes themselves, so an image profiled today
+  can be identified against one profiled last week by Hamming distance over
+  two stored payloads — no re-measurement, no second file. They survive
+  rescaling but are luminance-based: a pure recolour can measure distance 0,
+  which is exactly why the colour block ships in the same payload.
+- **`tonal`** — exact luminance min/max, percentiles (p01–p99), and
+  clipped/near-clipped fractions: exposure and dynamic-range facts that
+  mean/std alone cannot carry. Frame-scoped even in `--foreground` mode;
+  read `colour.luminance` for the foreground-masked figures.
+- **`channels`** — per-channel mean/std, exact distinct-colour count, and an
+  exact all-channels-equal (true-greyscale) test.
+- **`detail`** — edge-magnitude statistics and Laplacian variance on the
+  working copy. Uncalibrated 2D diagnostics: relative signals between
+  like-resolution images, never a quality verdict, never geometry.
+
+With two images the payload adds `diff.colour` and `diff.structure`
+(identical to the standalone tools' diffs), `diff.fingerprints` (all four
+hash distances) and `diff.file` (byte/format/mode/size identity) — a
+complete two-image comparison in one invocation. Each profile's top-level
+`flags` is the union of every block's flags, so one glance still catches
+`background_dominant` before any score is trusted. An unreadable file
+reports `readable: false` in its `file` block while its sibling still gets a
+full profile, and the exit code is 1.
 
 ## `pil_palette_diff.py`
 

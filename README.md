@@ -176,11 +176,23 @@ byte-identical, so output can be committed and diffed), and accept one image
 (analyse) or two (analyse and diff).
 
 ```bash
+uv run python scripts/pil_image_analyze.py  "reference.png"                # maximal one-call profile
+uv run python scripts/pil_image_analyze.py  "reference.png" "render.png"   # full comparison, one call
 uv run python scripts/pil_palette_diff.py   "reference.png"
 uv run python scripts/pil_palette_diff.py   "reference.png" "render.png"
 uv run python scripts/pil_structure_diff.py "reference.png" "render.png" --grid 4x3
 uv run python scripts/pil_structure_diff.py "view_a.png" "view_b.png" --foreground
 ```
+
+`pil_image_analyze.py` is the one-call entry point: it composes the file-fact,
+palette and structure tools (their blocks are content-identical to standalone
+runs) and adds what none of them emit for a single image — persistable
+dhash/ahash **fingerprints** (hex strings comparable across runs by Hamming
+distance, so an image profiled today can be identified against a payload
+stored last week), exact tonal percentiles and clipping fractions, per-channel
+statistics, an exact distinct-colour count and greyscale test, and
+edge/sharpness diagnostics. With two images it also contains both tools'
+pairwise diffs verbatim plus all four fingerprint distances.
 
 Always quote paths — image filenames routinely contain spaces and parentheses.
 
@@ -238,6 +250,10 @@ A caller reading only a similarity score or a hash would have concluded "identic
 
 | Question | Tool | Field |
 |---|---|---|
+| Everything measurable about an image, one call | `pil_image_analyze` | full profile: `file` + `colour` + `structure` + `fingerprints` + `tonal` + `channels` + `detail` |
+| Fingerprint an image for later identification | `pil_image_analyze` | `fingerprints.full_frame.dhash`/`ahash` — hex, cross-run comparable |
+| Exposure / clipping / dynamic range | `pil_image_analyze` | `tonal.percentiles`, `clipped_black_fraction`, `clipped_white_fraction` |
+| Exact distinct-colour count, true-greyscale test | `pil_image_analyze` | `channels.unique_colours`, `channels.all_channels_equal` |
 | Let me **see** a region at full resolution | `pil_crop` | native-resolution crop, integer upscale only |
 | Let me **point** at something a model will understand | `pil_annotate` | numbered boxes on a copy |
 | What does the **file** say (alpha, EXIF, ICC, true size)? | `pil_image_info` | file facts vision never receives |
