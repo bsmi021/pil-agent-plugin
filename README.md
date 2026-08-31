@@ -254,6 +254,7 @@ A caller reading only a similarity score or a hash would have concluded "identic
 | Fingerprint an image for later identification | `pil_image_analyze` | `fingerprints.full_frame.dhash`/`ahash` — hex, cross-run comparable |
 | Exposure / clipping / dynamic range | `pil_image_analyze` | `tonal.percentiles`, `clipped_black_fraction`, `clipped_white_fraction` |
 | Exact distinct-colour count, true-greyscale test | `pil_image_analyze` | `channels.unique_colours`, `channels.all_channels_equal` |
+| Record/verify/compare **vision claims** about an image | `pil_semantic_record` | sealed `vision_claim` records — sha256-bound, content-addressed, never a measurement |
 | Let me **see** a region at full resolution | `pil_crop` | native-resolution crop, integer upscale only |
 | Let me **point** at something a model will understand | `pil_annotate` | numbered boxes on a copy |
 | What does the **file** say (alpha, EXIF, ICC, true size)? | `pil_image_info` | file facts vision never receives |

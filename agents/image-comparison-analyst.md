@@ -80,7 +80,14 @@ source alone would have missed a real change.
    conflict, say so explicitly and reason about which is more trustworthy for that
    specific question. Do not silently defer to the numbers; measurement artefacts
    are common and documented in each payload's `interpretation_limits`.
-6. **Report.** Separate findings by confidence, and cite the specific field or
+6. **Record.** Semantic conclusions you reached visually — transcribed text,
+   identified objects or landmarks, scene type — evaporate as prose. Author a
+   claims file and seal it with `pil_semantic_record.py seal`, citing the
+   crop or measurement that supported each claim in its `evidence` field.
+   The sealed record binds your claims to the file's exact bytes as
+   `source: vision_claim`, so a later session can `verify` it against the
+   file and `compare` it with another observer's record.
+7. **Report.** Separate findings by confidence, and cite the specific field or
    observation supporting each. When you cite a score, cite the flags that came
    with it.
 

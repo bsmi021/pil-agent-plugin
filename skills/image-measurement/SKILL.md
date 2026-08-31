@@ -56,6 +56,9 @@ Always quote image paths: they frequently contain spaces or parentheses.
 | Full two-image comparison, one call | analyze | `diff.colour` + `diff.structure` + `diff.fingerprints` + `diff.file` |
 | Exposure, contrast, clipping | analyze | `tonal.percentiles`, `tonal.clipped_black_fraction`/`clipped_white_fraction` |
 | Is this file arithmetically greyscale? How many distinct colours? | analyze | `channels.all_channels_equal`, `channels.unique_colours` |
+| Record what vision concluded, attributably | semantic record | `seal` — claims bound to the file's sha256, `source: vision_claim` |
+| Does this record describe this exact file? | semantic record | `verify` — binding check, never a truth check |
+| Do two observers' claims agree? | semantic record | `compare` — matched/only_a/only_b lists per kind, no score |
 | Is this the same image? | structure | `dhash_distance`, `changed_area_fraction` |
 | Same layout/composition? | structure | `structural_similarity` |
 | What changed, and where? | structure | `changed_region_bbox_fractional`, `most_divergent_cells` |
@@ -287,6 +290,46 @@ stale or wrong. Metadata has three states, not two: absent is `null`,
 **unreadable is `null` plus a flag** (`exif_unreadable`, `icc_unreadable`). One
 unreadable file never aborts a batch — it reports `readable: false` with a
 reason while its siblings still report.
+
+## `pil_semantic_record.py` — vision claims as evidence, never as measurement
+
+```bash
+... pil_semantic_record.py seal "<image>" --claims claims.json [--claimant "..."] [--claimed-at "..."]
+... pil_semantic_record.py verify "<image>" --record record.json
+... pil_semantic_record.py compare --record-a a.json --record-b b.json
+```
+
+The measurement tools refuse semantic questions (`identity.*`, `style.*` are
+`UNMEASURABLE`) because no pixel statistic can answer them — but *your vision
+can*, and this tool is where those answers live so they stop evaporating as
+prose. Author a claims file with what you observed (each claim has a `kind` —
+`scene`, `object`, `text_transcription`, `landmark`, `attribute`, `relation`,
+`other` — a `value`, optional `confidence`/`evidence`, and an optional
+`region_fractional` that seals to an exact pixel rect with `pil_crop`'s own
+rounding, so the region can be re-cropped for inspection byte-for-byte):
+
+```json
+{"claims": [
+  {"kind": "text_transcription", "value": "THE CHANDELIER",
+   "region_fractional": [0.24, 0.17, 0.48, 0.23],
+   "confidence": "high", "evidence": "read from a pil_crop at native resolution"},
+  {"kind": "landmark", "value": "The Cosmopolitan of Las Vegas", "confidence": "high"}
+]}
+```
+
+`seal` binds the claims to the file's exact bytes (sha256) and frame, marks
+them `source: vision_claim`, and emits a deterministic record whose
+`record_id` is content-addressed — the same claims about the same bytes
+always reproduce it, and attribution (`--claimant`, `--claimed-at`) is
+excluded from the id so it never masquerades as new claims. `verify` answers
+exactly one question — *was this record sealed against this exact file?* —
+and a tampered record (edited after sealing) is rejected outright. `compare`
+reports per-kind agreement between two records as `matched`/`only_a`/`only_b`
+lists after case/whitespace normalisation, with **no similarity score**.
+
+The provenance rule, stated in every payload: a sealed claim is an
+*assertion*. Sealing makes it attributable and checkable, not true — and
+nothing in this tool's output may ever be cited as a pixel measurement.
 
 ## `pil_alignment.py --colors` — WCAG contrast ratio
 
