@@ -56,6 +56,7 @@ Always quote image paths: they frequently contain spaces or parentheses.
 | Full two-image comparison, one call | analyze | `diff.colour` + `diff.structure` + `diff.fingerprints` + `diff.file` |
 | Exposure, contrast, clipping | analyze | `tonal.percentiles`, `tonal.clipped_black_fraction`/`clipped_white_fraction` |
 | Is this file arithmetically greyscale? How many distinct colours? | analyze | `channels.all_channels_equal`, `channels.unique_colours` |
+| What text does the image contain, machine-read? | `pil_ocr` | `lines[].text` + engine confidence + frame-mapped boxes; degrades honestly on stylised text |
 | Record what vision concluded, attributably | semantic record | `seal` — claims bound to the file's sha256, `source: vision_claim` |
 | Does this record describe this exact file? | semantic record | `verify` — binding check, never a truth check |
 | Do two observers' claims agree? | semantic record | `compare` — matched/only_a/only_b lists per kind, no score |
@@ -290,6 +291,43 @@ stale or wrong. Metadata has three states, not two: absent is `null`,
 **unreadable is `null` plus a flag** (`exif_unreadable`, `icc_unreadable`). One
 unreadable file never aborts a batch — it reports `readable: false` with a
 reason while its siblings still report.
+
+## `pil_ocr.py` — machine-read text, with the engine's own confidence
+
+```bash
+... pil_ocr.py "<image>" [--region L,T,R,B] [--psm 11] [--lang eng] [--claims-out claims.json]
+```
+
+Shells out to a system-installed `tesseract` binary (the `pil_blender_mesh`
+pattern: no Python OCR dependency; exits 2 with a named reason when the
+binary is absent — a clean `UNMEASURABLE` upstream). Reports per-word text,
+Tesseract's own 0–100 confidence, and bounding boxes in **full-frame** pixel
+and fractional coordinates even under `--region`, so every box can be
+re-cropped with `pil_crop` or sealed into a semantic record. Lines follow
+the engine's own reading order; `full_text` joins them.
+
+What to know before trusting it:
+
+- **Every transcription is an engine estimate.** Tesseract hallucinates
+  words in texture and misreads stylised, neon, curved, or low-contrast
+  text severely — measured on real photos here: clean billboard capitals
+  read at confidence 96; a neon script sign returned noise. Verify a
+  transcription that matters by cropping its box and looking.
+- **Scope with `--region` on photographs.** Signage that is tiny relative
+  to a 12MP frame is routinely missed at full frame and found when the
+  region is scoped (use vision or `pil_annotate` to locate it first, or
+  `--psm 11` for sparse text).
+- **Confidence is the engine's, not calibrated here.** The high/medium/low
+  bands used by `--claims-out` are reporting conventions echoed in
+  `parameters`.
+- **`--claims-out` closes the loop with the semantic layer**: each accepted
+  line (mean confidence ≥ `--claims-min-confidence`, default 60) becomes a
+  `text_transcription` claim whose evidence names the engine and
+  confidence, ready for `pil_semantic_record.py seal`. The OCR payload
+  itself always reports every word regardless of the filter.
+- **Determinism is scoped like the Blender render tools**: same image, same
+  Tesseract build, same machine is byte-identical; cross-machine is not
+  claimed, and the `engine` field records the version.
 
 ## `pil_semantic_record.py` — vision claims as evidence, never as measurement
 
