@@ -57,6 +57,7 @@ Always quote image paths: they frequently contain spaces or parentheses.
 | Exposure, contrast, clipping | analyze | `tonal.percentiles`, `tonal.clipped_black_fraction`/`clipped_white_fraction` |
 | Is this file arithmetically greyscale? How many distinct colours? | analyze | `channels.all_channels_equal`, `channels.unique_colours` |
 | What text does the image contain, machine-read? | `pil_ocr` | `lines[].text` + engine confidence + frame-mapped boxes; degrades honestly on stylised text |
+| Is this a copy of that image, surviving crop/rotation? | `pil_embed` | `cosine_similarity` — gate-validated for same-image identification where dhash breaks |
 | Record what vision concluded, attributably | semantic record | `seal` — claims bound to the file's sha256, `source: vision_claim` |
 | Does this record describe this exact file? | semantic record | `verify` — binding check, never a truth check |
 | Do two observers' claims agree? | semantic record | `compare` — matched/only_a/only_b lists per kind, no score |
@@ -328,6 +329,44 @@ What to know before trusting it:
 - **Determinism is scoped like the Blender render tools**: same image, same
   Tesseract build, same machine is byte-identical; cross-machine is not
   claimed, and the `engine` field records the version.
+
+## `pil_embed.py` — embedding fingerprints, with a measured scope
+
+```bash
+... pil_embed.py embed "<image>" ["<image_b>"] [--model model.onnx] [--region L,T,R,B]
+... pil_embed.py compare --fingerprint-a a.json --fingerprint-b b.json
+```
+
+Computes a descriptor in a **pinned ONNX vision model's** output space
+(model via `--model` or `$PIL_AGENT_EMBED_MODEL`; requires the optional
+extra — `uv sync --extra embedding`; missing either exits 2 with a named
+reason). The stored vector is L2-normalised and rounded, and cosine is
+computed **from the stored values**, so comparing two saved payloads
+reproduces a fresh two-image run exactly. `compare` **refuses** two
+fingerprints whose model sha256 or preprocessing differ — vectors from
+different models share no geometry.
+
+The discrimination gate
+([`runs/2026-08-31-embedding-discrimination/`](../../runs/2026-08-31-embedding-discrimination/README.md))
+fixes what may be claimed:
+
+- **Advertised — robust same-image identification.** On real photographs,
+  perturbed copies (50% rescale, JPEG q60, **75% crop**, **5° rotation**)
+  scored cosine ≥ 0.9051 while every unrelated pair scored ≤ 0.4701. The
+  crop and rotation cases defeat `dhash` (Hamming 18 and 9 — reading as
+  *different images*) while the embedding holds. Use it when a copy may
+  have been cropped, rotated, or re-framed beyond what the hash survives.
+- **Demoted — "same venue / same thing" across different photographs.**
+  The same-venue band [0.4558, 0.6263] overlaps the unrelated maximum, so
+  a mid-band cosine is never a "same place" verdict. The raw number is
+  still reported — it is a legitimate signal for *ranking* retrieval
+  candidates, nothing more.
+
+Cosine carries no calibrated decision threshold; the payload's
+`interpretation_limits` restate the advertised/demoted split with the
+measured numbers. The gate-tested default model is `mobilenetv2-12.onnx`
+(ONNX Model Zoo, sha256 `c0c3f76d…`); the tool is model-agnostic, and
+re-running the gate against a stronger model is the supported upgrade path.
 
 ## `pil_semantic_record.py` — vision claims as evidence, never as measurement
 

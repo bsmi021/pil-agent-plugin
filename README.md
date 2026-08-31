@@ -81,6 +81,12 @@ print('valid')"
 - **Python 3.11+**
 - **Pillow** and **numpy** for the core image tools
 - Optional reconstruction extra: **OpenCV** and **SciPy**
+- Optional embedding extra: **onnxruntime** plus an ONNX vision model file —
+  `uv sync --extra embedding`, then point `PIL_AGENT_EMBED_MODEL` (or
+  `pil_embed --model`) at e.g. the gate-tested `mobilenetv2-12.onnx` from the
+  ONNX Model Zoo (sha256 `c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5`);
+  model weights are pinned by hash in every payload, never bundled in this repo
+- Optional OCR tool: a system **tesseract** binary (e.g. `apt-get install tesseract-ocr`)
 - Optional Blender tools: a local Blender executable (tested with Blender 5.2)
 - **[uv](https://docs.astral.sh/uv/)** recommended, for a pinned environment
 
@@ -255,6 +261,7 @@ A caller reading only a similarity score or a hash would have concluded "identic
 | Exposure / clipping / dynamic range | `pil_image_analyze` | `tonal.percentiles`, `clipped_black_fraction`, `clipped_white_fraction` |
 | Exact distinct-colour count, true-greyscale test | `pil_image_analyze` | `channels.unique_colours`, `channels.all_channels_equal` |
 | What **text** does the image contain, machine-read? | `pil_ocr` | Tesseract lines/words with engine confidence and frame-mapped boxes; `--claims-out` feeds the semantic layer |
+| Is this a **copy** of that image, surviving crop/rotation? | `pil_embed` | pinned-model embedding `cosine_similarity`, gate-validated where dhash breaks (`--extra embedding`) |
 | Record/verify/compare **vision claims** about an image | `pil_semantic_record` | sealed `vision_claim` records — sha256-bound, content-addressed, never a measurement |
 | Let me **see** a region at full resolution | `pil_crop` | native-resolution crop, integer upscale only |
 | Let me **point** at something a model will understand | `pil_annotate` | numbered boxes on a copy |
