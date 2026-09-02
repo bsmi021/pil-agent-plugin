@@ -4,6 +4,11 @@
 The repository already keeps a per-release paragraph under `## Status` in
 README.md, so the release notes are written once, by a human, in the place
 contributors read -- not duplicated into a changelog that drifts.
+
+With --title, prints just the release title in this repository's existing
+form -- "0.6.0 - Constrained multiview reconstruction" -- taken from the
+same Status headline, so a generated release is titled like the six
+hand-made ones before it.
 """
 
 from __future__ import annotations
@@ -27,9 +32,33 @@ def extract(version, text):
     return (rest[: end.start() + 1] if end else rest).strip()
 
 
+def title(version, text):
+    """`0.7.0 - One-call profiling and the semantic layers`, or None."""
+    entry = extract(version, text)
+    if not entry:
+        return None
+    headline = re.match(
+        rf"\*\*{re.escape(version)}\s*[\u2014-]\s*(.+?)\.?\*\*", entry, flags=re.S
+    )
+    if not headline:
+        return None
+    words = " ".join(headline.group(1).split())
+    return f"{version} \u2014 {words[:1].upper()}{words[1:]}"
+
+
 def main(argv):
+    if len(argv) == 3 and argv[1] == "--title":
+        text = README.read_text(encoding="utf-8")
+        name = title(argv[2], text)
+        if not name:
+            print(
+                f"No `## Status` entry for {argv[2]} in README.md.", file=sys.stderr
+            )
+            return 1
+        print(name)
+        return 0
     if len(argv) != 2:
-        print("usage: release_notes.py <version>", file=sys.stderr)
+        print("usage: release_notes.py [--title] <version>", file=sys.stderr)
         return 2
     version = argv[1]
     notes = extract(version, README.read_text(encoding="utf-8"))
