@@ -46,8 +46,12 @@ statistics for clipping, clearance, topology, dimensions, and object identity.
    drape, overlaps, lighting, perspective, and uncertain regions so a later
    metric does not anchor semantic judgment.
 3. Follow `image-measurement` for file facts, foreground masks, palette,
-   structure, crops, annotations, and declared-intent comparison. On object
-   renders, use foreground mode and read flags before scores.
+   structure, crops, annotations, and declared-intent comparison. For the
+   per-image inventory, one `pil_image_analyze.py` call per image (or per
+   matched pair) returns every pixel/file layer at once — file facts, colour,
+   structure, persistable hash fingerprints, tonal and channel statistics —
+   so record its payload rather than re-running the individual tools. On
+   object renders, use foreground mode and read flags before scores.
 4. When several views matter, run `pil_multiview_prepare.py` to retain an
    ordered normalized contour for every view. An unmeasurable view remains in
    the packet.

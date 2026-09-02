@@ -13,6 +13,9 @@ reconstruction = [
     "opencv-python-headless>=4.10,<5",
     "scipy>=1.14,<2",
 ]
+embedding = [
+    "onnxruntime>=1.17,<2",
+]
 
 [dependency-groups]
 dev = [

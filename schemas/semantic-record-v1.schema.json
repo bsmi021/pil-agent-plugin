@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bsmi021/pil-agent-plugin/schemas/semantic-record-v1.schema.json",
+  "title": "PIL Agent sealed semantic record v1",
+  "description": "A set of vision claims about one image, sealed against that image's exact bytes. Claims are assertions by a model or person -- never pixel measurements -- and sealing makes them attributable and checkable, not true.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "image", "source", "claims", "record_id"],
+  "properties": {
+    "schema": {"const": "semantic-record-v1"},
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 1},
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "source": {"const": "vision_claim"},
+    "claimant": {"type": ["string", "null"], "maxLength": 200},
+    "claimed_at": {"type": ["string", "null"], "maxLength": 64},
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "value"],
+        "properties": {
+          "kind": {
+            "enum": [
+              "scene",
+              "object",
+              "text_transcription",
+              "landmark",
+              "attribute",
+              "relation",
+              "other"
+            ]
+          },
+          "value": {"type": "string", "minLength": 1, "maxLength": 2000},
+          "confidence": {"enum": ["high", "medium", "low", null]},
+          "evidence": {"type": ["string", "null"], "maxLength": 2000},
+          "region_fractional": {
+            "type": ["array", "null"],
+            "items": {"type": "number", "minimum": 0, "maximum": 1},
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "resolved_pixel_rect": {
+            "type": ["array", "null"],
+            "items": {"type": "integer", "minimum": 0},
+            "minItems": 4,
+            "maxItems": 4
+          }
+        }
+      }
+    },
+    "record_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

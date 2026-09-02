@@ -1,6 +1,6 @@
 ---
 name: image-measurement
-description: Measures images numerically and compares two images with Pillow — exact hex colour palettes with coverage, per-hue census, luminance/saturation/entropy statistics, per-region grid statistics, perceptual hash distance, and changed-region bounding boxes. Use when asked whether two images match, whether a render or screenshot kept a reference's colour scheme or layout, what specifically changed between two versions, what the exact colours of an image are, or to compare a generated image against a reference. Does NOT measure 3D geometry or polygon count.
+description: Measures images numerically and compares two images with Pillow — a one-call maximal profile per image (file facts, exact hex colour palettes with coverage, per-hue census, luminance/saturation/entropy statistics, tonal percentiles and clipping, per-region grid statistics, persistable perceptual-hash fingerprints) plus pairwise hash distance and changed-region bounding boxes. Use when asked whether two images match, whether a render or screenshot kept a reference's colour scheme or layout, what specifically changed between two versions, what the exact colours of an image are, to fingerprint or identify an image, or to compare a generated image against a reference. Does NOT measure 3D geometry or polygon count.
 ---
 
 # Image measurement
@@ -14,8 +14,17 @@ seven-view concept-to-model evaluation, route through the sibling
 `image-analysis` umbrella skill, which composes this skill with
 `multiview-reconstruction` while preserving their evidence boundaries.
 
-Both tools emit JSON on stdout, are deterministic (repeated runs are
+All tools emit JSON on stdout, are deterministic (repeated runs are
 byte-identical), and take one image (analyse) or two (analyse and diff).
+
+**Default entry point: `pil_image_analyze.py`.** One invocation returns the
+maximal profile — file facts, full colour analysis, full structure analysis,
+persistable perceptual-hash fingerprints, tonal percentiles/clipping, channel
+statistics, and detail diagnostics — and, with two images, the complete
+pairwise diff of every layer. Reach for the individual tools below when you
+need only one layer, a smaller payload, or their extra modes
+(`pil_contract_verdict`'s declared-intent contracts, `pil_crop`/`pil_annotate`
+for vision hand-off).
 
 ## Running the tools
 
@@ -42,6 +51,17 @@ Always quote image paths: they frequently contain spaces or parentheses.
 
 | Question | Tool | Field to read |
 |---|---|---|
+| Everything measurable about this image, in one call | analyze | the full profile: `file`, `colour`, `structure`, `fingerprints`, `tonal`, `channels`, `detail` |
+| Fingerprint this image so I can identify it later | analyze | `fingerprints.full_frame.dhash`/`ahash` — hex, comparable across runs by Hamming distance |
+| Full two-image comparison, one call | analyze | `diff.colour` + `diff.structure` + `diff.fingerprints` + `diff.file` |
+| Exposure, contrast, clipping | analyze | `tonal.percentiles`, `tonal.clipped_black_fraction`/`clipped_white_fraction` |
+| Is this file arithmetically greyscale? How many distinct colours? | analyze | `channels.all_channels_equal`, `channels.unique_colours` |
+| What text does the image contain, machine-read? | `pil_ocr` | `lines[].text` + engine confidence + frame-mapped boxes; degrades honestly on stylised text |
+| Is this a copy of that image, surviving crop/rotation? | `pil_embed` | `cosine_similarity` — gate-validated for same-image identification where dhash breaks |
+| Rank photos by how related they are to this one | `pil_embed` | `cosine_similarity` with the CLIP model + `--preprocessing clip` — ranking only, never a "same place" verdict |
+| Record what vision concluded, attributably | semantic record | `seal` — claims bound to the file's sha256, `source: vision_claim` |
+| Does this record describe this exact file? | semantic record | `verify` — binding check, never a truth check |
+| Do two observers' claims agree? | semantic record | `compare` — matched/only_a/only_b lists per kind, no score |
 | Is this the same image? | structure | `dhash_distance`, `changed_area_fraction` |
 | Same layout/composition? | structure | `structural_similarity` |
 | What changed, and where? | structure | `changed_region_bbox_fractional`, `most_divergent_cells` |
@@ -95,6 +115,45 @@ how the mask was derived.
 One caveat: thin objects lose edge fidelity across resolutions (most of their
 pixels are edge-blended), so compare like-resolution renders where possible and
 rely on relative ranking otherwise.
+
+## `pil_image_analyze.py` — the one-call maximal profile
+
+```bash
+... pil_image_analyze.py "<image>" ["<candidate>"] [--foreground] [--region L,T,R,B] [--grid 4x3] [--colors 8]
+```
+
+Composes `pil_image_info`, `pil_palette_diff` and `pil_structure_diff`
+through their own analysis functions — the `file`, `colour` and `structure`
+blocks are content-identical to running those tools standalone with the same
+options, and every flag and interpretation limit they publish is carried
+through — then adds what none of them emitted for a single image:
+
+- **`fingerprints`** — dhash/ahash as 16-hex-character strings, for
+  `full_frame` and for `subject` (the foreground-masked, bbox-cropped object
+  in `--foreground` mode). The pairwise tools only ever report hash
+  *distances*; these are the hashes themselves, so an image profiled today
+  can be identified against one profiled last week by Hamming distance over
+  two stored payloads — no re-measurement, no second file. They survive
+  rescaling but are luminance-based: a pure recolour can measure distance 0,
+  which is exactly why the colour block ships in the same payload.
+- **`tonal`** — exact luminance min/max, percentiles (p01–p99), and
+  clipped/near-clipped fractions: exposure and dynamic-range facts that
+  mean/std alone cannot carry. Frame-scoped even in `--foreground` mode;
+  read `colour.luminance` for the foreground-masked figures.
+- **`channels`** — per-channel mean/std, exact distinct-colour count, and an
+  exact all-channels-equal (true-greyscale) test.
+- **`detail`** — edge-magnitude statistics and Laplacian variance on the
+  working copy. Uncalibrated 2D diagnostics: relative signals between
+  like-resolution images, never a quality verdict, never geometry.
+
+With two images the payload adds `diff.colour` and `diff.structure`
+(identical to the standalone tools' diffs), `diff.fingerprints` (all four
+hash distances) and `diff.file` (byte/format/mode/size identity) — a
+complete two-image comparison in one invocation. Each profile's top-level
+`flags` is the union of every block's flags, so one glance still catches
+`background_dominant` before any score is trusted. An unreadable file
+reports `readable: false` in its `file` block while its sibling still gets a
+full profile, and the exit code is 1.
 
 ## `pil_palette_diff.py`
 
@@ -234,6 +293,134 @@ stale or wrong. Metadata has three states, not two: absent is `null`,
 **unreadable is `null` plus a flag** (`exif_unreadable`, `icc_unreadable`). One
 unreadable file never aborts a batch — it reports `readable: false` with a
 reason while its siblings still report.
+
+## `pil_ocr.py` — machine-read text, with the engine's own confidence
+
+```bash
+... pil_ocr.py "<image>" [--region L,T,R,B] [--psm 11] [--lang eng] [--claims-out claims.json]
+```
+
+Shells out to a system-installed `tesseract` binary (the `pil_blender_mesh`
+pattern: no Python OCR dependency; exits 2 with a named reason when the
+binary is absent — a clean `UNMEASURABLE` upstream). Reports per-word text,
+Tesseract's own 0–100 confidence, and bounding boxes in **full-frame** pixel
+and fractional coordinates even under `--region`, so every box can be
+re-cropped with `pil_crop` or sealed into a semantic record. Lines follow
+the engine's own reading order; `full_text` joins them.
+
+What to know before trusting it:
+
+- **Every transcription is an engine estimate.** Tesseract hallucinates
+  words in texture and misreads stylised, neon, curved, or low-contrast
+  text severely — measured on real photos here: clean billboard capitals
+  read at confidence 96; a neon script sign returned noise. Verify a
+  transcription that matters by cropping its box and looking.
+- **Scope with `--region` on photographs.** Signage that is tiny relative
+  to a 12MP frame is routinely missed at full frame and found when the
+  region is scoped (use vision or `pil_annotate` to locate it first, or
+  `--psm 11` for sparse text).
+- **Confidence is the engine's, not calibrated here.** The high/medium/low
+  bands used by `--claims-out` are reporting conventions echoed in
+  `parameters`.
+- **`--claims-out` closes the loop with the semantic layer**: each accepted
+  line (mean confidence ≥ `--claims-min-confidence`, default 60) becomes a
+  `text_transcription` claim whose evidence names the engine and
+  confidence, ready for `pil_semantic_record.py seal`. The OCR payload
+  itself always reports every word regardless of the filter.
+- **Determinism is scoped like the Blender render tools**: same image, same
+  Tesseract build, same machine is byte-identical; cross-machine is not
+  claimed, and the `engine` field records the version.
+
+## `pil_embed.py` — embedding fingerprints, with a measured scope
+
+```bash
+... pil_embed.py embed "<image>" ["<image_b>"] [--model model.onnx]
+      [--preprocessing imagenet|clip] [--region L,T,R,B]
+... pil_embed.py compare --fingerprint-a a.json --fingerprint-b b.json
+```
+
+Computes a descriptor in a **pinned ONNX vision model's** output space
+(model via `--model` or `$PIL_AGENT_EMBED_MODEL`; requires the optional
+extra — `uv sync --extra embedding`; missing either exits 2 with a named
+reason). The stored vector is L2-normalised and rounded, and cosine is
+computed **from the stored values**, so comparing two saved payloads
+reproduces a fresh two-image run exactly. `compare` **refuses** two
+fingerprints whose model sha256 or preprocessing differ — vectors from
+different models share no geometry.
+
+**Match the preprocessing profile to the model.** `--preprocessing`
+(or `$PIL_AGENT_EMBED_PREPROCESSING`, default `imagenet`) selects
+`imagenet` for ImageNet classifiers or `clip` for CLIP-family visual
+encoders, and the profile name is recorded in every payload. A mismatch is
+**silent** — the measured control in the CLIP gate still separated every
+pair family, just on a margin cut by 36% — so nothing downstream can catch
+it for you.
+
+**What may be claimed depends on the model**, so `interpretation_limits`
+and the `model_gated` flag are keyed by model sha256. Two models are gated:
+
+| model | gate | advertised |
+|---|---|---|
+| `mobilenetv2-12.onnx` (default, `imagenet`) | [2026-08-31](../../runs/2026-08-31-embedding-discrimination/README.md) | same-image identification (perturbed ≥ 0.9051 vs unrelated ≤ 0.4701) |
+| `clip-vit-b32-visual.onnx` (`clip`) | [2026-09-02](../../runs/2026-09-02-clip-embedding-discrimination/README.md) | same-image identification **and** same-venue/related-scene ranking |
+
+- **Both models — robust same-image identification.** Perturbed copies
+  (50% rescale, JPEG q60, **75% crop**, **5° rotation**) stay high while
+  the crop and rotation cases defeat `dhash` (Hamming 18 and 9 — reading
+  as *different images*). Use it when a copy may have been cropped,
+  rotated, or re-framed beyond what the hash survives.
+- **"Same venue / same thing" across different photographs** is
+  **demoted** under `mobilenetv2-12` (its related band [0.4558, 0.6263]
+  overlaps the unrelated maximum) and **advertised** under CLIP, where the
+  bands fully separate: related [0.6285, 0.7535] above unrelated ≤ 0.5118.
+- **Any other model is ungated**: the payload carries a `model_not_gated`
+  flag and advertises nothing. Gate it (same procedure, under `runs/`)
+  before believing a verdict.
+
+Cosine carries **no calibrated decision threshold** under either model, and
+values do not transfer between them — 0.51 is unrelated under CLIP and
+would be a top same-venue score under mobilenetv2-12. Rank candidates by
+cosine; never read a verdict off a single value near a band edge.
+
+## `pil_semantic_record.py` — vision claims as evidence, never as measurement
+
+```bash
+... pil_semantic_record.py seal "<image>" --claims claims.json [--claimant "..."] [--claimed-at "..."]
+... pil_semantic_record.py verify "<image>" --record record.json
+... pil_semantic_record.py compare --record-a a.json --record-b b.json
+```
+
+The measurement tools refuse semantic questions (`identity.*`, `style.*` are
+`UNMEASURABLE`) because no pixel statistic can answer them — but *your vision
+can*, and this tool is where those answers live so they stop evaporating as
+prose. Author a claims file with what you observed (each claim has a `kind` —
+`scene`, `object`, `text_transcription`, `landmark`, `attribute`, `relation`,
+`other` — a `value`, optional `confidence`/`evidence`, and an optional
+`region_fractional` that seals to an exact pixel rect with `pil_crop`'s own
+rounding, so the region can be re-cropped for inspection byte-for-byte):
+
+```json
+{"claims": [
+  {"kind": "text_transcription", "value": "THE CHANDELIER",
+   "region_fractional": [0.24, 0.17, 0.48, 0.23],
+   "confidence": "high", "evidence": "read from a pil_crop at native resolution"},
+  {"kind": "landmark", "value": "The Cosmopolitan of Las Vegas", "confidence": "high"}
+]}
+```
+
+`seal` binds the claims to the file's exact bytes (sha256) and frame, marks
+them `source: vision_claim`, and emits a deterministic record whose
+`record_id` is content-addressed — the same claims about the same bytes
+always reproduce it, and attribution (`--claimant`, `--claimed-at`) is
+excluded from the id so it never masquerades as new claims. `verify` answers
+exactly one question — *was this record sealed against this exact file?* —
+and a tampered record (edited after sealing) is rejected outright. `compare`
+reports per-kind agreement between two records as `matched`/`only_a`/`only_b`
+lists after case/whitespace normalisation, with **no similarity score**.
+
+The provenance rule, stated in every payload: a sealed claim is an
+*assertion*. Sealing makes it attributable and checkable, not true — and
+nothing in this tool's output may ever be cited as a pixel measurement.
 
 ## `pil_alignment.py --colors` — WCAG contrast ratio
 
