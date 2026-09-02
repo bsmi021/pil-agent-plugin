@@ -63,3 +63,14 @@ mid-band value.
   ONNX) may pass the venue family. The tool is model-agnostic and pins the
   model by sha256, so re-running this gate against a new model is the
   supported upgrade path.
+
+## Follow-up
+
+The upgrade path named above was taken on 2026-09-02: see
+[`runs/2026-09-02-clip-embedding-discrimination`](../2026-09-02-clip-embedding-discrimination/README.md),
+which re-runs this exact corpus and pair list against a CLIP ViT-B/32
+visual encoder and promotes same-venue matching from DEMOTED to ADVERTISED
+on full band separation. The results recorded above are unchanged and
+remain the verdict for `mobilenetv2-12`, which is still the tool's
+gate-tested default; capability claims in `pil_embed.py` are keyed by model
+sha256 precisely so the two verdicts cannot be confused for one another.

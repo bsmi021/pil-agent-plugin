@@ -10,6 +10,7 @@ import importlib.util
 import json
 import os
 import sys
+from types import SimpleNamespace
 from pathlib import Path
 
 import pytest
@@ -40,7 +41,7 @@ def _run(capsys, *argv):
 
 
 def _payload(tmp_path, name, unit_values, model_sha="a" * 64, image_sha="b" * 64,
-             preprocessing=None):
+             preprocessing=None, profile="imagenet"):
     payload = {
         "tool": "pil_embed",
         "version": pil_embed.TOOL_VERSION,
@@ -55,6 +56,7 @@ def _payload(tmp_path, name, unit_values, model_sha="a" * 64, image_sha="b" * 64
         "parameters": {
             "region": None,
             "preprocessing": preprocessing or dict(pil_embed.PREPROCESSING),
+            "preprocessing_profile": profile,
             "vector_decimals": pil_embed.VECTOR_DECIMALS,
         },
         "images": {
@@ -149,7 +151,16 @@ def test_embed_contract_and_determinism(capsys, image):
     assert fingerprint["dim"] == payload_1["engine"]["output_dim"]
     assert len(fingerprint["unit_values"]) == fingerprint["dim"]
     assert len(payload_1["engine"]["model_sha256"]) == 64
-    assert any("DEMOTED" in entry for entry in payload_1["interpretation_limits"])
+    # Whichever model is configured, the payload states its gate status:
+    # an advertised capability, or that nothing is advertised for it.
+    limits = payload_1["interpretation_limits"]
+    assert limits == pil_embed.interpretation_limits(
+        payload_1["engine"]["model_sha256"]
+    )
+    assert any(
+        "ADVERTISES" in entry or "NOT been discrimination-gated" in entry
+        for entry in limits
+    )
 
 
 @needs_engine
@@ -189,3 +200,122 @@ def test_region_changes_fingerprint(capsys, tmp_path):
         full_payload["images"]["a"]["fingerprint"]["unit_values"]
         != region_payload["images"]["a"]["fingerprint"]["unit_values"]
     )
+
+
+class TestPreprocessingProfiles:
+    """A model must be fed the preprocessing it was trained with.
+
+    A wrong profile degrades quietly rather than failing -- the measured
+    control still separated its pair families on a narrower margin -- so
+    the profile is explicit, named in every payload, and part of the
+    comparability key that compare refuses across.
+    """
+
+    def test_profiles_are_distinct_specs(self):
+        imagenet = pil_embed.PREPROCESSING_PROFILES["imagenet"]
+        clip = pil_embed.PREPROCESSING_PROFILES["clip"]
+        assert imagenet != clip
+        assert imagenet["normalize_mean"] != clip["normalize_mean"]
+        assert imagenet["resample"] != clip["resample"]
+        # Both crop to the same square: size alone cannot catch a mismatch,
+        # which is exactly why the profile name is recorded.
+        assert imagenet["center_crop"] == clip["center_crop"] == 224
+
+    def test_default_profile_is_the_historical_preprocessing(self, monkeypatch):
+        monkeypatch.delenv(pil_embed.PREPROCESSING_ENV_VAR, raising=False)
+        assert pil_embed.PREPROCESSING is pil_embed.PREPROCESSING_PROFILES["imagenet"]
+        assert pil_embed._resolve_preprocessing(None)[0] == "imagenet"
+
+    def test_env_var_selects_profile(self, monkeypatch):
+        monkeypatch.setenv(pil_embed.PREPROCESSING_ENV_VAR, "clip")
+        name, spec = pil_embed._resolve_preprocessing(None)
+        assert name == "clip"
+        assert spec is pil_embed.PREPROCESSING_PROFILES["clip"]
+
+    def test_explicit_flag_beats_env_var(self, monkeypatch):
+        monkeypatch.setenv(pil_embed.PREPROCESSING_ENV_VAR, "clip")
+        assert pil_embed._resolve_preprocessing("imagenet")[0] == "imagenet"
+
+    def test_unknown_profile_is_refused(self):
+        with pytest.raises(pil_embed.EmbedError) as excinfo:
+            pil_embed._resolve_preprocessing("resnet-ish")
+        assert "clip" in str(excinfo.value) and "imagenet" in str(excinfo.value)
+
+    def test_model_input_size_mismatch_is_refused(self):
+        class _Session:
+            def get_inputs(self):
+                return [SimpleNamespace(shape=["batch", 3, 299, 299])]
+
+        with pytest.raises(pil_embed.EmbedError):
+            pil_embed._check_model_input(
+                _Session(), pil_embed.PREPROCESSING_PROFILES["clip"]
+            )
+
+    def test_model_input_size_match_is_accepted(self):
+        class _Session:
+            def get_inputs(self):
+                return [SimpleNamespace(shape=["batch_size", 3, 224, 224])]
+
+        pil_embed._check_model_input(
+            _Session(), pil_embed.PREPROCESSING_PROFILES["clip"]
+        )
+
+    def test_compare_refuses_across_profiles(self, capsys, tmp_path):
+        a = _payload(tmp_path, "a.json", [1.0, 0.0], profile="imagenet")
+        b = _payload(
+            tmp_path,
+            "b.json",
+            [1.0, 0.0],
+            preprocessing=dict(pil_embed.PREPROCESSING_PROFILES["clip"]),
+            profile="clip",
+        )
+        code, payload = _run(
+            capsys, "compare", "--fingerprint-a", str(a), "--fingerprint-b", str(b)
+        )
+        assert code == 2
+        assert payload is None
+
+
+class TestGateVerdictsAreModelScoped:
+    """No model inherits another model's advertised capability."""
+
+    def test_gated_model_carries_its_own_verdict(self):
+        limits = pil_embed.interpretation_limits(pil_embed.MOBILENET_V2_12_SHA256)
+        assert any("mobilenetv2-12" in entry and "ADVERTISES" in entry for entry in limits)
+        assert any("DEMOTED" in entry for entry in limits)
+
+    def test_clip_model_carries_a_different_verdict(self):
+        mobilenet = pil_embed.interpretation_limits(pil_embed.MOBILENET_V2_12_SHA256)
+        clip = pil_embed.interpretation_limits(pil_embed.CLIP_VIT_B32_VISUAL_SHA256)
+        assert clip != mobilenet
+        assert any("CLIP" in entry for entry in clip)
+
+    def test_ungated_model_advertises_nothing(self):
+        limits = pil_embed.interpretation_limits("f" * 64)
+        assert any("NOT been discrimination-gated" in entry for entry in limits)
+        assert not any("ADVERTISES" in entry for entry in limits)
+
+    def test_every_gated_model_has_a_run_directory_reference(self):
+        for verdict in pil_embed.GATE_VERDICTS.values():
+            assert "runs/" in verdict
+
+
+@needs_engine
+def test_profile_changes_the_fingerprint(capsys, image):
+    """Same model, same bytes, different profile -> different vector."""
+    _code, imagenet = _run(capsys, "embed", str(image), "--preprocessing", "imagenet")
+    _code, clip = _run(capsys, "embed", str(image), "--preprocessing", "clip")
+    assert imagenet["parameters"]["preprocessing_profile"] == "imagenet"
+    assert clip["parameters"]["preprocessing_profile"] == "clip"
+    assert (
+        imagenet["images"]["a"]["fingerprint"]["unit_values"]
+        != clip["images"]["a"]["fingerprint"]["unit_values"]
+    )
+
+
+@needs_engine
+def test_payload_reports_whether_the_model_is_gated(capsys, image):
+    _code, payload = _run(capsys, "embed", str(image))
+    gated = payload["engine"]["model_sha256"] in pil_embed.GATE_VERDICTS
+    assert payload["engine"]["model_gated"] is gated
+    assert ("model_not_gated" in payload["flags"]) is not gated

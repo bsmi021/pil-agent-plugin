@@ -16,9 +16,18 @@ compared when they are actually comparable:
     recorded in every payload. ``compare`` REFUSES two fingerprints whose
     model hashes differ -- vectors from different models share no geometry,
     and comparing them silently would be fabrication.
-*   Preprocessing is fixed and echoed in parameters (shortest side to 256,
-    LANCZOS, center-crop 224, scale 1/255, ImageNet mean/std, NCHW), so a
-    fingerprint means the same thing on every run of this tool version.
+*   Preprocessing is a NAMED PROFILE (``--preprocessing`` or the
+    ``PIL_AGENT_EMBED_PREPROCESSING`` environment variable) whose full
+    numeric spec is echoed in parameters, so a fingerprint means the same
+    thing on every run of this tool version. A model must be fed the
+    preprocessing it was trained with -- ``imagenet`` for ImageNet
+    classifiers such as mobilenetv2-12, ``clip`` for CLIP-family visual
+    encoders. The wrong profile does NOT fail loudly: measured, it still
+    produces well-formed vectors that still separate, just with a
+    materially narrower margin (see the control in
+    runs/2026-09-02-clip-embedding-discrimination/), which is precisely why
+    the profile is named in every payload rather than inferred.
+    ``compare`` REFUSES payloads whose preprocessing specs differ.
 *   The stored vector is L2-normalised and rounded to 6 decimals; cosine is
     computed FROM THE STORED VALUES, so comparing two saved payloads
     reproduces exactly what a fresh two-image run reports.
@@ -30,6 +39,8 @@ Tesseract tools.
 
 Usage:
     python pil_embed.py embed "a.png" ["b.png"] --model mobilenetv2-12.onnx
+    python pil_embed.py embed "a.png" --model clip-vit-b32-visual.onnx \\
+        --preprocessing clip
     python pil_embed.py embed "a.png" --region "0.2,0.1,0.8,0.9"
     python pil_embed.py compare --fingerprint-a a.json --fingerprint-b b.json
 """
@@ -58,42 +69,125 @@ from pil_region import (  # noqa: E402
 TOOL_VERSION = "0.6.0"
 
 MODEL_ENV_VAR = "PIL_AGENT_EMBED_MODEL"
+PREPROCESSING_ENV_VAR = "PIL_AGENT_EMBED_PREPROCESSING"
 
-PREPROCESSING = {
-    "resize_shortest_side": 256,
-    "resample": "lanczos",
-    "center_crop": 224,
-    "scale": "1/255",
-    "normalize_mean": [0.485, 0.456, 0.406],
-    "normalize_std": [0.229, 0.224, 0.225],
-    "layout": "NCHW",
-    "dtype": "float32",
+# A vision model only means anything when fed the preprocessing it was
+# trained with, and the numbers differ per model family: ImageNet
+# classifiers take the torchvision mean/std after a 256-shortest-side
+# resize, CLIP takes its own mean/std after a 224-shortest-side BICUBIC
+# resize. Feeding one to the other degrades quietly rather than failing --
+# the measured control in runs/2026-09-02-clip-embedding-discrimination/
+# still separated its pair families, on a margin cut by ~36% -- so the
+# profile is named in the payload and its spec is the comparability key.
+PREPROCESSING_PROFILES = {
+    "imagenet": {
+        "resize_shortest_side": 256,
+        "resample": "lanczos",
+        "center_crop": 224,
+        "scale": "1/255",
+        "normalize_mean": [0.485, 0.456, 0.406],
+        "normalize_std": [0.229, 0.224, 0.225],
+        "layout": "NCHW",
+        "dtype": "float32",
+    },
+    "clip": {
+        "resize_shortest_side": 224,
+        "resample": "bicubic",
+        "center_crop": 224,
+        "scale": "1/255",
+        "normalize_mean": [0.48145466, 0.4578275, 0.40821073],
+        "normalize_std": [0.26862954, 0.26130258, 0.27577711],
+        "layout": "NCHW",
+        "dtype": "float32",
+    },
 }
+
+DEFAULT_PREPROCESSING_PROFILE = "imagenet"
+
+# Kept as the historical name for the default profile's spec: payloads
+# written before profiles existed carry exactly this dict.
+PREPROCESSING = PREPROCESSING_PROFILES[DEFAULT_PREPROCESSING_PROFILE]
+
+RESAMPLE_FILTERS = {"lanczos": "LANCZOS", "bicubic": "BICUBIC"}
 
 VECTOR_DECIMALS = 6
 
-INTERPRETATION_LIMITS = [
+MOBILENET_V2_12_SHA256 = (
+    "c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5"
+)
+CLIP_VIT_B32_VISUAL_SHA256 = (
+    "06395063c0a5c28b1a8d4bd585261501a878c8f52d1216db6c4cbb651f7c13f1"
+)
+
+# What the tool is allowed to advertise is a property of the MODEL, not of
+# the code: each entry below is the verdict of a discrimination gate run
+# whose evidence lives under runs/. A model with no gate gets no claim.
+GATE_VERDICTS = {
+    MOBILENET_V2_12_SHA256: (
+        "The discrimination gate (runs/2026-08-31-embedding-discrimination/) "
+        "ADVERTISES exactly one capability for this model "
+        "(mobilenetv2-12, imagenet preprocessing): robust same-image "
+        "identification. Measured on real photographs: perturbed copies "
+        "(rescale, JPEG re-encode, 75% crop, 5 degree rotation) scored "
+        "cosine >= 0.9051 while every unrelated pair scored <= 0.4701 -- "
+        "and the crop and rotation cases defeat dhash (Hamming 18 and 9) "
+        "while the embedding holds. Same-venue or same-object matching "
+        "ACROSS different photographs is DEMOTED: the same-venue band "
+        "[0.4558, 0.6263] overlaps the unrelated maximum, so a mid-band "
+        "cosine must never be read as a 'same place' or 'same thing' "
+        "verdict. The raw number is still reported for ranking."
+    ),
+    CLIP_VIT_B32_VISUAL_SHA256: (
+        "The discrimination gate "
+        "(runs/2026-09-02-clip-embedding-discrimination/) ADVERTISES two "
+        "capabilities for this model (CLIP ViT-B/32 visual encoder, clip "
+        "preprocessing), measured on the same 13-photograph corpus as the "
+        "mobilenetv2-12 gate. (1) Same-image identification: perturbed "
+        "copies (rescale, JPEG re-encode, 75% crop, 5 degree rotation) "
+        "scored cosine >= 0.8762 against a related-pair maximum of 0.7535. "
+        "(2) Same-venue / related-scene RANKING, which mobilenetv2-12 "
+        "could not do: photographs of one venue scored [0.6285, 0.7535] "
+        "with every unrelated pair at <= 0.5118 -- full separation where "
+        "the older model's bands overlapped. Both margins are narrow "
+        "(0.1227 and 0.1167) on small families (n=4/5/8), so the ordering "
+        "is what was demonstrated, NOT a threshold: rank candidates by "
+        "cosine, do not read a verdict off a single value near a band "
+        "edge. CLIP compresses the whole scale upward, so mobilenetv2-12 "
+        "numbers do not transfer -- 0.51 is unrelated here and would have "
+        "been a top same-venue score there."
+    ),
+}
+
+GATE_UNGATED = (
+    "This model file has NOT been discrimination-gated in this repository: "
+    "no capability is advertised for it and no threshold from another "
+    "model's gate transfers to it. Cosine values are reported as an "
+    "ungated ranking signal only. To gate a model, follow the procedure "
+    "recorded under runs/ -- perturbation, related and unrelated pair "
+    "families on real input -- and read the separation before believing "
+    "any verdict."
+)
+
+_LIMITS_HEAD = (
     "A fingerprint is a descriptor in the pinned ONNX model's OUTPUT space; "
     "what 'similar' means is inherited from that model's training, not from "
     "this repository. cosine_similarity is a relative retrieval signal for "
     "ranking candidates -- it is NOT calibrated here, carries no "
     "authoritative decision threshold, and a high value is never proof of "
-    "identity, provenance, or shared origin.",
-    "The discrimination gate (runs/2026-08-31-embedding-discrimination/) "
-    "ADVERTISES exactly one capability for the gate-tested default model "
-    "(mobilenetv2-12): robust same-image identification. Measured on real "
-    "photographs: perturbed copies (rescale, JPEG re-encode, 75% crop, 5 "
-    "degree rotation) scored cosine >= 0.9051 while every unrelated pair "
-    "scored <= 0.4701 -- and the crop and rotation cases defeat dhash "
-    "(Hamming 18 and 9) while the embedding holds. Same-venue or "
-    "same-object matching ACROSS different photographs is DEMOTED: the "
-    "same-venue band [0.4558, 0.6263] overlaps the unrelated maximum, so a "
-    "mid-band cosine must never be read as a 'same place' or 'same thing' "
-    "verdict. The raw number is still reported for ranking.",
+    "identity, provenance, or shared origin."
+)
+
+_LIMITS_TAIL = [
     "Fingerprints are comparable ONLY under the same model file and "
     "preprocessing: compare refuses on model sha256 or preprocessing "
     "mismatch rather than producing a number that means nothing. The model "
-    "hash in the engine block is the comparability key.",
+    "hash in the engine block is the comparability key, and the named "
+    "preprocessing profile must be the one the model was trained with. A "
+    "mismatched profile is SILENT: measured on the gate corpus, running "
+    "CLIP under imagenet preprocessing still separated the pair families, "
+    "but the related-vs-unrelated margin fell from 0.1167 to 0.0741. "
+    "Nothing in a payload reveals a wrong-profile run except the recorded "
+    "profile name, so check it before trusting a comparison.",
     "Determinism is scoped like the Blender and Tesseract tools: same "
     "model file, same onnxruntime build, same machine reproduces the "
     "payload byte-for-byte (the session is pinned to the CPU provider with "
@@ -111,6 +205,15 @@ INTERPRETATION_LIMITS = [
     "--region (or crop via the foreground bbox that pil_image_analyze "
     "reports) before fingerprinting.",
 ]
+
+
+def interpretation_limits(model_sha256):
+    """Limits for this payload, with the gate verdict for THIS model."""
+    return [
+        _LIMITS_HEAD,
+        GATE_VERDICTS.get(model_sha256, GATE_UNGATED),
+        *_LIMITS_TAIL,
+    ]
 
 
 class EmbedError(Exception):
@@ -141,29 +244,60 @@ def _resolve_model(explicit):
     return model_path
 
 
-def _preprocess(rgb):
+def _resolve_preprocessing(explicit):
+    name = explicit or os.environ.get(PREPROCESSING_ENV_VAR) or (
+        DEFAULT_PREPROCESSING_PROFILE
+    )
+    if name not in PREPROCESSING_PROFILES:
+        raise EmbedError(
+            f"unknown preprocessing profile {name!r}; choose one of "
+            f"{', '.join(sorted(PREPROCESSING_PROFILES))} and match it to "
+            "the preprocessing the model was trained with"
+        )
+    return name, PREPROCESSING_PROFILES[name]
+
+
+def _check_model_input(session, spec):
+    """Refuse a profile whose crop cannot be what this model declares.
+
+    Catches the loud half of a profile/model mismatch -- a 224 profile on a
+    299 or 384 input. The quiet half (right size, wrong mean/std) is
+    undetectable here, which is why the profile name is recorded.
+    """
+    shape = session.get_inputs()[0].shape
+    static = [d for d in shape if isinstance(d, int)]
+    crop = spec["center_crop"]
+    if len(static) >= 2 and static[-1] != crop:
+        raise EmbedError(
+            f"preprocessing produces {crop}x{crop} but the model declares "
+            f"input shape {shape}; the profile does not match this model"
+        )
+
+
+def _preprocess(rgb, spec):
     width, height = rgb.size
-    short = PREPROCESSING["resize_shortest_side"]
+    short = spec["resize_shortest_side"]
     if width <= height:
         new_size = (short, max(1, round(height * short / width)))
     else:
         new_size = (max(1, round(width * short / height)), short)
     from PIL import Image  # noqa: PLC0415
 
-    resized = rgb.resize(new_size, Image.LANCZOS)
-    crop = PREPROCESSING["center_crop"]
+    resample = getattr(Image, RESAMPLE_FILTERS[spec["resample"]])
+    resized = rgb.resize(new_size, resample)
+    crop = spec["center_crop"]
     left = (resized.width - crop) // 2
     top = (resized.height - crop) // 2
     cropped = resized.crop((left, top, left + crop, top + crop))
     arr = np.asarray(cropped, dtype=np.float32) / 255.0
-    mean = np.asarray(PREPROCESSING["normalize_mean"], dtype=np.float32)
-    std = np.asarray(PREPROCESSING["normalize_std"], dtype=np.float32)
+    mean = np.asarray(spec["normalize_mean"], dtype=np.float32)
+    std = np.asarray(spec["normalize_std"], dtype=np.float32)
     arr = (arr - mean) / std
     return arr.transpose(2, 0, 1)[None, ...]
 
 
-def _fingerprint(session, input_name, rgb):
-    tensor = _preprocess(rgb)
+def _fingerprint(session, input_name, rgb, spec):
+    tensor = _preprocess(rgb, spec)
     output = session.run(None, {input_name: tensor})[0]
     vector = np.asarray(output, dtype=np.float64).ravel()
     norm = float(np.linalg.norm(vector))
@@ -188,7 +322,7 @@ def _cosine(values_a, values_b):
     return round(float(np.dot(a, b) / denominator), 6)
 
 
-def _analyse_image(path, session, input_name, region_box):
+def _analyse_image(path, session, input_name, region_box, spec):
     composited_rgb, _straight, _alpha = load_rgba_straight(path)
     frame_size = composited_rgb.size
     region_block = None
@@ -207,13 +341,14 @@ def _analyse_image(path, session, input_name, region_box):
         "sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest(),
         "size": list(frame_size),
         "region": region_block,
-        "fingerprint": _fingerprint(session, input_name, subject),
+        "fingerprint": _fingerprint(session, input_name, subject, spec),
     }
 
 
 def run_embed(args):
     onnxruntime = _load_runtime()
     model_path = _resolve_model(args.model)
+    profile_name, spec = _resolve_preprocessing(args.preprocessing)
     region_box = (
         parse_fractional_bbox(args.region) if args.region is not None else None
     )
@@ -225,11 +360,16 @@ def run_embed(args):
         str(model_path), sess_options=options, providers=["CPUExecutionProvider"]
     )
     input_name = session.get_inputs()[0].name
+    _check_model_input(session, spec)
 
-    images = {"a": _analyse_image(args.image_a, session, input_name, region_box)}
+    images = {
+        "a": _analyse_image(args.image_a, session, input_name, region_box, spec)
+    }
     diff = None
     if args.image_b:
-        images["b"] = _analyse_image(args.image_b, session, input_name, region_box)
+        images["b"] = _analyse_image(
+            args.image_b, session, input_name, region_box, spec
+        )
         diff = {
             "cosine_similarity": _cosine(
                 images["a"]["fingerprint"]["unit_values"],
@@ -237,6 +377,7 @@ def run_embed(args):
             )
         }
 
+    model_sha256 = hashlib.sha256(model_path.read_bytes()).hexdigest()
     return {
         "tool": "pil_embed",
         "version": TOOL_VERSION,
@@ -245,18 +386,20 @@ def run_embed(args):
             "runtime": f"onnxruntime {onnxruntime.__version__}",
             "providers": ["CPUExecutionProvider"],
             "model_file": model_path.name,
-            "model_sha256": hashlib.sha256(model_path.read_bytes()).hexdigest(),
+            "model_sha256": model_sha256,
+            "model_gated": model_sha256 in GATE_VERDICTS,
             "output_dim": images["a"]["fingerprint"]["dim"],
         },
         "parameters": {
             "region": region_box,
-            "preprocessing": PREPROCESSING,
+            "preprocessing": spec,
+            "preprocessing_profile": profile_name,
             "vector_decimals": VECTOR_DECIMALS,
         },
         "images": images,
         "diff": diff,
-        "flags": [],
-        "interpretation_limits": INTERPRETATION_LIMITS,
+        "flags": [] if model_sha256 in GATE_VERDICTS else ["model_not_gated"],
+        "interpretation_limits": interpretation_limits(model_sha256),
     }
 
 
@@ -289,7 +432,9 @@ def run_compare(args):
         )
     if payload_a["parameters"]["preprocessing"] != payload_b["parameters"]["preprocessing"]:
         raise EmbedError(
-            "fingerprints are not comparable: preprocessing parameters differ"
+            "fingerprints are not comparable: preprocessing parameters differ "
+            f"({payload_a['parameters'].get('preprocessing_profile', 'unnamed')}"
+            f" vs {payload_b['parameters'].get('preprocessing_profile', 'unnamed')})"
         )
 
     return {
@@ -306,8 +451,8 @@ def run_compare(args):
             "image_b_sha256": image_b["sha256"],
             "same_image_bytes": image_a["sha256"] == image_b["sha256"],
         },
-        "flags": [],
-        "interpretation_limits": INTERPRETATION_LIMITS,
+        "flags": [] if model_a in GATE_VERDICTS else ["model_not_gated"],
+        "interpretation_limits": interpretation_limits(model_a),
     }
 
 
@@ -326,6 +471,15 @@ def main(argv=None):
         "--model",
         default=None,
         help=f"ONNX vision model file (default: ${MODEL_ENV_VAR})",
+    )
+    embed_parser.add_argument(
+        "--preprocessing",
+        default=None,
+        choices=sorted(PREPROCESSING_PROFILES),
+        help="preprocessing profile matching the model's training "
+        f"(default: ${PREPROCESSING_ENV_VAR}, else "
+        f"{DEFAULT_PREPROCESSING_PROFILE}); 'imagenet' for ImageNet "
+        "classifiers, 'clip' for CLIP-family visual encoders",
     )
     embed_parser.add_argument(
         "--region",

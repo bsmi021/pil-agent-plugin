@@ -1,0 +1,76 @@
+{
+ "perturbation": {
+  "cosmo_shoe~center_crop_75": {
+   "cosine": 0.914775,
+   "dhash": 18
+  },
+  "cosmo_shoe~jpeg_q60": {
+   "cosine": 0.99804,
+   "dhash": 0
+  },
+  "cosmo_shoe~rescale_50": {
+   "cosine": 0.999839,
+   "dhash": 0
+  },
+  "cosmo_shoe~rotate_5deg": {
+   "cosine": 0.939227,
+   "dhash": 9
+  }
+ },
+ "same_venue": {
+  "cannon~lions_sign": {
+   "cosine": 0.573049,
+   "dhash": 34
+  },
+  "cosmo_shoe~nyny_bridge": {
+   "cosine": 0.712001,
+   "dhash": 37
+  },
+  "mm_statue~mm_car": {
+   "cosine": 0.647291,
+   "dhash": 33
+  },
+  "pirate_flag~pirate_skel": {
+   "cosine": 0.714433,
+   "dhash": 38
+  },
+  "pirate_flag~torture": {
+   "cosine": 0.667334,
+   "dhash": 38
+  }
+ },
+ "unrelated": {
+  "drone~cosmo_shoe": {
+   "cosine": 0.498864,
+   "dhash": 35
+  },
+  "drone~lab_app": {
+   "cosine": 0.427663,
+   "dhash": 32
+  },
+  "lab_app~cannon": {
+   "cosine": 0.40319,
+   "dhash": 34
+  },
+  "passkey~drone": {
+   "cosine": 0.458084,
+   "dhash": 26
+  },
+  "passkey~pirate_flag": {
+   "cosine": 0.449332,
+   "dhash": 32
+  },
+  "poodle~cannon": {
+   "cosine": 0.492096,
+   "dhash": 35
+  },
+  "poodle~mm_statue": {
+   "cosine": 0.462139,
+   "dhash": 33
+  },
+  "poodle~nyny_bridge": {
+   "cosine": 0.476119,
+   "dhash": 37
+  }
+ }
+}

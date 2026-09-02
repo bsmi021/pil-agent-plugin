@@ -58,6 +58,7 @@ Always quote image paths: they frequently contain spaces or parentheses.
 | Is this file arithmetically greyscale? How many distinct colours? | analyze | `channels.all_channels_equal`, `channels.unique_colours` |
 | What text does the image contain, machine-read? | `pil_ocr` | `lines[].text` + engine confidence + frame-mapped boxes; degrades honestly on stylised text |
 | Is this a copy of that image, surviving crop/rotation? | `pil_embed` | `cosine_similarity` — gate-validated for same-image identification where dhash breaks |
+| Rank photos by how related they are to this one | `pil_embed` | `cosine_similarity` with the CLIP model + `--preprocessing clip` — ranking only, never a "same place" verdict |
 | Record what vision concluded, attributably | semantic record | `seal` — claims bound to the file's sha256, `source: vision_claim` |
 | Does this record describe this exact file? | semantic record | `verify` — binding check, never a truth check |
 | Do two observers' claims agree? | semantic record | `compare` — matched/only_a/only_b lists per kind, no score |
@@ -333,7 +334,8 @@ What to know before trusting it:
 ## `pil_embed.py` — embedding fingerprints, with a measured scope
 
 ```bash
-... pil_embed.py embed "<image>" ["<image_b>"] [--model model.onnx] [--region L,T,R,B]
+... pil_embed.py embed "<image>" ["<image_b>"] [--model model.onnx]
+      [--preprocessing imagenet|clip] [--region L,T,R,B]
 ... pil_embed.py compare --fingerprint-a a.json --fingerprint-b b.json
 ```
 
@@ -346,27 +348,39 @@ reproduces a fresh two-image run exactly. `compare` **refuses** two
 fingerprints whose model sha256 or preprocessing differ — vectors from
 different models share no geometry.
 
-The discrimination gate
-([`runs/2026-08-31-embedding-discrimination/`](../../runs/2026-08-31-embedding-discrimination/README.md))
-fixes what may be claimed:
+**Match the preprocessing profile to the model.** `--preprocessing`
+(or `$PIL_AGENT_EMBED_PREPROCESSING`, default `imagenet`) selects
+`imagenet` for ImageNet classifiers or `clip` for CLIP-family visual
+encoders, and the profile name is recorded in every payload. A mismatch is
+**silent** — the measured control in the CLIP gate still separated every
+pair family, just on a margin cut by 36% — so nothing downstream can catch
+it for you.
 
-- **Advertised — robust same-image identification.** On real photographs,
-  perturbed copies (50% rescale, JPEG q60, **75% crop**, **5° rotation**)
-  scored cosine ≥ 0.9051 while every unrelated pair scored ≤ 0.4701. The
-  crop and rotation cases defeat `dhash` (Hamming 18 and 9 — reading as
-  *different images*) while the embedding holds. Use it when a copy may
-  have been cropped, rotated, or re-framed beyond what the hash survives.
-- **Demoted — "same venue / same thing" across different photographs.**
-  The same-venue band [0.4558, 0.6263] overlaps the unrelated maximum, so
-  a mid-band cosine is never a "same place" verdict. The raw number is
-  still reported — it is a legitimate signal for *ranking* retrieval
-  candidates, nothing more.
+**What may be claimed depends on the model**, so `interpretation_limits`
+and the `model_gated` flag are keyed by model sha256. Two models are gated:
 
-Cosine carries no calibrated decision threshold; the payload's
-`interpretation_limits` restate the advertised/demoted split with the
-measured numbers. The gate-tested default model is `mobilenetv2-12.onnx`
-(ONNX Model Zoo, sha256 `c0c3f76d…`); the tool is model-agnostic, and
-re-running the gate against a stronger model is the supported upgrade path.
+| model | gate | advertised |
+|---|---|---|
+| `mobilenetv2-12.onnx` (default, `imagenet`) | [2026-08-31](../../runs/2026-08-31-embedding-discrimination/README.md) | same-image identification (perturbed ≥ 0.9051 vs unrelated ≤ 0.4701) |
+| `clip-vit-b32-visual.onnx` (`clip`) | [2026-09-02](../../runs/2026-09-02-clip-embedding-discrimination/README.md) | same-image identification **and** same-venue/related-scene ranking |
+
+- **Both models — robust same-image identification.** Perturbed copies
+  (50% rescale, JPEG q60, **75% crop**, **5° rotation**) stay high while
+  the crop and rotation cases defeat `dhash` (Hamming 18 and 9 — reading
+  as *different images*). Use it when a copy may have been cropped,
+  rotated, or re-framed beyond what the hash survives.
+- **"Same venue / same thing" across different photographs** is
+  **demoted** under `mobilenetv2-12` (its related band [0.4558, 0.6263]
+  overlaps the unrelated maximum) and **advertised** under CLIP, where the
+  bands fully separate: related [0.6285, 0.7535] above unrelated ≤ 0.5118.
+- **Any other model is ungated**: the payload carries a `model_not_gated`
+  flag and advertises nothing. Gate it (same procedure, under `runs/`)
+  before believing a verdict.
+
+Cosine carries **no calibrated decision threshold** under either model, and
+values do not transfer between them — 0.51 is unrelated under CLIP and
+would be a top same-venue score under mobilenetv2-12. Rank candidates by
+cosine; never read a verdict off a single value near a band edge.
 
 ## `pil_semantic_record.py` — vision claims as evidence, never as measurement
 

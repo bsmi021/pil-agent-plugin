@@ -83,9 +83,16 @@ print('valid')"
 - Optional reconstruction extra: **OpenCV** and **SciPy**
 - Optional embedding extra: **onnxruntime** plus an ONNX vision model file —
   `uv sync --extra embedding`, then point `PIL_AGENT_EMBED_MODEL` (or
-  `pil_embed --model`) at e.g. the gate-tested `mobilenetv2-12.onnx` from the
-  ONNX Model Zoo (sha256 `c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5`);
-  model weights are pinned by hash in every payload, never bundled in this repo
+  `pil_embed --model`) at one of the two gate-tested models, pairing each with
+  its preprocessing profile (`--preprocessing` / `$PIL_AGENT_EMBED_PREPROCESSING`):
+  - `mobilenetv2-12.onnx` (ONNX Model Zoo) with `imagenet` — sha256
+    `c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5`
+  - `clip-vit-b32-visual.onnx` (CLIP ViT-B/32 visual tower, ONNX export from
+    jina-ai/clip-as-service) with `clip` — sha256
+    `06395063c0a5c28b1a8d4bd585261501a878c8f52d1216db6c4cbb651f7c13f1`
+
+  Model weights are pinned by hash in every payload, never bundled in this repo.
+  Any other model runs, but is flagged `model_not_gated` and advertises nothing.
 - Optional OCR tool: a system **tesseract** binary (e.g. `apt-get install tesseract-ocr`)
 - Optional Blender tools: a local Blender executable (tested with Blender 5.2)
 - **[uv](https://docs.astral.sh/uv/)** recommended, for a pinned environment
@@ -190,6 +197,19 @@ uv run python scripts/pil_structure_diff.py "reference.png" "render.png" --grid 
 uv run python scripts/pil_structure_diff.py "view_a.png" "view_b.png" --foreground
 ```
 
+With the optional extras, the semantic layers run the same way — note that
+each embedding model is paired with the preprocessing profile it was
+trained with, and the payload records which was used:
+
+```bash
+uv run python scripts/pil_ocr.py "sign.jpg" --region "0.3,0.4,0.7,0.55" --psm 6
+uv run --extra embedding python scripts/pil_embed.py embed "a.jpg" "b.jpg" \
+    --model mobilenetv2-12.onnx     --preprocessing imagenet   # same-image ID
+uv run --extra embedding python scripts/pil_embed.py embed "a.jpg" "b.jpg" \
+    --model clip-vit-b32-visual.onnx --preprocessing clip      # + related-scene ranking
+uv run python scripts/pil_semantic_record.py seal "a.jpg" --claims claims.json
+```
+
 `pil_image_analyze.py` is the one-call entry point: it composes the file-fact,
 palette and structure tools (their blocks are content-identical to standalone
 runs) and adds what none of them emit for a single image — persistable
@@ -262,6 +282,7 @@ A caller reading only a similarity score or a hash would have concluded "identic
 | Exact distinct-colour count, true-greyscale test | `pil_image_analyze` | `channels.unique_colours`, `channels.all_channels_equal` |
 | What **text** does the image contain, machine-read? | `pil_ocr` | Tesseract lines/words with engine confidence and frame-mapped boxes; `--claims-out` feeds the semantic layer |
 | Is this a **copy** of that image, surviving crop/rotation? | `pil_embed` | pinned-model embedding `cosine_similarity`, gate-validated where dhash breaks (`--extra embedding`) |
+| **Rank** other photos by how related they are to this one | `pil_embed` | `cosine_similarity` under the CLIP model — gate-validated for ranking, never a "same place" verdict |
 | Record/verify/compare **vision claims** about an image | `pil_semantic_record` | sealed `vision_claim` records — sha256-bound, content-addressed, never a measurement |
 | Let me **see** a region at full resolution | `pil_crop` | native-resolution crop, integer upscale only |
 | Let me **point** at something a model will understand | `pil_annotate` | numbered boxes on a copy |
@@ -389,6 +410,18 @@ an artist to fix work that was already correct. It also records `pil_structure_d
 correctly *refusing* the comparison via its own `aspect_ratio_mismatch` flag, and
 draws a hard line between what the plugin measured and what harness code around it
 measured.
+
+The same rule governs the embedding layer: a capability is advertised only where a
+discrimination gate measured it. The first gate
+([`runs/2026-08-31-embedding-discrimination/`](runs/2026-08-31-embedding-discrimination/README.md))
+**demoted** same-venue matching under `mobilenetv2-12` because two exhibits of one
+museum (0.4558) scored *below* an unrelated pair (0.4701). The follow-up
+([`runs/2026-09-02-clip-embedding-discrimination/`](runs/2026-09-02-clip-embedding-discrimination/README.md))
+re-ran that identical corpus and pair list against a CLIP ViT-B/32 visual encoder,
+which separates all three bands — so the capability is advertised **for that model
+only**, keyed by its sha256, and every ungated model is flagged as such. That run
+also records a control worth knowing: feeding CLIP the wrong preprocessing profile
+does not fail loudly, it quietly costs 36% of the margin.
 
 ## Documentation
 
