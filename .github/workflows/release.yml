@@ -24,13 +24,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Tags in this repository are named "<plugin name>--v<version>"
+      # (pil-agent-plugin--v0.6.0 and back through v0.2.0), so the generated
+      # tag has to match or releases stop sorting together.
       - name: Read the manifest version
         id: version
         run: |
           VERSION="$(python -c 'import json;print(json.load(open(".claude-plugin/plugin.json"))["version"])')"
+          NAME="$(python -c 'import json;print(json.load(open(".claude-plugin/plugin.json"))["name"])')"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Manifest version: $VERSION"
+          echo "tag=$NAME--v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Manifest version: $VERSION (tag $NAME--v$VERSION)"
 
       - name: Skip if this version is already released
         id: check
@@ -57,11 +61,19 @@ jobs:
           uv sync --locked
           uv run pytest -q tests/test_packaging_conformance.py
 
-      - name: Extract release notes from README Status
+      # Both the notes and the title come from the one Status entry, so a
+      # generated release reads like the hand-written ones before it
+      # ("0.5.0 — Phase 3 complete"), not like a bare tag name.
+      - name: Extract release notes and title from README Status
+        id: notes
         if: steps.check.outputs.already == 'false'
         run: |
           python .github/scripts/release_notes.py \
             "${{ steps.version.outputs.version }}" > RELEASE_NOTES.md
+          TITLE="$(python .github/scripts/release_notes.py --title \
+            "${{ steps.version.outputs.version }}")"
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          echo "Release title: $TITLE"
           cat RELEASE_NOTES.md
 
       - name: Create the tag and the release
@@ -75,6 +87,6 @@ jobs:
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
           gh release create "$TAG" \
-            --title "$TAG" \
+            --title "${{ steps.notes.outputs.title }}" \
             --notes-file RELEASE_NOTES.md \
             --verify-tag
