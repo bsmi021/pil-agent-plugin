@@ -56,7 +56,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.6.0"
+TOOL_VERSION = "0.7.0"
 
 DEFAULT_LANG = "eng"
 DEFAULT_PSM = 3  # Tesseract's default: fully automatic page segmentation.

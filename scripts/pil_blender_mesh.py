@@ -33,7 +33,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-TOOL_VERSION = "0.6.0"
+TOOL_VERSION = "0.7.0"
 
 # Default search order for the Blender executable. `--blender-executable` wins;
 # the Windows install path used to build this tool is second; then a bare

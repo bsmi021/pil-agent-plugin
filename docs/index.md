@@ -205,6 +205,24 @@ Phase 3 Track A landed in 0.4.0.
   comparisons refuse; and render output is staged atomically so a failed run
   leaves neither a partial artifact nor destroys a pre-existing caller file.
 
+**0.7.0 — one-call profiling and the semantic layers:**
+
+- `pil_image_analyze.py` composes `pil_image_info` + `pil_palette_diff` +
+  `pil_structure_diff` through their own analysis functions (blocks are
+  content-identical to standalone runs) and adds persistable hex dhash/ahash
+  fingerprints, tonal percentiles and clipping fractions, channel statistics,
+  and explicitly uncalibrated detail diagnostics.
+- `pil_semantic_record.py` seals typed vision claims to an image's exact
+  sha256; `verify` is a binding check, never a truth check, and `compare`
+  emits matched/only_a/only_b lists with no similarity score.
+- `pil_ocr.py` runs Tesseract as an external binary (absent → exit 2, named
+  reason), maps boxes to full-frame coordinates even under `--region`, and
+  can emit `text_transcription` claims for the record tool.
+- `pil_embed.py` adds ONNX embedding fingerprints behind the optional
+  `embedding` extra, with named preprocessing profiles (`imagenet`, `clip`)
+  and advertised capabilities keyed by model sha256. Two models are gated;
+  any other runs but is flagged `model_not_gated` and advertises nothing.
+
 **0.6.0 — constrained multi-view reconstruction:**
 
 - `pil_multiview_prepare.py` traces deterministic ordered foreground contours
