@@ -433,6 +433,20 @@ does not fail loudly, it quietly costs 36% of the margin.
 
 ## Status
 
+**0.7.0 — one-call profiling and the semantic layers.** `pil_image_analyze`
+composes the file-fact, palette and structure tools into a single maximal
+profile and adds persistable hex fingerprints, tonal percentiles and clipping
+fractions, channel statistics and (uncalibrated) detail diagnostics.
+`pil_semantic_record` seals vision claims to an image's exact sha256 —
+attributable and checkable, never a truth claim. `pil_ocr` reads text with
+frame-mapped boxes and feeds those records. `pil_embed` adds ONNX embedding
+fingerprints under the new optional `embedding` extra, with per-model
+preprocessing profiles and advertised capabilities keyed by model sha256:
+`mobilenetv2-12` is gated for same-image identification only, while CLIP
+ViT-B/32 also passes same-venue ranking on full band separation
+([`runs/2026-09-02-clip-embedding-discrimination/`](runs/2026-09-02-clip-embedding-discrimination/README.md)).
+Ungated models advertise nothing. Existing tool payload shapes are unchanged.
+
 **0.6.0 — constrained multi-view reconstruction.** The optional
 `multiview-reconstruction` skill adds OpenCV contour preparation, a SciPy
 least-squares template solver with full-rank and conflict refusal states,

@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: tests (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # pil_ocr.py shells out to a system tesseract; without it those tests
+      # skip cleanly rather than fail, but CI should actually exercise them.
+      - name: Install tesseract
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tesseract-ocr
+          tesseract --version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync the pinned environment
+        run: uv sync --locked --extra reconstruction --extra embedding
+        env:
+          UV_PYTHON: ${{ matrix.python-version }}
+
+      # PIL_AGENT_EMBED_MODEL and PIL_AGENT_REFERENCE_IMAGE are deliberately
+      # unset: those tests skip cleanly by design (model weights are pinned by
+      # sha256 and never bundled). Everything else must pass.
+      - name: Run the test suite
+        run: uv run --extra reconstruction --extra embedding pytest -q
+
+  release-version:
+    name: release version bumped
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The manifests, every scripts/pil_*.py TOOL_VERSION and the marketplace
+      # listing must agree -- tests/test_packaging_conformance.py enforces that
+      # and runs in the job above. What it cannot see is a PR that ships new
+      # behaviour while leaving the version where it was, so the release
+      # workflow finds nothing to tag on merge. This job catches exactly that.
+      - name: Require a version bump when shipped code changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python .github/scripts/check_version_bump.py "$BASE_SHA" "$HEAD_SHA"

@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pil_blender_mesh import resolve_blender_executable
 
-TOOL_VERSION = "0.6.0"
+TOOL_VERSION = "0.7.0"
 _BEGIN = "<<<PIL_AGENT_BLENDER_FIT_BEGIN>>>"
 _END = "<<<PIL_AGENT_BLENDER_FIT_END>>>"
 

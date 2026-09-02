@@ -46,7 +46,7 @@ from pil_blender_mesh import (  # noqa: E402
     resolve_blender_executable,
 )
 
-TOOL_VERSION = "0.6.0"
+TOOL_VERSION = "0.7.0"
 
 # Named view → which world axis the camera sits on relative to the character.
 # Verified against the brute corpus's own render-visible bbox (16 meshes with
