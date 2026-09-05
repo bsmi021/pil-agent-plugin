@@ -287,4 +287,4 @@ class TestManifestVersion:
         # Guarded generally by test_packaging_conformance; asserted here so
         # the components file's own version is pinned even if the packaging
         # glob is ever narrowed.
-        assert pil_components.TOOL_VERSION == "0.7.0"
+        assert pil_components.TOOL_VERSION == "0.8.0"

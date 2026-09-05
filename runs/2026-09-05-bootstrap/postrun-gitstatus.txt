@@ -1,0 +1,9 @@
+ M README.md
+ M scripts/pil_embed.py
+ M scripts/pil_ocr.py
+?? runs/2026-09-05-bootstrap/
+?? runs/2026-09-05-windows-setup/
+?? scripts/pil_bootstrap.py
+?? skills/bootstrap/
+?? tests/test_bootstrap.py
+?? tests/test_dependency_process.py

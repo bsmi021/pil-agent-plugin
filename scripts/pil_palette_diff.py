@@ -76,7 +76,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.7.0"
+TOOL_VERSION = "0.8.0"
 
 # A hue family counts as shifted only when its share of accent pixels moves by
 # both an absolute and a relative margin, which keeps resampling noise from

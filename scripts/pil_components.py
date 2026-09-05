@@ -51,7 +51,7 @@ from pil_common import (  # noqa: E402
     mask_bbox,
 )
 
-TOOL_VERSION = "0.7.0"
+TOOL_VERSION = "0.8.0"
 
 # Calibrated noise floor: the smallest blob-area frame-fraction that the
 # no-op control set of runs/2026-08-20-components-discrimination/ could not

@@ -74,7 +74,7 @@ from pil_region import (  # noqa: E402
     parse_fractional_bbox,
 )
 
-TOOL_VERSION = "0.7.0"
+TOOL_VERSION = "0.8.0"
 
 # Luminance code values at or below/above which a pixel counts as
 # near-clipped. These are reporting conventions echoed in parameters, not

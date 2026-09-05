@@ -1,0 +1,27 @@
+{
+  "already_bootstrapped": false,
+  "checks": {
+    "python_dependencies": {
+      "details": {
+        "numpy": "2.5.2",
+        "pillow": "12.3.0"
+      },
+      "ok": true
+    }
+  },
+  "configuration": {
+    "extras": [],
+    "machine": "AMD64",
+    "manifest_sha256": "80dadaff2631c6bbb6d00622ba9b92fd9a7895fb4bfbb4ac92d4338c79eb8a34",
+    "ocr": false,
+    "platform": "Windows",
+    "python": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe",
+    "root": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin",
+    "schema": 1
+  },
+  "previously_run": false,
+  "ready": true,
+  "receipt_matches": false,
+  "receipt_path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\pil-agent-bootstrap.json",
+  "tool": "pil_bootstrap"
+}
