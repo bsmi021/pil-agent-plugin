@@ -7,7 +7,7 @@ env = {'APPDATA': 'C:\\Users\\bsmi0\\AppData\\Roaming', 'CLAUDE_CODE_ENABLE_PROM
     def test_ocr_missing_process(env):
 >       refused(run("pil_ocr.py", env, "--diagnose"), "tesseract executable not found")
 
-tests\test_dependency_process.py:59: 
+tests\test_dependency_process.py:59:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...nce CLAIMS_MIN_CONFIDENCE]\n                  image\npil_ocr.py: error: the following arguments are required: image\n')
@@ -46,7 +46,7 @@ E                           [--claims-out CLAIMS_OUT]
 E                           [--claims-min-confidence CLAIMS_MIN_CONFIDENCE]
 E                           image
 E         pil_ocr.py: error: the following arguments are required: image
-E         
+E
 E       assert 2 == 0
 E        +  where 2 = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...nce CLAIMS_MIN_CONFIDENCE]\n                  image\npil_ocr.py: error: the following arguments are required: image\n').returncode
 
@@ -76,7 +76,7 @@ E                           [--claims-out CLAIMS_OUT]
 E                           [--claims-min-confidence CLAIMS_MIN_CONFIDENCE]
 E                           image
 E         pil_ocr.py: error: the following arguments are required: image
-E         
+E
 E       assert 2 == 0
 E        +  where 2 = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...nce CLAIMS_MIN_CONFIDENCE]\n                  image\npil_ocr.py: error: the following arguments are required: image\n').returncode
 
@@ -106,7 +106,7 @@ E                           [--claims-out CLAIMS_OUT]
 E                           [--claims-min-confidence CLAIMS_MIN_CONFIDENCE]
 E                           image
 E         pil_ocr.py: error: the following arguments are required: image
-E         
+E
 E       assert 2 == 0
 E        +  where 2 = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...nce CLAIMS_MIN_CONFIDENCE]\n                  image\npil_ocr.py: error: the following arguments are required: image\n').returncode
 
@@ -121,7 +121,7 @@ tmp_path = WindowsPath('C:/Users/bsmi0/AppData/Local/Temp/pytest-of-bsmi0/pytest
 >       refused(run("pil_ocr.py", env, "--diagnose", "--tesseract-executable",
                     tmp_path / "missing"), "tesseract executable not found")
 
-tests\test_dependency_process.py:82: 
+tests\test_dependency_process.py:82:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...nce CLAIMS_MIN_CONFIDENCE]\n                  image\npil_ocr.py: error: the following arguments are required: image\n')
@@ -144,7 +144,7 @@ tmp_path = WindowsPath('C:/Users/bsmi0/AppData/Local/Temp/pytest-of-bsmi0/pytest
         env["PIL_AGENT_TESSERACT"] = str(fake_tesseract(tmp_path))
 >       refused(run("pil_ocr.py", env, "--diagnose", "--lang", "eng+deu"), "deu")
 
-tests\test_dependency_process.py:88: 
+tests\test_dependency_process.py:88:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...nce CLAIMS_MIN_CONFIDENCE]\n                  image\npil_ocr.py: error: the following arguments are required: image\n')
@@ -173,7 +173,7 @@ command = ['diagnose']
         (tmp_path / "onnxruntime.py").write_text(f"raise {error}\n")
 >       refused(run("pil_embed.py", env, *command), "onnxruntime")
 
-tests\test_dependency_process.py:97: 
+tests\test_dependency_process.py:97:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...ed,compare} ...\npil_embed.py: error: argument command: invalid choice: 'diagnose' (choose from 'embed', 'compare')\n")
@@ -201,7 +201,7 @@ error = "ImportError('DLL load failed')", command = ['diagnose']
         (tmp_path / "onnxruntime.py").write_text(f"raise {error}\n")
 >       refused(run("pil_embed.py", env, *command), "onnxruntime")
 
-tests\test_dependency_process.py:97: 
+tests\test_dependency_process.py:97:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...ed,compare} ...\npil_embed.py: error: argument command: invalid choice: 'diagnose' (choose from 'embed', 'compare')\n")
@@ -229,7 +229,7 @@ error = "OSError('WinError 126')", command = ['diagnose']
         (tmp_path / "onnxruntime.py").write_text(f"raise {error}\n")
 >       refused(run("pil_embed.py", env, *command), "onnxruntime")
 
-tests\test_dependency_process.py:97: 
+tests\test_dependency_process.py:97:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...ed,compare} ...\npil_embed.py: error: argument command: invalid choice: 'diagnose' (choose from 'embed', 'compare')\n")
@@ -257,7 +257,7 @@ error = "OSError('WinError 126')", command = ['embed', 'unused.png']
         (tmp_path / "onnxruntime.py").write_text(f"raise {error}\n")
 >       refused(run("pil_embed.py", env, *command), "onnxruntime")
 
-tests\test_dependency_process.py:97: 
+tests\test_dependency_process.py:97:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...nt-plugin\\scripts\\pil_embed.py', 'embed', 'unused.png'], returncode=2, stdout='', stderr='pil_embed: WinError 126\n')
@@ -280,7 +280,7 @@ tmp_path = WindowsPath('C:/Users/bsmi0/AppData/Local/Temp/pytest-of-bsmi0/pytest
         runtime_double(tmp_path)
 >       refused(run("pil_embed.py", env, "diagnose"), "no embedding model given")
 
-tests\test_dependency_process.py:114: 
+tests\test_dependency_process.py:114:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...ed,compare} ...\npil_embed.py: error: argument command: invalid choice: 'diagnose' (choose from 'embed', 'compare')\n")
@@ -309,7 +309,7 @@ tmp_path = WindowsPath('C:/Users/bsmi0/AppData/Local/Temp/pytest-of-bsmi0/pytest
 >       assert result.returncode == 0, result.stderr
 E       AssertionError: usage: pil_embed.py [-h] {embed,compare} ...
 E         pil_embed.py: error: argument command: invalid choice: 'diagnose' (choose from 'embed', 'compare')
-E         
+E
 E       assert 2 == 0
 E        +  where 2 = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...ed,compare} ...\npil_embed.py: error: argument command: invalid choice: 'diagnose' (choose from 'embed', 'compare')\n").returncode
 
@@ -327,7 +327,7 @@ command = ['diagnose']
         model.write_bytes(b"invalid")
 >       refused(run("pil_embed.py", env, *command, "--model", model), "cannot load ONNX model")
 
-tests\test_dependency_process.py:141: 
+tests\test_dependency_process.py:141:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...ed,compare} ...\npil_embed.py: error: argument command: invalid choice: 'diagnose' (choose from 'embed', 'compare')\n")
@@ -354,7 +354,7 @@ command = ['embed', 'unused.png']
         model.write_bytes(b"invalid")
 >       refused(run("pil_embed.py", env, *command, "--model", model), "cannot load ONNX model")
 
-tests\test_dependency_process.py:141: 
+tests\test_dependency_process.py:141:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 result = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...xruntime.py", line 6, in __init__\n    raise RuntimeError(\'invalid ONNX model\')\nRuntimeError: invalid ONNX model\n')
@@ -375,7 +375,7 @@ E                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 E           File "C:\Users\bsmi0\AppData\Local\Temp\pytest-of-bsmi0\pytest-332\test_embed_invalid_model_proce1\onnxruntime.py", line 6, in __init__
 E             raise RuntimeError('invalid ONNX model')
 E         RuntimeError: invalid ONNX model
-E         
+E
 E       assert 1 == 2
 E        +  where 1 = CompletedProcess(args=['C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe', 'C:\\Projects\\...xruntime.py", line 6, in __init__\n    raise RuntimeError(\'invalid ONNX model\')\nRuntimeError: invalid ONNX model\n').returncode
 
