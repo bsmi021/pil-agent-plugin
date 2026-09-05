@@ -66,7 +66,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.7.0"
+TOOL_VERSION = "0.8.0"
 
 MODEL_ENV_VAR = "PIL_AGENT_EMBED_MODEL"
 PREPROCESSING_ENV_VAR = "PIL_AGENT_EMBED_PREPROCESSING"
@@ -223,10 +223,12 @@ class EmbedError(Exception):
 def _load_runtime():
     try:
         import onnxruntime  # noqa: PLC0415
-    except ImportError as exc:
+    except (ImportError, OSError) as exc:
         raise EmbedError(
-            "onnxruntime is not installed; install the embedding extra "
-            "(uv sync --extra embedding)"
+            "onnxruntime is unavailable; install the embedding extra "
+            "(uv sync --extra embedding) and run with .venv/Scripts/python.exe "
+            "on Windows. For DLL load failures, install the Microsoft Visual "
+            f"C++ runtime matching Python's architecture. Cause: {exc}"
         ) from exc
     return onnxruntime
 
@@ -345,22 +347,43 @@ def _analyse_image(path, session, input_name, region_box, spec):
     }
 
 
-def run_embed(args):
+def _setup(args):
     onnxruntime = _load_runtime()
     model_path = _resolve_model(args.model)
     profile_name, spec = _resolve_preprocessing(args.preprocessing)
+    try:
+        options = onnxruntime.SessionOptions()
+        options.intra_op_num_threads = 1
+        options.inter_op_num_threads = 1
+        session = onnxruntime.InferenceSession(
+            str(model_path), sess_options=options, providers=["CPUExecutionProvider"]
+        )
+    except Exception as exc:
+        # ORT exposes several native exception types, not all RuntimeError.
+        raise EmbedError(f"cannot load ONNX model {model_path}: {exc}") from exc
+    _check_model_input(session, spec)
+    return onnxruntime, model_path, profile_name, spec, session
+
+
+def run_diagnose(args):
+    runtime, model, profile, _spec, session = _setup(args)
+    digest = hashlib.sha256(model.read_bytes()).hexdigest()
+    return {"tool": "pil_embed", "command": "diagnose", "version": TOOL_VERSION,
+            "python": sys.executable, "runtime": f"onnxruntime {runtime.__version__}",
+            "model_path": str(model), "model_sha256": digest,
+            "model_gated": digest in GATE_VERDICTS,
+            "preprocessing_profile": profile,
+            "input_shape": session.get_inputs()[0].shape,
+            "note": "Model loaded on CPU; no inference or calibration performed. "
+                    "Confirm the preprocessing profile with the model supplier."}
+
+
+def run_embed(args):
+    onnxruntime, model_path, profile_name, spec, session = _setup(args)
     region_box = (
         parse_fractional_bbox(args.region) if args.region is not None else None
     )
-
-    options = onnxruntime.SessionOptions()
-    options.intra_op_num_threads = 1
-    options.inter_op_num_threads = 1
-    session = onnxruntime.InferenceSession(
-        str(model_path), sess_options=options, providers=["CPUExecutionProvider"]
-    )
     input_name = session.get_inputs()[0].name
-    _check_model_input(session, spec)
 
     images = {
         "a": _analyse_image(args.image_a, session, input_name, region_box, spec)
@@ -464,6 +487,13 @@ def main(argv=None):
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
+    diagnose_parser = sub.add_parser("diagnose", help="check runtime and model without an image")
+    diagnose_parser.add_argument("--model", default=None,
+                                 help=f"ONNX model file (else {MODEL_ENV_VAR})")
+    diagnose_parser.add_argument("--preprocessing", default=None,
+                                 choices=sorted(PREPROCESSING_PROFILES),
+                                 help=f"profile (else {PREPROCESSING_ENV_VAR}, then imagenet)")
+
     embed_parser = sub.add_parser("embed", help="fingerprint one image, or two plus their cosine")
     embed_parser.add_argument("image_a", help="image to fingerprint")
     embed_parser.add_argument("image_b", nargs="?", help="optional second image")
@@ -499,6 +529,8 @@ def main(argv=None):
     try:
         if args.command == "embed":
             payload = run_embed(args)
+        elif args.command == "diagnose":
+            payload = run_diagnose(args)
         else:
             payload = run_compare(args)
     except (EmbedError, RegionError, OSError) as exc:

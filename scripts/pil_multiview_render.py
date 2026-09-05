@@ -18,7 +18,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pil_blender_mesh import resolve_blender_executable
 
-TOOL_VERSION = "0.7.0"
+TOOL_VERSION = "0.8.0"
 _BEGIN = "<<<PIL_AGENT_MULTIVIEW_RENDER_BEGIN>>>"
 _END = "<<<PIL_AGENT_MULTIVIEW_RENDER_END>>>"
 

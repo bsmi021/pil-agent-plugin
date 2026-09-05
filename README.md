@@ -99,12 +99,159 @@ print('valid')"
 
 ## Installation
 
+### Bootstrap
+
+With **Python 3.11+** installed, the standalone bootstrap creates or repairs
+the plugin's `.venv` and records successful setup. It runs from any working
+directory; paths below assume you are at the plugin root:
+
+```powershell
+# Windows PowerShell (py -3 must select Python 3.11 or newer)
+py -3 .\scripts\pil_bootstrap.py check
+py -3 .\scripts\pil_bootstrap.py install
+py -3 .\scripts\pil_bootstrap.py check
+# Optional capabilities, selected explicitly:
+py -3 .\scripts\pil_bootstrap.py install --ocr --reconstruction
+py -3 .\scripts\pil_bootstrap.py install --embedding --model 'C:\Models\mobilenetv2-12.onnx' --preprocessing imagenet
+```
+
+```sh
+# macOS / Linux
+python3 ./scripts/pil_bootstrap.py check
+python3 ./scripts/pil_bootstrap.py install
+python3 ./scripts/pil_bootstrap.py install --ocr
+```
+
+Core installs Pillow and NumPy. `--reconstruction` adds OpenCV and SciPy;
+`--embedding` adds ONNX Runtime and checks a caller-supplied model; `--ocr`
+checks Tesseract and installs it if needed using winget (Windows), Homebrew
+(macOS), or apt-get/dnf (Linux). Install the platform package manager separately
+if absent. Linux system installation may prompt through sudo, and Windows may
+request elevation. Blender and model weights are not installed by this script.
+
+The bootstrap uses uv if available, otherwise Python's venv/pip. It installs
+the dependency ranges declared in `pyproject.toml` without updating the lockfile
+or removing unselected extras. For the repository's lockfile-pinned development
+environment, use the `uv sync` commands below instead. On Linux, the fallback
+may require your distribution's `python3-venv` package.
+
+Use **the same capability flags** when checking a prior installation. `check`
+emits JSON without installing packages or writing state. Exit 0 and
+`already_bootstrapped: true` mean both a matching successful receipt and passing
+live probes. Exit 2 means setup is absent, stale, or incomplete; inspect
+`ready`, `previously_run`, and `checks` to distinguish those cases. An existing
+working venv can report `ready: true` before bootstrap has ever run.
+
+Successful `install` writes `.venv/pil-agent-bootstrap.json`; repeated installs
+with a matching receipt and passing probes skip installers. A receipt is not
+trusted without live checks. Model diagnostics run each time, so moving or
+breaking a configured model is detected. `--embedding` without a valid model
+can install its Python packages but will refuse completion and write no new
+success receipt. Configure models as described below; no models are guessed or
+downloaded. Failed installs return 2 with a reason on stderr and empty stdout.
+
+The bundled [bootstrap skill](skills/bootstrap/SKILL.md) handles this check-first
+workflow for agents. It operates on the active plugin copy; bootstrapping a
+source clone does not configure a separate installed cache. The receipt and
+venv are local state, not portable installation evidence.
+
+### Manual Python environment
+
 ```bash
 git clone https://github.com/bsmi021/pil-agent-plugin.git
 cd pil-agent-plugin
 uv sync                        # installs Pillow + numpy into a local venv
 uv sync --extra reconstruction # also installs OpenCV + SciPy
 ```
+
+### Windows / PowerShell: OCR and embedding setup
+
+From the repository root, install the Python dependencies and run the venv's
+interpreter directly; activation is unnecessary. The embedding extra installs
+the CPU runtime, but does not download model weights:
+
+```powershell
+uv sync --extra embedding
+& .\.venv\Scripts\python.exe --version
+winget install --id UB-Mannheim.TesseractOCR --exact
+& .\.venv\Scripts\python.exe .\scripts\pil_ocr.py --diagnose
+```
+
+Tesseract's [Windows installation documentation](https://tesseract-ocr.github.io/tessdoc/Installation.html)
+links to the UB Mannheim installer. Discovery checks `--tesseract-executable`,
+then `PIL_AGENT_TESSERACT`, then `PATH`, then Windows installations under
+`ProgramFiles\Tesseract-OCR`, `ProgramFiles(x86)\Tesseract-OCR`,
+`LOCALAPPDATA\Programs\Tesseract-OCR`, and `LOCALAPPDATA\Tesseract-OCR`.
+An invalid explicit or environment override refuses instead of falling back.
+For a custom installation or language-data directory:
+
+```powershell
+$env:PIL_AGENT_TESSERACT = 'C:\Tools\Tesseract-OCR\tesseract.exe'
+$env:TESSDATA_PREFIX = 'C:\Tools\Tesseract-OCR\tessdata'
+& .\.venv\Scripts\python.exe .\scripts\pil_ocr.py --diagnose --lang eng
+& .\.venv\Scripts\python.exe .\scripts\pil_ocr.py 'C:\Images\sign.png' --lang eng
+# A one-command override takes precedence over the environment:
+& .\.venv\Scripts\python.exe .\scripts\pil_ocr.py --diagnose --tesseract-executable 'C:\Program Files\Tesseract-OCR\tesseract.exe'
+```
+
+`--diagnose` probes the executable version and installed languages, including
+each language requested in a combination such as `eng+deu`. Install the matching
+Tesseract `.traineddata` files if a language is missing. Clear an obsolete
+override with `Remove-Item Env:PIL_AGENT_TESSERACT` or
+`Remove-Item Env:TESSDATA_PREFIX`.
+
+Obtain an ONNX model separately and replace the example path below with its
+actual location. For the gated models, check the SHA256 against **Requirements**
+above; a different export is a different model even if its filename matches.
+Configure the matching preprocessing profile explicitly:
+
+```powershell
+$env:PIL_AGENT_EMBED_MODEL = 'C:\Models\mobilenetv2-12.onnx'
+$env:PIL_AGENT_EMBED_PREPROCESSING = 'imagenet'
+Get-FileHash -Algorithm SHA256 -LiteralPath $env:PIL_AGENT_EMBED_MODEL
+& .\.venv\Scripts\python.exe .\scripts\pil_embed.py diagnose
+& .\.venv\Scripts\python.exe .\scripts\pil_embed.py embed 'C:\Images\photo.jpg'
+
+# For the CLIP visual-tower model described in Requirements:
+$env:PIL_AGENT_EMBED_MODEL = 'C:\Models\clip-vit-b32-visual.onnx'
+$env:PIL_AGENT_EMBED_PREPROCESSING = 'clip'
+& .\.venv\Scripts\python.exe .\scripts\pil_embed.py diagnose
+# Flags override the corresponding environment variables:
+& .\.venv\Scripts\python.exe .\scripts\pil_embed.py diagnose --model 'C:\Models\mobilenetv2-12.onnx' --preprocessing imagenet
+```
+
+These `$env:` assignments affect the current PowerShell session and child
+processes. To persist embedding configuration for future processes:
+
+```powershell
+[Environment]::SetEnvironmentVariable('PIL_AGENT_EMBED_MODEL', $env:PIL_AGENT_EMBED_MODEL, 'User')
+[Environment]::SetEnvironmentVariable('PIL_AGENT_EMBED_PREPROCESSING', $env:PIL_AGENT_EMBED_PREPROCESSING, 'User')
+```
+
+Restart an already-running agent or terminal to inherit persisted changes.
+Embedding diagnostics import ONNX Runtime, load the selected model on CPU,
+check its declared input size against the profile, and report the interpreter,
+runtime, model path/hash, gate status, and profile. This is a setup check with
+no inference or calibration; it cannot detect a same-sized model paired with
+the wrong normalization profile. Existing per-model capability claims still
+apply unchanged. `compare` continues to require neither runtime nor model file.
+
+Both diagnostic commands emit JSON on success (exit 0). Dependency/setup
+refusals use exit 2, a named reason on stderr, and **empty stdout**, just like
+normal OCR/embedding refusal. Check `$LASTEXITCODE` before consuming output.
+If ONNX Runtime reports a Windows DLL load failure, install the current
+[Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
+matching your Python architecture, as required by the
+[ONNX Runtime installation guide](https://onnxruntime.ai/docs/install/).
+For x64 Python, the PowerShell installation command is:
+
+```powershell
+winget install --id Microsoft.VCRedist.2015+.x64 --exact
+uv sync --extra embedding
+& .\.venv\Scripts\python.exe .\scripts\pil_embed.py diagnose
+```
+
+### Plugin registration
 
 Then install it as a plugin. The Claude Code CLI installs from *marketplaces*, not
 from a bare directory path, so the repository ships a single-plugin marketplace
@@ -432,6 +579,22 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.8.0 — platform bootstrap and dependency diagnostics.** Adds a Python
+bootstrap for a plugin-local environment on Windows, macOS, and Linux, with
+opt-in OCR, embedding, and reconstruction dependencies. Its check command
+distinguishes a recorded successful bootstrap from current readiness, rechecks
+live dependencies, and skips repeat installation only when both pass. A bundled
+bootstrap skill guides agents through setup and status checks.
+
+OCR now discovers standard Windows Tesseract installations and supports an
+environment override and image-free executable/language diagnostics. Embedding
+diagnostics validate runtime/model setup; DLL and model-load failures preserve
+exit 2 with empty stdout. PowerShell installation and model/profile configuration
+commands are documented. Focused process tests exercise missing/discovered
+dependencies, override precedence, paths with spaces, and bootstrap lifecycle.
+Model weights remain caller-supplied; embedding claims and calibration results
+are unchanged.
 
 **0.7.0 — one-call profiling and the semantic layers.** `pil_image_analyze`
 composes the file-fact, palette and structure tools into a single maximal

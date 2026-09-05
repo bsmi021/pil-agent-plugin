@@ -7,14 +7,14 @@
     "url": "https://github.com/bsmi021"
   },
   "metadata": {
-    "version": "0.7.0"
+    "version": "0.8.0"
   },
   "plugins": [
     {
       "name": "pil-agent-plugin",
       "displayName": "PIL Image Measurement",
       "description": "Quantitative image measurement plus optional constrained multi-view reconstruction and Blender geometry checks.",
-      "version": "0.7.0",
+      "version": "0.8.0",
       "category": "design",
       "keywords": [
         "image-analysis",

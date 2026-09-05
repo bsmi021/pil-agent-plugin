@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -56,7 +57,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.7.0"
+TOOL_VERSION = "0.8.0"
 
 DEFAULT_LANG = "eng"
 DEFAULT_PSM = 3  # Tesseract's default: fully automatic page segmentation.
@@ -105,18 +106,56 @@ INTERPRETATION_LIMITS = [
 
 
 def _find_tesseract(explicit):
-    if explicit:
-        return explicit if Path(explicit).exists() else None
-    return shutil.which("tesseract")
+    override = explicit or os.environ.get("PIL_AGENT_TESSERACT")
+    if override:
+        return str(Path(override)) if Path(override).is_file() else None
+    found = shutil.which("tesseract")
+    if found:
+        return found
+    if os.name == "nt":
+        for variable, suffix in (
+            ("ProgramFiles", "Tesseract-OCR"),
+            ("ProgramFiles(x86)", "Tesseract-OCR"),
+            ("LOCALAPPDATA", "Programs/Tesseract-OCR"),
+            ("LOCALAPPDATA", "Tesseract-OCR"),
+        ):
+            root = os.environ.get(variable)
+            if root:
+                candidate = Path(root) / suffix / "tesseract.exe"
+                if candidate.is_file():
+                    return str(candidate)
+    return None
 
 
 def _engine_version(executable):
     result = subprocess.run(
-        [executable, "--version"], capture_output=True, text=True, check=True
+        [executable, "--version"], capture_output=True, text=True, check=True,
+        encoding="utf-8", errors="replace", timeout=30,
     )
     # First line, e.g. "tesseract 5.3.4"; stderr on some builds.
     text = (result.stdout or result.stderr).strip().splitlines()
     return text[0] if text else "tesseract (version unreported)"
+
+
+def _diagnose(executable, lang):
+    engine = _engine_version(executable)
+    result = subprocess.run(
+        [executable, "--list-langs"], capture_output=True, text=True,
+        encoding="utf-8", errors="replace", check=True, timeout=30,
+    )
+    languages = sorted({line.strip() for line in
+                        (result.stdout + "\n" + result.stderr).splitlines()
+                        if line.strip() and not line.startswith("List of")})
+    missing = sorted(set(lang.split("+")) - set(languages))
+    if missing:
+        raise RuntimeError(
+            f"Tesseract language data missing: {', '.join(missing)}; install "
+            "the requested traineddata or set TESSDATA_PREFIX to its directory"
+        )
+    return {"tool": "pil_ocr", "command": "diagnose", "version": TOOL_VERSION,
+            "python": sys.executable, "executable": executable, "engine": engine,
+            "languages": languages, "requested_language": lang,
+            "tessdata_prefix": os.environ.get("TESSDATA_PREFIX")}
 
 
 def _confidence_band(conf):
@@ -136,6 +175,7 @@ def _run_tesseract(executable, image, lang, psm):
             [executable, str(input_path), "stdout", "-l", lang, "--psm", str(psm), "tsv"],
             capture_output=True,
             text=True,
+            encoding="utf-8", errors="replace",
         )
     if result.returncode != 0:
         raise RuntimeError(
@@ -264,7 +304,9 @@ def main(argv=None):
         description="Word-level OCR (Tesseract) with frame-mapped boxes and "
         "optional claims-file output for pil_semantic_record.py."
     )
-    parser.add_argument("image", help="image file to read text from")
+    parser.add_argument("image", nargs="?", help="image file to read text from")
+    parser.add_argument("--diagnose", action="store_true",
+                        help="check executable and language data without an image")
     parser.add_argument(
         "--region",
         default=None,
@@ -282,7 +324,8 @@ def main(argv=None):
     parser.add_argument(
         "--tesseract-executable",
         default=None,
-        help="path to the tesseract binary (default: search PATH)",
+        help="path to the tesseract binary (else PIL_AGENT_TESSERACT, PATH, "
+        "then standard Windows install directories)",
     )
     parser.add_argument(
         "--claims-out",
@@ -299,16 +342,29 @@ def main(argv=None):
         "always reports every word)",
     )
     args = parser.parse_args(argv)
+    if not args.diagnose and args.image is None:
+        parser.error("image is required unless --diagnose is used")
 
     executable = _find_tesseract(args.tesseract_executable)
     if executable is None:
         print(
-            "pil_ocr: tesseract executable not found (searched PATH; use "
-            "--tesseract-executable). Install the system package, e.g. "
-            "'apt-get install tesseract-ocr'.",
+            "pil_ocr: tesseract executable not found (explicit flag / "
+            "PIL_AGENT_TESSERACT override, else PATH and Windows install "
+            "directories). Use --tesseract-executable with a file path. "
+            "Windows: winget install --id UB-Mannheim.TesseractOCR --exact; "
+            "Debian/Ubuntu: apt-get install tesseract-ocr.",
             file=sys.stderr,
         )
         return 2
+
+    if args.diagnose:
+        try:
+            payload = _diagnose(executable, args.lang)
+        except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+            print(f"pil_ocr: {exc}", file=sys.stderr)
+            return 2
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
 
     try:
         region_box = parse_fractional_bbox(args.region) if args.region is not None else None

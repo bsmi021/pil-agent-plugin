@@ -1,6 +1,6 @@
 {
   "name": "pil-agent-plugin",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Quantitative image measurement plus optional constrained multi-view reconstruction and Blender geometry checks.",
   "author": {
     "name": "bsmi021",
