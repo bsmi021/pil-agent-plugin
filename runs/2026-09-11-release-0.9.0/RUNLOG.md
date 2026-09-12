@@ -69,6 +69,34 @@ Release-pipeline pre-flight, run before asking to push:
 - All 30 `scripts/pil_*.py` report `TOOL_VERSION = "0.9.0"`; `README.md` has the
   `## Status` entry the release notes are extracted from.
 
+## Remote
+
+Pushed `feat/release-0.9.0` and opened
+[PR #13](https://github.com/bsmi021/pil-agent-plugin/pull/13) against `main`.
+
+All four required checks pass (receipt: `ci-checks.txt`,
+[workflow run](https://github.com/bsmi021/pil-agent-plugin/actions/runs/34663755055)):
+
+| Check | Result | Time |
+|---|---|---|
+| release version bumped | pass | 6s |
+| tests (py3.11) | pass | 2m46s |
+| tests (py3.12) | pass | 2m1s |
+| tests (py3.13) | pass | 2m41s |
+
+The PR reports `mergeable=MERGEABLE` but `mergeStateStatus=BLOCKED` with
+`reviewDecision=REVIEW_REQUIRED`. That comes from the repository ruleset
+`basic` (id 22153065, active), not from classic branch protection -- the
+`branches/main/protection` endpoint returns 404. This is the same state PR #12
+was in: it shows `reviewDecision=REVIEW_REQUIRED` and was merged by `bsmi021`
+on Sep 5 using the owner bypass. Merging is Brian's action and was not
+performed here.
+
+On merge, `release.yml` fires on the push to `main`, tags
+`pil-agent-plugin--v0.9.0` and cuts the release titled
+"0.9.0 -- Explicit measurement workflows and agent tooling" from the README
+`## Status` entry.
+
 ## Notes / follow-ups
 
 - The 2 eval-suite commits on `codex/windows-ocr-embed-setup` remain unpushed
