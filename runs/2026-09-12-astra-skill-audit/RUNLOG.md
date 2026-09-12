@@ -26,6 +26,9 @@ update the PIL Agent Plugin skills where the guidance applies.
 - Aligned all release version carriers and added the 0.9.1 README/docs status.
 - Corrected the release-note generator to link to this repository's actual
   `<plugin-name>--v<version>` tag convention.
+- Opened PR #14 at https://github.com/bsmi021/pil-agent-plugin/pull/14.
+- The first protected CI run passed the version guard and Python 3.11, 3.12,
+  and 3.13 test jobs. The receipt is in `pr-14-ci.txt`.
 
 ## Verification
 
@@ -44,3 +47,8 @@ update the PIL Agent Plugin skills where the guidance applies.
   behavior changed; public payload versions moved to 0.9.1 for the release.
 - The bundled comparison-agent prompt remains a separate follow-up candidate;
   it was not edited in this skill-only scope.
+
+## State at receipt commit
+
+PR #14 is mergeable and all checks are green. GitHub reports
+`REVIEW_REQUIRED`; merge and automated tag/release remain pending.
