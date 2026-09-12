@@ -1,0 +1,40 @@
+{
+  "schema": "review-views-v1",
+  "views": [
+    {
+      "name": "front",
+      "reference": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front.png",
+      "render": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front.png"
+    },
+    {
+      "name": "front_right",
+      "reference": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front_right.png",
+      "render": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front_right.png"
+    },
+    {
+      "name": "right",
+      "reference": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\right.png",
+      "render": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\right.png"
+    },
+    {
+      "name": "back_right",
+      "reference": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back_right.png",
+      "render": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back_right.png"
+    },
+    {
+      "name": "back",
+      "reference": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back.png",
+      "render": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back.png"
+    },
+    {
+      "name": "back_left",
+      "reference": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back_left.png",
+      "render": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back_left.png"
+    },
+    {
+      "name": "front_left",
+      "reference": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front_left.png",
+      "render": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front_left.png"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+Refined registration mean Delta E: 38.03101028 -> 0.0
+Successful refinement invocations: 10

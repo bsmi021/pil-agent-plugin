@@ -1,0 +1,284 @@
+{
+  "calibration_scope": "four synthetic smoke corpora, source-disjoint; production transfer not claimed",
+  "local_difference": {
+    "alpha_mean_absolute_delta": 0.0,
+    "artifacts": {
+      "changed_mask": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\local-diff\\changed.png",
+      "crop_upscale": 4,
+      "crops": [
+        "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\local-diff\\1-a.png",
+        "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\local-diff\\1-b.png",
+        "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\local-diff\\2-a.png",
+        "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\local-diff\\2-b.png"
+      ],
+      "delta_e": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\local-diff\\delta-e.npy",
+      "heatmap": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\local-diff\\heatmap.png",
+      "heatmap_saturation_delta_e": 20
+    },
+    "changed_area_fraction": 6.944e-05,
+    "changed_pixels": 25,
+    "compared_pixels": 360000,
+    "delta_e_max": 38.66324992,
+    "delta_e_mean": 0.00249828,
+    "delta_e_p95": 0.0,
+    "flags": [
+      "uncalibrated_thresholds"
+    ],
+    "inputs": {
+      "a": {
+        "alpha": "preserved; not colour transformed",
+        "assumed_profile": null,
+        "colour_transform_applied": false,
+        "coordinate_convention": "pixel edges; pixel centers are x+0.5,y+0.5",
+        "mode": "stored",
+        "orientation_applied": 1,
+        "output_colour_space": "stored channels",
+        "pipeline": "stored-v1",
+        "rendering_intent": null,
+        "size": [
+          600,
+          600
+        ],
+        "source": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\base.png",
+        "source_icc_sha256": null,
+        "source_orientation": 1,
+        "source_sha256": "34f204d7217058bd222d59a4f79592afc18faf15a6ce492202310c8540655ea5",
+        "source_size": [
+          600,
+          600
+        ],
+        "source_to_output": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      "b": {
+        "alpha": "preserved; not colour transformed",
+        "assumed_profile": null,
+        "colour_transform_applied": false,
+        "coordinate_convention": "pixel edges; pixel centers are x+0.5,y+0.5",
+        "mode": "stored",
+        "orientation_applied": 1,
+        "output_colour_space": "stored channels",
+        "pipeline": "stored-v1",
+        "rendering_intent": null,
+        "size": [
+          600,
+          600
+        ],
+        "source": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\changes.png",
+        "source_icc_sha256": null,
+        "source_orientation": 1,
+        "source_sha256": "2cac18f9026f742dc947e59800037a043be4fd0ea1396ead0be4ce52f847383a",
+        "source_size": [
+          600,
+          600
+        ],
+        "source_to_output": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      }
+    },
+    "interpretation_limits": [
+      "Delta E describes sRGB appearance composited on black; alpha differences are measured separately.",
+      "Stored mode assumes sRGB channels; use display mode for tagged inputs.",
+      "Selection support is the intersection; excluded pixels are not assessed."
+    ],
+    "metric_version": "native-de00-alpha-v1",
+    "parameters": {
+      "alpha_threshold": 1.0,
+      "delta_e_threshold": 2.0,
+      "min_pixels": 1
+    },
+    "regions": [
+      {
+        "bbox_pixels": [
+          500,
+          500,
+          504,
+          504
+        ],
+        "changed_pixels": 16,
+        "peak_delta_e": 38.66325
+      },
+      {
+        "bbox_pixels": [
+          10,
+          10,
+          13,
+          13
+        ],
+        "changed_pixels": 9,
+        "peak_delta_e": 31.196578
+      }
+    ],
+    "ssim": 0.999508702617114,
+    "tool": "pil_diff_regions",
+    "version": "0.9.0"
+  },
+  "mcp": "successful real stdio handshake/list/call",
+  "missing_tools": [],
+  "public_cli_tools": 30,
+  "registration": {
+    "aligned": {
+      "alpha_mean_absolute_delta": 0.0,
+      "changed_area_fraction": 0.41922078,
+      "changed_pixels": 8070,
+      "compared_pixels": 19250,
+      "delta_e_max": 9.68434671,
+      "delta_e_mean": 1.96280014,
+      "delta_e_p95": 3.83347712
+    },
+    "artifacts": {
+      "aligned": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\registered\\aligned.png",
+      "overlap": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\registered\\overlap.png"
+    },
+    "bounds": {
+      "max_rotation": 5.0,
+      "max_scale_change": 0.05,
+      "max_shift": 20.0,
+      "min_overlap": 0.8
+    },
+    "candidate_to_reference": [
+      [
+        1.0,
+        -0.0,
+        -5.050309658050537
+      ],
+      [
+        -0.0,
+        1.0,
+        2.990131378173828
+      ]
+    ],
+    "inputs": {
+      "a": {
+        "alpha": "preserved; not colour transformed",
+        "assumed_profile": null,
+        "colour_transform_applied": false,
+        "coordinate_convention": "pixel edges; pixel centers are x+0.5,y+0.5",
+        "mode": "stored",
+        "orientation_applied": 1,
+        "output_colour_space": "stored channels",
+        "pipeline": "stored-v1",
+        "rendering_intent": null,
+        "size": [
+          160,
+          128
+        ],
+        "source": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\texture.png",
+        "source_icc_sha256": null,
+        "source_orientation": 1,
+        "source_sha256": "b8ae8ca7cd727bb3c11003eebb69c6f0143a2b6e944ea80f4a1a0c850d4d9375",
+        "source_size": [
+          160,
+          128
+        ],
+        "source_to_output": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      "b": {
+        "alpha": "preserved; not colour transformed",
+        "assumed_profile": null,
+        "colour_transform_applied": false,
+        "coordinate_convention": "pixel edges; pixel centers are x+0.5,y+0.5",
+        "mode": "stored",
+        "orientation_applied": 1,
+        "output_colour_space": "stored channels",
+        "pipeline": "stored-v1",
+        "rendering_intent": null,
+        "size": [
+          160,
+          128
+        ],
+        "source": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\shift.png",
+        "source_icc_sha256": null,
+        "source_orientation": 1,
+        "source_sha256": "9db99205a15da5ee74841fbf4114d2951773b94ce007676aed0d3d55e6687909",
+        "source_size": [
+          160,
+          128
+        ],
+        "source_to_output": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      }
+    },
+    "interpretation_limits": [
+      "Alignment removes the reported transform; the raw comparison retains displacement evidence.",
+      "Aligned metrics are diagnostic and do not establish object identity or permitted deformation."
+    ],
+    "motion": "translation",
+    "raw": {
+      "alpha_mean_absolute_delta": 0.0,
+      "changed_area_fraction": 0.99907227,
+      "changed_pixels": 20461,
+      "compared_pixels": 20480,
+      "delta_e_max": 96.82208451,
+      "delta_e_mean": 38.03101028,
+      "delta_e_p95": 70.54239928
+    },
+    "response": 0.7739058515056968,
+    "status": "REGISTERED",
+    "tool": "pil_register",
+    "valid_overlap_fraction": 0.93994140625,
+    "version": "0.9.0"
+  },
+  "successful_invocations": 50
+}

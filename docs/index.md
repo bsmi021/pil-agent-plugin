@@ -1,8 +1,13 @@
 # pil-agent-plugin documentation
 
-Last updated: 2026-08-25
+Last updated: 2026-09-05
 
 ## Contents
+
+- [0.9.0 measurement workflows](measurement-workflows.md) — normalization,
+  masks, registration, domain profiles, local differences, discovery and MCP.
+- [0.9.0 execution evidence](verification-0.9.0.md) — original and new tool
+  results, quality comparisons and verification boundaries.
 
 - [Design rationale and findings](design-rationale.md) — why the tools are shaped
   the way they are, and what the phase 1 experiment established.

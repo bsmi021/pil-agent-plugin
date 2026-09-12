@@ -1,6 +1,6 @@
 [project]
 name = "pil-agent-plugin"
-version = "0.8.0"
+version = "0.9.0"
 description = "Quantitative image measurement and diffing tools for coding agents, complementing native multimodal vision"
 requires-python = ">=3.11"
 dependencies = [
@@ -15,6 +15,12 @@ reconstruction = [
 ]
 embedding = [
     "onnxruntime>=1.17,<2",
+]
+comparison = [
+    "scikit-image>=0.24,<1",
+]
+mcp = [
+    "mcp>=1.20,<2",
 ]
 
 [dependency-groups]

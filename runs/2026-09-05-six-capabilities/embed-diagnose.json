@@ -1,0 +1,26 @@
+{
+  "command": "diagnose",
+  "configuration_gate": {
+    "capabilities": [
+      "same_image_ranking"
+    ],
+    "evidence": "runs/2026-08-31-embedding-discrimination/",
+    "required_preprocessing": "imagenet",
+    "validated": true
+  },
+  "input_shape": [
+    "batch_size",
+    3,
+    224,
+    224
+  ],
+  "model_gated": true,
+  "model_path": "runs\\2026-09-05-six-capabilities\\mobilenetv2-12.onnx",
+  "model_sha256": "c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5",
+  "note": "Model loaded on CPU; no inference or calibration performed. Confirm the preprocessing profile with the model supplier.",
+  "preprocessing_profile": "imagenet",
+  "python": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe",
+  "runtime": "onnxruntime 1.29.0",
+  "tool": "pil_embed",
+  "version": "0.8.0"
+}

@@ -1,0 +1,137 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "interpretation_limits": [
+      "Locked framing makes silhouette scale comparable across views but does not calibrate concept-art cameras.",
+      "Render byte determinism is claimed only for the same scene, machine, and Blender install."
+    ],
+    "parameters": {
+      "blend": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\fitted.blend",
+      "height": 128,
+      "manifest": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\render-spec.json",
+      "margin": 0.1,
+      "mode": "analysis",
+      "width": 128
+    },
+    "render": {
+      "blender_version": "5.2.0",
+      "locked_framing": true,
+      "status": "RENDERED",
+      "views": [
+        {
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "name": "front",
+          "ortho_scale": 3.11126971244812,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front.png",
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "direction": [
+            0.7071067811865475,
+            -0.7071067811865475,
+            0.0
+          ],
+          "name": "front_right",
+          "ortho_scale": 3.11126971244812,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front_right.png",
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "direction": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "name": "right",
+          "ortho_scale": 3.11126971244812,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\right.png",
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "direction": [
+            0.7071067811865475,
+            0.7071067811865475,
+            0.0
+          ],
+          "name": "back_right",
+          "ortho_scale": 3.11126971244812,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back_right.png",
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "direction": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "name": "back",
+          "ortho_scale": 3.11126971244812,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back.png",
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "direction": [
+            -0.7071067811865475,
+            0.7071067811865475,
+            0.0
+          ],
+          "name": "back_left",
+          "ortho_scale": 3.11126971244812,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back_left.png",
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "direction": [
+            -0.7071067811865475,
+            -0.7071067811865475,
+            0.0
+          ],
+          "name": "front_left",
+          "ortho_scale": 3.11126971244812,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front_left.png",
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "visible_objects": [
+        "Body",
+        "Garment"
+      ]
+    },
+    "tool": "pil_multiview_render",
+    "version": "0.9.0"
+  }
+}

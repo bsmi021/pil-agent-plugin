@@ -1,0 +1,519 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "diff": {
+      "ahash_distance": 0,
+      "cells_compared": 12,
+      "cells_skipped_low_support": 0,
+      "changed_area_fraction": 0.0,
+      "changed_region_bbox_fractional": null,
+      "dhash_distance": 0,
+      "entropy_delta": 0.0,
+      "flags": [],
+      "luminance_mean_delta": 0.0,
+      "most_divergent_cells": [
+        {
+          "bounds_fractional": [
+            0.0,
+            0.0,
+            0.25,
+            0.3333
+          ],
+          "col": 0,
+          "divergence": 0.0,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.0,
+            0.5,
+            0.3333
+          ],
+          "col": 1,
+          "divergence": 0.0,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.0,
+            0.75,
+            0.3333
+          ],
+          "col": 2,
+          "divergence": 0.0,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.0,
+            1.0,
+            0.3333
+          ],
+          "col": 3,
+          "divergence": 0.0,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.3333,
+            0.25,
+            0.6667
+          ],
+          "col": 0,
+          "divergence": 0.0,
+          "row": 1
+        }
+      ],
+      "structural_similarity": 1.0
+    },
+    "images": {
+      "a": {
+        "aspect_ratio": 1.0,
+        "cells": [
+          {
+            "bounds_fractional": [
+              0.0,
+              0.0,
+              0.25,
+              0.3333
+            ],
+            "col": 0,
+            "edge_mean": 0.0,
+            "entropy": -0.0,
+            "luminance_mean": 0.0,
+            "luminance_std": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.25,
+              0.0,
+              0.5,
+              0.3333
+            ],
+            "col": 1,
+            "edge_mean": 1.037,
+            "entropy": 1.0328,
+            "luminance_mean": 11.315,
+            "luminance_std": 31.01,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.5,
+              0.0,
+              0.75,
+              0.3333
+            ],
+            "col": 2,
+            "edge_mean": 1.072,
+            "entropy": 1.0991,
+            "luminance_mean": 12.839,
+            "luminance_std": 32.76,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.75,
+              0.0,
+              1.0,
+              0.3333
+            ],
+            "col": 3,
+            "edge_mean": 0.0,
+            "entropy": -0.0,
+            "luminance_mean": 0.0,
+            "luminance_std": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.0,
+              0.3333,
+              0.25,
+              0.6667
+            ],
+            "col": 0,
+            "edge_mean": 0.005,
+            "entropy": 0.0051,
+            "luminance_mean": 0.001,
+            "luminance_std": 0.049,
+            "row": 1
+          },
+          {
+            "bounds_fractional": [
+              0.25,
+              0.3333,
+              0.5,
+              0.6667
+            ],
+            "col": 1,
+            "edge_mean": 1.711,
+            "entropy": 1.8018,
+            "luminance_mean": 66.145,
+            "luminance_std": 45.573,
+            "row": 1
+          },
+          {
+            "bounds_fractional": [
+              0.5,
+              0.3333,
+              0.75,
+              0.6667
+            ],
+            "col": 2,
+            "edge_mean": 1.687,
+            "entropy": 1.7498,
+            "luminance_mean": 68.591,
+            "luminance_std": 44.584,
+            "row": 1
+          },
+          {
+            "bounds_fractional": [
+              0.75,
+              0.3333,
+              1.0,
+              0.6667
+            ],
+            "col": 3,
+            "edge_mean": 0.028,
+            "entropy": 0.0269,
+            "luminance_mean": 0.007,
+            "luminance_std": 0.226,
+            "row": 1
+          },
+          {
+            "bounds_fractional": [
+              0.0,
+              0.6667,
+              0.25,
+              1.0
+            ],
+            "col": 0,
+            "edge_mean": 0.984,
+            "entropy": 0.7332,
+            "luminance_mean": 5.388,
+            "luminance_std": 21.941,
+            "row": 2
+          },
+          {
+            "bounds_fractional": [
+              0.25,
+              0.6667,
+              0.5,
+              1.0
+            ],
+            "col": 1,
+            "edge_mean": 1.211,
+            "entropy": 1.4482,
+            "luminance_mean": 45.235,
+            "luminance_std": 48.689,
+            "row": 2
+          },
+          {
+            "bounds_fractional": [
+              0.5,
+              0.6667,
+              0.75,
+              1.0
+            ],
+            "col": 2,
+            "edge_mean": 1.157,
+            "entropy": 1.4148,
+            "luminance_mean": 45.269,
+            "luminance_std": 48.699,
+            "row": 2
+          },
+          {
+            "bounds_fractional": [
+              0.75,
+              0.6667,
+              1.0,
+              1.0
+            ],
+            "col": 3,
+            "edge_mean": 1.067,
+            "entropy": 0.7973,
+            "luminance_mean": 6.489,
+            "luminance_std": 23.991,
+            "row": 2
+          }
+        ],
+        "entropy": 0.7622,
+        "flags": [],
+        "foreground": {
+          "applied": false,
+          "background_estimate": null,
+          "fraction_of_frame": 0.221133,
+          "source": "alpha"
+        },
+        "grid": {
+          "cols": 4,
+          "rows": 3
+        },
+        "luminance": {
+          "mean": 21.671,
+          "std": 40.671
+        },
+        "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\shape.png",
+        "region": null,
+        "size": [
+          160,
+          160
+        ],
+        "source_size": [
+          160,
+          160
+        ],
+        "symmetry": {
+          "left_right_diff": 1.017,
+          "top_bottom_diff": 18.628
+        },
+        "working_size": [
+          256,
+          256
+        ]
+      },
+      "b": {
+        "aspect_ratio": 1.0,
+        "cells": [
+          {
+            "bounds_fractional": [
+              0.0,
+              0.0,
+              0.25,
+              0.3333
+            ],
+            "col": 0,
+            "edge_mean": 0.0,
+            "entropy": -0.0,
+            "luminance_mean": 0.0,
+            "luminance_std": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.25,
+              0.0,
+              0.5,
+              0.3333
+            ],
+            "col": 1,
+            "edge_mean": 1.037,
+            "entropy": 1.0328,
+            "luminance_mean": 11.315,
+            "luminance_std": 31.01,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.5,
+              0.0,
+              0.75,
+              0.3333
+            ],
+            "col": 2,
+            "edge_mean": 1.072,
+            "entropy": 1.0991,
+            "luminance_mean": 12.839,
+            "luminance_std": 32.76,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.75,
+              0.0,
+              1.0,
+              0.3333
+            ],
+            "col": 3,
+            "edge_mean": 0.0,
+            "entropy": -0.0,
+            "luminance_mean": 0.0,
+            "luminance_std": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.0,
+              0.3333,
+              0.25,
+              0.6667
+            ],
+            "col": 0,
+            "edge_mean": 0.005,
+            "entropy": 0.0051,
+            "luminance_mean": 0.001,
+            "luminance_std": 0.049,
+            "row": 1
+          },
+          {
+            "bounds_fractional": [
+              0.25,
+              0.3333,
+              0.5,
+              0.6667
+            ],
+            "col": 1,
+            "edge_mean": 1.711,
+            "entropy": 1.8018,
+            "luminance_mean": 66.145,
+            "luminance_std": 45.573,
+            "row": 1
+          },
+          {
+            "bounds_fractional": [
+              0.5,
+              0.3333,
+              0.75,
+              0.6667
+            ],
+            "col": 2,
+            "edge_mean": 1.687,
+            "entropy": 1.7498,
+            "luminance_mean": 68.591,
+            "luminance_std": 44.584,
+            "row": 1
+          },
+          {
+            "bounds_fractional": [
+              0.75,
+              0.3333,
+              1.0,
+              0.6667
+            ],
+            "col": 3,
+            "edge_mean": 0.028,
+            "entropy": 0.0269,
+            "luminance_mean": 0.007,
+            "luminance_std": 0.226,
+            "row": 1
+          },
+          {
+            "bounds_fractional": [
+              0.0,
+              0.6667,
+              0.25,
+              1.0
+            ],
+            "col": 0,
+            "edge_mean": 0.984,
+            "entropy": 0.7332,
+            "luminance_mean": 5.388,
+            "luminance_std": 21.941,
+            "row": 2
+          },
+          {
+            "bounds_fractional": [
+              0.25,
+              0.6667,
+              0.5,
+              1.0
+            ],
+            "col": 1,
+            "edge_mean": 1.211,
+            "entropy": 1.4482,
+            "luminance_mean": 45.235,
+            "luminance_std": 48.689,
+            "row": 2
+          },
+          {
+            "bounds_fractional": [
+              0.5,
+              0.6667,
+              0.75,
+              1.0
+            ],
+            "col": 2,
+            "edge_mean": 1.157,
+            "entropy": 1.4148,
+            "luminance_mean": 45.269,
+            "luminance_std": 48.699,
+            "row": 2
+          },
+          {
+            "bounds_fractional": [
+              0.75,
+              0.6667,
+              1.0,
+              1.0
+            ],
+            "col": 3,
+            "edge_mean": 1.067,
+            "entropy": 0.7973,
+            "luminance_mean": 6.489,
+            "luminance_std": 23.991,
+            "row": 2
+          }
+        ],
+        "entropy": 0.7622,
+        "flags": [],
+        "foreground": {
+          "applied": false,
+          "background_estimate": null,
+          "fraction_of_frame": 0.221133,
+          "source": "alpha"
+        },
+        "grid": {
+          "cols": 4,
+          "rows": 3
+        },
+        "luminance": {
+          "mean": 21.671,
+          "std": 40.671
+        },
+        "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\shape.png",
+        "region": null,
+        "size": [
+          160,
+          160
+        ],
+        "source_size": [
+          160,
+          160
+        ],
+        "symmetry": {
+          "left_right_diff": 1.017,
+          "top_bottom_diff": 18.628
+        },
+        "working_size": [
+          256,
+          256
+        ]
+      }
+    },
+    "interpretation_limits": [
+      "edge_mean and entropy are 2D image-complexity proxies, NOT geometry: they do not measure polygon count, mesh density or topology. Shading, normal maps, lighting and camera angle all move these numbers independently of the underlying model. For polygon or topology questions, query the 3D scene's mesh statistics directly instead of analysing a render.",
+      "The grid is rectangular and ignores real object boundaries, so a cell may mix unrelated content; per-cell numbers describe pixel neighbourhoods, not semantic regions.",
+      "structural_similarity is a normalised mean absolute difference over cell statistics. It is sensitive to global lighting and exposure shifts, which can lower the score even when layout is unchanged.",
+      "Perceptual hash distance detects near-duplicates and survives rescaling, but is weak at distinguishing images that differ only in fine detail.",
+      "In full-frame mode structural_similarity includes the background. Two different objects on the same large background will score near 1.0 -- the shared background is doing the scoring, not the objects. When the background_dominant flag appears (or similarity is high while changed_area_fraction is tiny), re-run with --foreground before drawing any conclusion about the subjects.",
+      "In --foreground mode both images are cropped to their foreground bounding boxes before gridding, so cells correspond object-to-object rather than frame-to-frame, and cells without foreground support are excluded from the score (see cells_compared / cells_skipped_low_support).",
+      "Foreground statistics of a THIN object degrade across resolutions: when the object is a few pixels wide, most of its pixels are edge-blended with the background, so a rescaled copy reads moderately different even though dhash still reports the same layout. Compare like-resolution renders where possible; rely on relative ranking otherwise.",
+      "entropy_delta is DEMOTED: WP2 calibration (runs/2026-08-19-phase2-calibration) found it unable to resolve 24 of 26 perturbation families at any tested magnitude, with 9 non-monotonic response curves. It is kept for continuity; do not let it decide anything.",
+      "--region crops BOTH images to the same fractional box at full resolution before any measurement runs, including the working-resolution resample -- never after, which is what keeps a --region measurement resolution-independent and identical to pre-cropping the file with pil_crop.py and measuring the result -- with exactly one exception: the flags list. region_background_estimate_diverged (below) can appear on a --region run and never on the equivalent pre-cropped-file run, because it compares the crop's own border-median colour against the ORIGINAL, un-cropped frame's -- a comparison a pre-cropped file structurally cannot make, having no frame left to compare against. Every other field, including every structure and similarity statistic, is unaffected. Composed with --foreground, the order is: region crop first, then the foreground mask -- and, on the border-median path, the background estimate -- is re-derived from the crop's own pixels, never inherited from the whole frame. region_background_estimate_diverged fires when that re-derived estimate lands further than --background-delta (in OKLab) from the whole frame's own border-median colour -- the signature of a region that contains little or no backdrop, where the re-derived estimate is the more honest one but also the more surprising one."
+    ],
+    "parameters": {
+      "alpha_foreground_min": 8,
+      "background_delta": 0.035,
+      "cell_min_support_pixels": 64,
+      "change_threshold": 20,
+      "foreground": false,
+      "grid": {
+        "cols": 4,
+        "rows": 3
+      },
+      "region": null,
+      "region_space": "frame",
+      "working_long_edge": 256
+    },
+    "tool": "pil_structure_diff",
+    "version": "0.9.0"
+  }
+}

@@ -1,0 +1,9 @@
+?? docs/capability-assessment-2026-09-05.html
+?? runs/2026-09-05-release-0.8.0/collected.txt
+?? runs/2026-09-05-release-0.8.0/corpus-version-test.txt
+?? runs/2026-09-05-release-0.8.0/final-status.md
+?? runs/2026-09-05-release-0.8.0/normalize-log.py
+?? runs/2026-09-05-release-0.8.0/pr-body.md
+?? runs/2026-09-05-release-0.8.0/tests.txt
+?? runs/2026-09-05-release-0.8.0/update-version-tests.py
+?? runs/2026-09-05-release-0.8.0/version-tests.txt

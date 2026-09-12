@@ -1,0 +1,81 @@
+{
+  "schema": "correspondences-v1",
+  "views": [
+    {
+      "landmarks": [
+        {
+          "target": [
+            -1.0,
+            0.0
+          ],
+          "vertex": 0
+        },
+        {
+          "target": [
+            1.0,
+            0.0
+          ],
+          "vertex": 1
+        },
+        {
+          "target": [
+            0.0,
+            2.0
+          ],
+          "vertex": 2
+        }
+      ],
+      "name": "front",
+      "projection_matrix": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "landmarks": [
+        {
+          "target": [
+            0.2,
+            0.0
+          ],
+          "vertex": 0
+        },
+        {
+          "target": [
+            0.2,
+            0.0
+          ],
+          "vertex": 1
+        },
+        {
+          "target": [
+            0.8,
+            2.0
+          ],
+          "vertex": 2
+        }
+      ],
+      "name": "right",
+      "projection_matrix": [
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,402 @@
+[
+  {
+    "exit_code": 0,
+    "label": "pil_image_info",
+    "ok": true,
+    "receipt": "pil_image_info.json",
+    "seconds": 0.31,
+    "tool": "pil_image_info"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_image_analyze",
+    "ok": true,
+    "receipt": "pil_image_analyze.json",
+    "seconds": 0.38,
+    "tool": "pil_image_analyze"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_palette_diff",
+    "ok": true,
+    "receipt": "pil_palette_diff.json",
+    "seconds": 0.33,
+    "tool": "pil_palette_diff"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_structure_diff",
+    "ok": true,
+    "receipt": "pil_structure_diff.json",
+    "seconds": 0.36,
+    "tool": "pil_structure_diff"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_components",
+    "ok": true,
+    "receipt": "pil_components.json",
+    "seconds": 0.33,
+    "tool": "pil_components"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_silhouette",
+    "ok": true,
+    "receipt": "pil_silhouette.json",
+    "seconds": 0.34,
+    "tool": "pil_silhouette"
+  },
+  {
+    "exit_code": 0,
+    "label": "alignment-diagnostic",
+    "ok": true,
+    "receipt": "alignment-diagnostic.json",
+    "seconds": 0.38,
+    "tool": "pil_alignment"
+  },
+  {
+    "exit_code": 0,
+    "label": "contrast-standard",
+    "ok": true,
+    "receipt": "contrast-standard.json",
+    "seconds": 0.34,
+    "tool": "pil_alignment"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_crop",
+    "ok": true,
+    "receipt": "pil_crop.json",
+    "seconds": 0.39,
+    "tool": "pil_crop"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_annotate",
+    "ok": true,
+    "receipt": "pil_annotate.json",
+    "seconds": 0.41,
+    "tool": "pil_annotate"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_contract_verdict",
+    "ok": true,
+    "receipt": "pil_contract_verdict.json",
+    "seconds": 0.39,
+    "tool": "pil_contract_verdict"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_ocr",
+    "ok": true,
+    "receipt": "pil_ocr.json",
+    "seconds": 0.67,
+    "tool": "pil_ocr"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_semantic_record",
+    "ok": true,
+    "receipt": "pil_semantic_record.json",
+    "seconds": 0.25,
+    "tool": "pil_semantic_record"
+  },
+  {
+    "exit_code": 0,
+    "label": "semantic-verify",
+    "ok": true,
+    "receipt": "semantic-verify.json",
+    "seconds": 0.25,
+    "tool": "pil_semantic_record"
+  },
+  {
+    "exit_code": 0,
+    "label": "semantic-compare",
+    "ok": true,
+    "receipt": "semantic-compare.json",
+    "seconds": 0.22,
+    "tool": "pil_semantic_record"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_embed",
+    "ok": true,
+    "receipt": "pil_embed.json",
+    "seconds": 0.59,
+    "tool": "pil_embed"
+  },
+  {
+    "exit_code": 0,
+    "label": "embed-compare",
+    "ok": true,
+    "receipt": "embed-compare.json",
+    "seconds": 0.41,
+    "tool": "pil_embed"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_bootstrap",
+    "ok": true,
+    "receipt": "pil_bootstrap.json",
+    "seconds": 2.42,
+    "tool": "pil_bootstrap"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_normalize",
+    "ok": true,
+    "receipt": "pil_normalize.json",
+    "seconds": 0.34,
+    "tool": "pil_normalize"
+  },
+  {
+    "exit_code": 0,
+    "label": "normalization-quality",
+    "ok": true,
+    "receipt": "normalization-quality.json",
+    "seconds": 0.64,
+    "tool": "pil_image_analyze"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_mask",
+    "ok": true,
+    "receipt": "pil_mask.json",
+    "seconds": 0.44,
+    "tool": "pil_mask"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-pil_palette_diff",
+    "ok": true,
+    "receipt": "pipeline-pil_palette_diff.json",
+    "seconds": 0.72,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-pil_structure_diff",
+    "ok": true,
+    "receipt": "pipeline-pil_structure_diff.json",
+    "seconds": 0.72,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-pil_image_analyze",
+    "ok": true,
+    "receipt": "pipeline-pil_image_analyze.json",
+    "seconds": 0.73,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-pil_embed",
+    "ok": true,
+    "receipt": "pipeline-pil_embed.json",
+    "seconds": 0.94,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "text-mask-command",
+    "ok": true,
+    "receipt": "text-mask-command.json",
+    "seconds": 0.44,
+    "tool": "pil_mask"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-ocr",
+    "ok": true,
+    "receipt": "pipeline-ocr.json",
+    "seconds": 0.88,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_register",
+    "ok": true,
+    "receipt": "pil_register.json",
+    "seconds": 0.47,
+    "tool": "pil_register"
+  },
+  {
+    "exit_code": 0,
+    "label": "registered-original-structure",
+    "ok": true,
+    "receipt": "registered-original-structure.json",
+    "seconds": 0.38,
+    "tool": "pil_structure_diff"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_diff_regions",
+    "ok": true,
+    "receipt": "pil_diff_regions.json",
+    "seconds": 3.86,
+    "tool": "pil_diff_regions"
+  },
+  {
+    "exit_code": 0,
+    "label": "tiny-edits-original-analyzer",
+    "ok": true,
+    "receipt": "tiny-edits-original-analyzer.json",
+    "seconds": 0.59,
+    "tool": "pil_image_analyze"
+  },
+  {
+    "exit_code": 0,
+    "label": "screenshot-calibration",
+    "ok": true,
+    "receipt": "screenshot-calibration.json",
+    "seconds": 0.64,
+    "tool": "pil_calibrate"
+  },
+  {
+    "exit_code": 0,
+    "label": "screenshot-profile-use",
+    "ok": true,
+    "receipt": "screenshot-profile-use.json",
+    "seconds": 0.76,
+    "tool": "pil_calibrate"
+  },
+  {
+    "exit_code": 0,
+    "label": "photograph-calibration",
+    "ok": true,
+    "receipt": "photograph-calibration.json",
+    "seconds": 0.66,
+    "tool": "pil_calibrate"
+  },
+  {
+    "exit_code": 0,
+    "label": "photograph-profile-use",
+    "ok": true,
+    "receipt": "photograph-profile-use.json",
+    "seconds": 0.88,
+    "tool": "pil_calibrate"
+  },
+  {
+    "exit_code": 0,
+    "label": "transparent-render-calibration",
+    "ok": true,
+    "receipt": "transparent-render-calibration.json",
+    "seconds": 0.69,
+    "tool": "pil_calibrate"
+  },
+  {
+    "exit_code": 0,
+    "label": "transparent-render-profile-use",
+    "ok": true,
+    "receipt": "transparent-render-profile-use.json",
+    "seconds": 0.81,
+    "tool": "pil_calibrate"
+  },
+  {
+    "exit_code": 0,
+    "label": "concept-versus-render-calibration",
+    "ok": true,
+    "receipt": "concept-versus-render-calibration.json",
+    "seconds": 0.67,
+    "tool": "pil_calibrate"
+  },
+  {
+    "exit_code": 0,
+    "label": "concept-versus-render-profile-use",
+    "ok": true,
+    "receipt": "concept-versus-render-profile-use.json",
+    "seconds": 1.08,
+    "tool": "pil_calibrate"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_capabilities",
+    "ok": true,
+    "receipt": "pil_capabilities.json",
+    "seconds": 0.91,
+    "tool": "pil_capabilities"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_blender_mesh",
+    "ok": true,
+    "receipt": "pil_blender_mesh.json",
+    "seconds": 2.22,
+    "tool": "pil_blender_mesh"
+  },
+  {
+    "exit_code": 0,
+    "label": "clearance-before",
+    "ok": true,
+    "receipt": "clearance-before.json",
+    "seconds": 2.19,
+    "tool": "pil_blender_fit"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_blender_fit",
+    "ok": true,
+    "receipt": "pil_blender_fit.json",
+    "seconds": 2.28,
+    "tool": "pil_blender_fit"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_blender_render",
+    "ok": true,
+    "receipt": "pil_blender_render.json",
+    "seconds": 3.23,
+    "tool": "pil_blender_render"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_character_sheet_review",
+    "ok": true,
+    "receipt": "pil_character_sheet_review.json",
+    "seconds": 3.92,
+    "tool": "pil_character_sheet_review"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_multiview_render",
+    "ok": true,
+    "receipt": "pil_multiview_render.json",
+    "seconds": 3.38,
+    "tool": "pil_multiview_render"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_multiview_prepare",
+    "ok": true,
+    "receipt": "pil_multiview_prepare.json",
+    "seconds": 0.45,
+    "tool": "pil_multiview_prepare"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_multiview_review",
+    "ok": true,
+    "receipt": "pil_multiview_review.json",
+    "seconds": 0.78,
+    "tool": "pil_multiview_review"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_multiview_solve",
+    "ok": true,
+    "receipt": "pil_multiview_solve.json",
+    "seconds": 3.53,
+    "tool": "pil_multiview_solve"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_reconstruct",
+    "ok": true,
+    "receipt": "pil_reconstruct.json",
+    "seconds": 1.27,
+    "tool": "pil_reconstruct"
+  }
+]

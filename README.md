@@ -7,6 +7,11 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
+**New in 0.9.0:** explicit EXIF/ICC normalization, image-bound masks,
+bounded registration, source-disjoint domain calibration, native local changes,
+and discoverable CLI/MCP tools. See the complete
+[measurement workflows and usage guide](docs/measurement-workflows.md).
+
 ## Why this exists
 
 An agent with multimodal vision already reads images well: it transcribes text,
@@ -47,8 +52,10 @@ portable and Claude Code-native layouts side by side:
 All four manifests describe the same package. `agents/`, `.codex-plugin/`, and `.claude-plugin/` are
 undefined top-level directories under Agent Plugins, which the specification
 requires clients to ignore rather than reject, so their presence does not affect
-portability. No `mcp.json` is shipped — this plugin exposes CLI tools and a skill,
-not an MCP server.
+portability. The optional `scripts/pil_mcp.py` stdio adapter exposes the CLI
+tools through MCP. It requires the `mcp` extra and explicit host configuration;
+no root MCP configuration auto-enables it for core-only installs. See
+[MCP setup](docs/measurement-workflows.md#optional-mcp-server).
 
 Two honest limits on that claim:
 
@@ -264,7 +271,7 @@ claude plugin install pil-agent-plugin@pil-agent-plugin -s user  # all your proj
 ```
 
 Verify with `claude plugin list` (or `/plugin` inside Claude Code) — you should see
-`pil-agent-plugin` at scope `user`, enabled, with one skill and one agent.
+`pil-agent-plugin` at scope `user`, enabled, with four skills and one agent.
 `claude plugin details pil-agent-plugin` prints the component inventory.
 
 Two things worth knowing:
@@ -420,6 +427,9 @@ Meanwhile `changed_region_bbox_fractional` pinpoints *where* it happened.
 A caller reading only a similarity score or a hash would have concluded "identical".
 
 ## Choosing a metric
+
+For input preparation, selections, registration, local change regions, domain
+profiles, discovery and MCP, use the [0.9.0 workflow guide](docs/measurement-workflows.md).
 
 | Question | Tool | Field |
 |---|---|---|
@@ -580,6 +590,20 @@ does not fail loudly, it quietly costs 36% of the margin.
 
 ## Status
 
+**0.9.0 — explicit measurement workflows and agent tooling.** Adds EXIF/ICC
+normalization with preserved alpha and coordinate provenance; model/profile
+configuration-aware embedding claims; image-bound raster/polygon masks and a
+pipeline that composes the original image tools; bounded translation/rigid/affine
+registration with raw/aligned evidence; native ΔE/alpha change regions, heatmaps,
+crops and optional standard SSIM; domain profiles with source-group holdouts,
+leakage checks, measured error rates and profile identity checks; and a public
+tool catalog, failure-preserving batches and optional stdio MCP adapter.
+Bootstrap accepts `--comparison` and `--mcp`. Legacy default measurements remain
+unchanged apart from the release version and corrected embedding eligibility.
+New defaults remain diagnostic unless a compatible evaluated profile is used.
+See [usage](docs/measurement-workflows.md) and
+[execution evidence](docs/verification-0.9.0.md).
+
 **0.8.0 — platform bootstrap and dependency diagnostics.** Adds a Python
 bootstrap for a plugin-local environment on Windows, macOS, and Linux, with
 opt-in OCR, embedding, and reconstruction dependencies. Its check command
@@ -728,9 +752,12 @@ input, which is what makes a `SATISFIED` invariant's limit worth reading.
 Known limitations, tracked in [`docs/index.md`](docs/index.md#open-items):
 
 - Thresholds are calibrated against a small sample and need broader validation.
-- Palette distance is Euclidean RGB, which is not perceptually uniform; it is
-  deliberately demoted to supporting detail until ΔE2000 replaces it.
-- There is no notion of *intended* versus *unintended* change yet.
+- CIEDE2000 is the primary palette-distance signal; legacy Euclidean RGB
+  distance remains supporting detail.
+- Declared-intent contracts are supported, but geometry/style claims still
+  require their own evidence, and thresholds do not transfer between domains.
+- Domain profiles require representative source-disjoint data. The four-domain
+  execution examples demonstrate operation, not production-domain accuracy.
 
 ## License
 

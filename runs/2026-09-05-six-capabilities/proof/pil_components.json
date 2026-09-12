@@ -1,0 +1,81 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "component_count": 1,
+    "components": [
+      {
+        "area_fraction_of_frame": 0.22113281,
+        "area_pixels": 5661,
+        "bbox_fractional": [
+          0.1875,
+          0.125,
+          0.81875,
+          0.81875
+        ],
+        "bbox_pixel": [
+          30,
+          20,
+          131,
+          131
+        ],
+        "centroid_fractional": [
+          0.5,
+          0.58323949
+        ],
+        "id": 1
+      }
+    ],
+    "excluded_below_floor": {
+      "count": 0,
+      "total_pixels": 0
+    },
+    "flags": [],
+    "foreground": {
+      "background_estimate": null,
+      "bbox_fractional": [
+        0.1875,
+        0.125,
+        0.81875,
+        0.81875
+      ],
+      "bbox_pixel": [
+        30,
+        20,
+        131,
+        131
+      ],
+      "flags": [],
+      "fraction_of_frame": 0.22113281,
+      "mask_pixels": 5661,
+      "source": "alpha"
+    },
+    "interpretation_limits": [
+      "component count and area_pixels are NOT scale-invariant and are only comparable between renders of the same pixel dimensions. Centroid and bbox are additionally reported as frame-fractional coordinates for cross-resolution comparison of position, not of size.",
+      "connectivity=8 (default) treats a diagonal-touching pixel pair as ONE component; connectivity=4 treats only axis-aligned neighbours as connected. The reported count depends on which is chosen and the parameter is echoed into the payload so a reader knows which rule produced the number.",
+      "min_blob_area_fraction is a calibrated noise floor (see runs/2026-08-20-components-discrimination/): blobs at or below the equivalent pixel count for this image are excluded from `components` and from `component_count`, but still contribute to the total mask area reported under `foreground`. A caller sweeping the floor lower should expect the count to become dominated by anti-aliasing residue.",
+      "the foreground mask follows pil_common's rule: alpha when the file carries real transparency (exact), the border-median OKLab estimate otherwise (inherits that estimate's error). An empty mask reports zero components with `foreground_mask_empty` set, never a fabricated count and never a crash. A very small mask still returns its counts but with `foreground_too_small` set, because on such a mask the components are themselves sub-1%-of-frame and their identities are noisy.",
+      "the labeller is a pure-numpy two-pass union-find. No scipy import is used or permitted; a repo-wide check enforces this."
+    ],
+    "min_blob_area_pixels_applied": 3,
+    "parameters": {
+      "background_delta": 0.035,
+      "connectivity": 8,
+      "image": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\shape.png",
+      "min_blob_area_fraction": 0.0001
+    },
+    "source": {
+      "has_alpha": true,
+      "mode": "RGBA",
+      "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\shape.png",
+      "sha256": "0949dca13a297a37cb3e930a2f599980848b53ee3e4ca6ca1e835c7b0a3433f2",
+      "size": [
+        160,
+        160
+      ]
+    },
+    "tool": "pil_components",
+    "version": "0.9.0"
+  }
+}

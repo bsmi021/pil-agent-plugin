@@ -5,6 +5,37 @@ description: Measures images numerically and compares two images with Pillow —
 
 # Image measurement
 
+## Explicit workflows and discovery (0.9.0)
+
+Use `pil_capabilities.py --tool NAME` for the installed CLI argument contract,
+dependency readiness and interpretation status. See
+[measurement workflows](../../docs/measurement-workflows.md) for executable
+examples and manifest formats for the following additive tools:
+
+- `pil_normalize`: explicit stored/display input modes, EXIF orientation, ICC
+  to sRGB conversion, preserved alpha and source-to-output coordinate mapping.
+- `pil_mask`: named binary selections from rasters/polygons, including holes,
+  bound to source bytes and input mode. A selection is not alpha coverage.
+- `pil_pipeline`: apply normalization and masks to the existing analyze,
+  palette, structure, OCR or embedding CLI. Tool options follow `--`; original
+  output is under `result`, original-file provenance under `inputs`.
+- `pil_register`: bounded translation by default; select rigid/affine only
+  when those transformations are permitted. Retain raw and aligned evidence
+  and overlap. Alignment must not erase the reported displacement finding.
+- `pil_diff_regions`: native local ΔE/alpha changes, separate boxes and crops,
+  with optional standard SSIM. Default thresholds are diagnostic.
+- `pil_calibrate`: create/apply domain profiles with disjoint source groups,
+  held-out rates, measured detection points and pipeline identity checks.
+- `pil_capabilities --batch`: preserve every job, including failures. Compact
+  summaries require a full output receipt. Optional `pil_mcp.py` uses the same
+  dispatcher and must be configured explicitly in the host.
+
+Do not transfer original thresholds to normalized/selected inputs. Pipeline
+results state this boundary. Validate source image hashes and mask coordinates;
+`prepared://` result paths identify transient working images. Embedding claim
+eligibility requires both model hash and matching preprocessing, even when two
+incorrectly prepared descriptors agree with each other.
+
 Native vision already reads images well — text, layout, objects, style. Use these
 tools when the answer needs to be a **number**: an exact hex value, a reproducible
 similarity score, or coordinates of what changed.
@@ -550,8 +581,8 @@ Every `pil_structure_diff` payload repeats this limit under `interpretation_limi
 
 ## Other limits worth stating to the user
 
-- Palette distance is Euclidean RGB, which is not perceptually uniform. Treat it
-  as a relative signal between comparable images, not an absolute perceptual delta.
+- CIEDE2000 is the primary perceptual palette signal. The legacy Euclidean RGB
+  distance remains a supporting relative measurement.
 - Accent membership is a hard HSV threshold, echoed in the output as
   `accent_thresholds`. Colours near the boundary can flip between palettes.
 - Thresholds are calibrated against synthetic perturbations with exact ground

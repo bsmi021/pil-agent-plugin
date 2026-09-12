@@ -1,0 +1,222 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "calibration_status": "requires_pipeline_specific_profile",
+    "exit_code": 0,
+    "inputs": {
+      "a": {
+        "alpha": "preserved; not colour transformed",
+        "assumed_profile": null,
+        "colour_transform_applied": false,
+        "coordinate_convention": "pixel edges; pixel centers are x+0.5,y+0.5",
+        "mask": {
+          "manifest_sha256": "d9a5da4675c6c9ac9103a712019b7c6b94292aa86cd231b3750e6c2e80fa797f",
+          "name": "subject",
+          "selected_pixels": 12780,
+          "semantics": "binary_selection_not_alpha_coverage",
+          "source": "explicit_selection"
+        },
+        "mode": "stored",
+        "orientation_applied": 1,
+        "output_colour_space": "stored channels",
+        "pipeline": "stored-v1",
+        "prepared_reference": "prepared://a",
+        "rendering_intent": null,
+        "size": [
+          160,
+          160
+        ],
+        "source": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\shape.png",
+        "source_icc_sha256": null,
+        "source_orientation": 1,
+        "source_sha256": "0949dca13a297a37cb3e930a2f599980848b53ee3e4ca6ca1e835c7b0a3433f2",
+        "source_size": [
+          160,
+          160
+        ],
+        "source_to_output": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      }
+    },
+    "interpretation_limits": [
+      "Result paths prepared:// identify transient prepared pixels, not the original files.",
+      "Masks select pixels; retained source alpha still supplies coverage weights.",
+      "Original threshold interpretations are not validated for this preparation pipeline."
+    ],
+    "measurement_tool": "pil_palette_diff",
+    "result": {
+      "diff": null,
+      "images": {
+        "a": {
+          "accent_palette": [
+            {
+              "coverage": 1.0,
+              "hex": "#3c8cdc",
+              "rgb": [
+                60,
+                140,
+                220
+              ]
+            }
+          ],
+          "accent_pixel_fraction": 1.0,
+          "aspect_ratio": 1.0,
+          "base_palette": [
+            {
+              "coverage": 1.0,
+              "hex": "#3c8cdc",
+              "rgb": [
+                60,
+                140,
+                220
+              ]
+            }
+          ],
+          "entropy": -0.0,
+          "flags": [],
+          "foreground": {
+            "applied": true,
+            "background_estimate": null,
+            "coverage_fraction_of_frame": 0.153493,
+            "coverage_weighted": true,
+            "fraction_of_frame": 0.195703,
+            "partial_coverage_share": 1.0,
+            "source": "alpha"
+          },
+          "hue_families": {
+            "blue": {
+              "coverage": 3929.411765,
+              "fraction_of_accents": 1.0,
+              "fraction_of_frame": 1.0,
+              "negligible": false,
+              "pixels": 5010
+            },
+            "cyan": {
+              "coverage": 0.0,
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "green": {
+              "coverage": 0.0,
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "magenta": {
+              "coverage": 0.0,
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "orange": {
+              "coverage": 0.0,
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "purple": {
+              "coverage": 0.0,
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "red": {
+              "coverage": 0.0,
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "yellow": {
+              "coverage": 0.0,
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            }
+          },
+          "luminance": {
+            "mean": 125.0,
+            "std": 0.0
+          },
+          "mode": "RGB",
+          "path": "prepared://a",
+          "region": null,
+          "saturation": {
+            "mean": 185.0,
+            "std": 0.0
+          },
+          "size": [
+            160,
+            160
+          ],
+          "source_size": [
+            160,
+            160
+          ]
+        }
+      },
+      "interpretation_limits": [
+        "Base-palette coverage is area-weighted: a visually dominant accent that occupies few pixels will rank low or be absent. Read accent_palette for perceptual identity, base_palette for bulk tone.",
+        "base_palette_distance_de2000 and accent_palette_distance_de2000 are the primary colour-distance signal: the same coverage-weighted symmetric Chamfer construction, but measured with CIEDE2000 over D65 CIELAB. Read these first.",
+        "base_palette_distance and accent_palette_distance are Euclidean in RGB, which is not perceptually uniform. They are kept for continuity with phase 1 and are now demoted to supporting detail; where the two disagree, the de2000 figure is the one to trust.",
+        "dE2000 has NO authoritative perceptibility bands. The widely-copied 0-1 / 1-2 / 2-10 banding table is disclaimed by its own author, and 'dE 1.0 = just noticeable difference' has no traceable primary source, so this tool emits no verbal band. The numbers are raw: dE2000 is not a percentage and is not bounded at 100 (black vs white is exactly 100.0, but the sRGB maximum measured is 119.22), so never normalise it. A decision threshold has to come from calibration, not from this scale.",
+        "Accent membership is a hard threshold in the space named by accent_space, with both spaces' thresholds echoed in accent_thresholds; only the pair belonging to accent_space is active. Colours near the boundary may flip between the two palettes. Hue-family bucketing runs on the HSV hue channel in both spaces -- no authoritative CIELAB hue-angle boundaries for basic colour names exist to port to.",
+        "accent_palette is itself area-weighted, so a dominant accent hue can crowd out smaller ones. Use hue_families to establish which hues are present at all, and hue_families_lost/gained to detect a dropped accent -- a hue can matter semantically at well under 1% of the frame.",
+        "In full-frame mode every statistic includes the background. When background_dominant or accent_support_low is flagged, hue and palette numbers mostly describe background and noise; re-run with --foreground before letting them influence a verdict or a ranking.",
+        "In --foreground mode all fractions (accent_pixel_fraction, hue_families fraction_of_frame) are shares of the foreground, not of the frame. The foreground block records how the mask was derived.",
+        "coverage_weighted (in the foreground block) is true when this image's colour statistics -- luminance, saturation, entropy, accent_pixel_fraction, base_palette/accent_palette coverage, hue_families coverage -- are alpha/255 coverage-weighted rather than counted at equal weight per masked pixel. base_palette/accent_palette cluster CENTRES remain chosen from an unweighted MEDIANCUT quantisation of the straight-RGB pixels; only each entry's reported coverage is reweighted afterwards. hue_families.pixels and fractional_cells.foreground_pixels stay integer counts throughout, because the gates built on them (HUE_PRESENCE_MIN_PIXELS, CELL_MIN_SUPPORT_PIXELS) are sampling-adequacy questions, not colour questions.",
+        "partial_coverage_share is the fraction of this image's masked pixels with alpha < 255. It carries NO flag and NO threshold: an uncalibrated flag threshold is exactly what this repository refuses to ship. Read it yourself when deciding how much to trust a colour statistic on a partially-transparent object.",
+        "foreground_source_mismatch fires when the two images' foreground.source differ (one alpha, one border-median) -- distinct from foreground_mask_mismatch, which fires when one side's mask fell back to full-frame. A source mismatch means one side's colours are coverage-weighted true object colour and the other side's are blended toward its own backdrop; the two are not commensurable, and a composited render's coverage information was destroyed at composite time -- there is no un-blending it. Measured on this repository's own calibration corpus, this residual reaches double digits in luminance and saturation code values on thin or highly transparent objects (see the W1 evidence bundle); it is not a rounding error.",
+        "--region crops BOTH images to the same fractional box at full resolution before any measurement runs -- never after, which is what keeps a --region measurement resolution-independent and identical to pre-cropping the file with pil_crop.py and measuring the result -- with exactly one exception: the flags list. region_background_estimate_diverged (below) can appear on a --region run and never on the equivalent pre-cropped-file run, because it compares the crop's own border-median colour against the ORIGINAL, un-cropped frame's -- a comparison a pre-cropped file structurally cannot make, having no frame left to compare against. Every other field, including every colour and structure statistic, is unaffected. Composed with --foreground, the order is: region crop first, then the foreground mask -- and, on the border-median path, the background estimate -- is re-derived from the crop's own pixels, never inherited from the whole frame. region_background_estimate_diverged fires when that re-derived estimate lands further than --background-delta (in OKLab) from the whole frame's own border-median colour -- the signature of a region that contains little or no backdrop, where the re-derived estimate is the more honest one but also the more surprising one."
+      ],
+      "parameters": {
+        "accent_space": "hsv",
+        "accent_thresholds": {
+          "chroma_min": 20.0,
+          "lightness_min": 20.0,
+          "saturation_min": 100,
+          "value_min": 60
+        },
+        "alpha_foreground_min": 8,
+        "background_delta": 0.035,
+        "colors": 8,
+        "foreground": true,
+        "hue_presence_min": {
+          "fraction": 0.0002,
+          "pixels": 10
+        },
+        "lab_reference": "D65 (CIE 1931 2 degree observer)",
+        "region": null,
+        "region_space": "frame"
+      },
+      "tool": "pil_palette_diff",
+      "version": "0.9.0"
+    },
+    "tool": "pil_pipeline",
+    "version": "0.9.0"
+  }
+}

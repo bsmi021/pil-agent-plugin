@@ -1,0 +1,35 @@
+pil_image_info PASS
+pil_image_analyze PASS
+pil_palette_diff PASS
+pil_structure_diff PASS
+pil_components PASS
+pil_silhouette PASS
+alignment-diagnostic PASS
+contrast-standard PASS
+pil_crop PASS
+pil_annotate PASS
+pil_contract_verdict PASS
+pil_ocr PASS
+pil_semantic_record PASS
+semantic-verify PASS
+semantic-compare PASS
+pil_embed PASS
+embed-compare PASS
+pil_bootstrap PASS
+pil_normalize PASS
+normalization-quality PASS
+pil_mask PASS
+pipeline-pil_palette_diff PASS
+pipeline-pil_structure_diff PASS
+pipeline-pil_image_analyze PASS
+pipeline-pil_embed PASS
+text-mask PASS
+pipeline-ocr pil_pipeline: mask binding does not match image bytes and input mode
+Traceback (most recent call last):
+  File "C:\Projects\pil-agent-plugin\pil-agent-plugin\runs\2026-09-05-six-capabilities\verify_tools.py", line 185, in <module>
+    main()
+  File "C:\Projects\pil-agent-plugin\pil-agent-plugin\runs\2026-09-05-six-capabilities\verify_tools.py", line 95, in main
+    call('pil_pipeline','--tool','pil_ocr','--image-a',RUN/'text.png','--mask-a',RUN/'text-mask.json','--','--psm','7',label='pipeline-ocr',
+  File "C:\Projects\pil-agent-plugin\pil-agent-plugin\runs\2026-09-05-six-capabilities\verify_tools.py", line 38, in call
+    assert result['ok'],result
+AssertionError: {'ok': False, 'exit_code': 2, 'result': None, 'error': 'pil_pipeline: mask binding does not match image bytes and input mode'}

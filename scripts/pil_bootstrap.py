@@ -16,7 +16,7 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = {"pillow": "PIL", "numpy": "numpy", "onnxruntime": "onnxruntime",
-           "opencv-python-headless": "cv2", "scipy": "scipy"}
+           "opencv-python-headless": "cv2", "scipy": "scipy", "scikit-image": "skimage", "mcp": "mcp"}
 
 # Executed in the target environment, never the bootstrap launcher's environment.
 # The repository's requirements use numeric >= and < constraints. Refuse other
@@ -72,7 +72,7 @@ def probe(command):
 def configuration(root, args):
     manifest = (root / "pyproject.toml").read_bytes()
     project = tomllib.loads(manifest.decode("utf-8"))["project"]
-    extras = [name for name in ("embedding", "reconstruction") if getattr(args, name)]
+    extras = [name for name in ("embedding", "reconstruction", "comparison", "mcp") if getattr(args, name, False)]
     requirements = list(project["dependencies"])
     for extra in extras:
         requirements.extend(project["optional-dependencies"][extra])
@@ -194,6 +194,8 @@ def main(argv=None, *, root=ROOT):
     parser.add_argument("--ocr", action="store_true", help="include Tesseract (English data)")
     parser.add_argument("--embedding", action="store_true", help="include runtime and configured ONNX model check")
     parser.add_argument("--reconstruction", action="store_true", help="include OpenCV and SciPy")
+    parser.add_argument("--comparison", action="store_true", help="include standard SSIM through scikit-image")
+    parser.add_argument("--mcp", action="store_true", help="include the optional stdio MCP adapter")
     parser.add_argument("--model", help="existing ONNX model path; implies --embedding")
     parser.add_argument("--preprocessing", choices=["imagenet", "clip"], help="model profile")
     args = parser.parse_args(argv)

@@ -1,0 +1,99 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "comparison": null,
+    "interpretation_limits": [
+      "Render determinism is scoped: two renders of the same (.blend, view) pair on this machine, this Blender install, produce byte-identical PNGs. Cross-machine or cross-install byte-identical rendering is NOT claimed -- Blender version, OS PNG codec, and Workbench studio-light bundling can all shift bytes across installs. Comparison metrics on a fixed image pair remain fully deterministic everywhere, as they do for every other tool in this repository -- what is scoped is only the render step that produces one side of the pair.",
+      "Camera convention: the scene is treated as standard Z-up (character stands along +Z, world +Z is up) with the character facing -Y. 'front' puts an orthographic camera at -Y looking +Y (aimed at the character's face); 'back' at +Y looking -Y (aimed at the back/cape); 'side' at +X looking -X (wearer's-right profile -- camera on the wearer's right hand side, looking across the body). Verified empirically against the brute corpus: after filtering hide_render=True donor meshes, the visible geometry has X range 2.37 (T-pose shoulders), Y range 0.94 (cape at +Y), Z range 2.14 (feet Z=0 to head Z=2.14). If a scene is authored with a different up axis or facing direction, front/back/side will not match the caller's expectation -- verify against a known-good reference before trusting the labelling. The framing flags (aspect_ratio_mismatch, resolution_mismatch) cannot catch this because they depend only on image size.",
+      "The auto-frame reads world-space vertex positions from the DEPSGRAPH-EVALUATED mesh of every render-visible object (hide_render=False), computes the axis-aligned bounding box, then fits it into the render frame with a 10% margin. hide_render=True meshes (donor/reference geometry) are excluded -- otherwise their transforms can dominate the bbox and shrink the visible character to a speck. Orthographic projection means no perspective foreshortening.",
+      "When aspect_ratio_mismatch or resolution_mismatch appears in the diff's own flags on a non-refused comparison, those flags describe framing and pose -- not the model. This is quoting the field trial's own finding (a T-pose render vs an A-pose reference scored structural_similarity 0.900 with both flags firing, correctly discarded). --reference pins the render size to the reference's size, so these two flags should not fire from this tool's own output.",
+      "foreground_source_mismatch is EXPECTED in comparison.diff_flags whenever the render has an alpha channel (film_transparent=True, which this tool sets unconditionally) and the reference does not. The render's alpha is true coverage information; the reference's foreground is derived from its own border-median colour. Both are valid definitions of foreground; they are just not the same one. The flag surfaces the source difference for honest reporting -- it does not cause refusal, and comparison metrics remain deterministic. Callers who want to eliminate this flag can render their references with matching alpha, or accept the small colour-comparison drift it signals.",
+      "Refusal semantics: a scene with no mesh geometry, or a comparison whose diff reports foreground_mask_empty or foreground_too_small on either image (in images.a.flags or images.b.flags), is reported as comparison.refused=true with numeric fields nulled -- never as a fabricated similarity number. Missing Blender, missing .blend, or a missing reference file is a rejection (exit 2, empty stdout, stderr reason). This mirrors pil_contract_verdict's UNMEASURABLE pattern at the render-orchestration layer."
+    ],
+    "parameters": {
+      "blend": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\fitted.blend",
+      "blender_executable": "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe",
+      "blender_version": "5.2.0",
+      "camera_convention": {
+        "character_facing": "-Y",
+        "views": {
+          "back": {
+            "camera_axis": "+Y",
+            "description": "camera at +Y looking -Y (faces character's back/cape)"
+          },
+          "front": {
+            "camera_axis": "-Y",
+            "description": "camera at -Y looking +Y (faces character's face)"
+          },
+          "side": {
+            "camera_axis": "+X",
+            "description": "camera at +X looking -X (wearer's-right profile)"
+          }
+        },
+        "world_up": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "device": "CPU",
+      "engine": "BLENDER_WORKBENCH",
+      "margin": 0.1,
+      "out_path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\front.png",
+      "reference": null,
+      "resolution_default": 128,
+      "resolution_source": "square_default",
+      "resolution_used": [
+        128,
+        128
+      ],
+      "view": "front"
+    },
+    "render": {
+      "bounding_box_world_visible": {
+        "max": [
+          1.0,
+          1.0,
+          1.0199999809265137
+        ],
+        "min": [
+          -1.0,
+          -1.0,
+          -1.0
+        ],
+        "visible_mesh_count": 2
+      },
+      "camera": {
+        "camera_axis": "-Y",
+        "location": [
+          0.0,
+          -19.079999923706055,
+          0.009999990463256836
+        ],
+        "ortho_scale": 2.221999979019165,
+        "target": [
+          0.0,
+          0.0,
+          0.009999990463256836
+        ],
+        "type": "ORTHO",
+        "world_up": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "output_path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\front.png",
+      "refused_reason": null,
+      "render_resolution": [
+        128,
+        128
+      ],
+      "rendered": true
+    },
+    "tool": "pil_blender_render",
+    "version": "0.9.0"
+  }
+}

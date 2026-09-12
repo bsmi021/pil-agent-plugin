@@ -1,0 +1,39 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "coordinate_space": "prepared_frame_pixel_centers",
+    "image_sha256": "58b84817dccb0a0eeb2d409e88b382ef37422a524dd2b733a60b0c64f7f16acb",
+    "input_mode": "stored",
+    "name": "text",
+    "raster": "text-mask.png",
+    "raster_sha256": "8ef5eddfb2c513ae165262a1ecc822623a9e2ca90a1d8fd38dfbf451f72e1c0b",
+    "schema": "selection-mask-v1",
+    "selected_pixels": 94501,
+    "selection_semantics": "binary_selection_not_alpha_coverage",
+    "size": [
+      800,
+      140
+    ],
+    "source_to_output": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        1
+      ]
+    ],
+    "tool": "pil_mask",
+    "version": "0.9.0"
+  }
+}

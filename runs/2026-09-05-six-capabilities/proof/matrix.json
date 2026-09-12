@@ -1,0 +1,218 @@
+[
+  {
+    "exit_code": 0,
+    "label": "pil_image_info",
+    "ok": true,
+    "receipt": "pil_image_info.json",
+    "seconds": 0.59,
+    "tool": "pil_image_info"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_image_analyze",
+    "ok": true,
+    "receipt": "pil_image_analyze.json",
+    "seconds": 0.38,
+    "tool": "pil_image_analyze"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_palette_diff",
+    "ok": true,
+    "receipt": "pil_palette_diff.json",
+    "seconds": 0.36,
+    "tool": "pil_palette_diff"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_structure_diff",
+    "ok": true,
+    "receipt": "pil_structure_diff.json",
+    "seconds": 0.31,
+    "tool": "pil_structure_diff"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_components",
+    "ok": true,
+    "receipt": "pil_components.json",
+    "seconds": 0.31,
+    "tool": "pil_components"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_silhouette",
+    "ok": true,
+    "receipt": "pil_silhouette.json",
+    "seconds": 0.33,
+    "tool": "pil_silhouette"
+  },
+  {
+    "exit_code": 0,
+    "label": "alignment-diagnostic",
+    "ok": true,
+    "receipt": "alignment-diagnostic.json",
+    "seconds": 0.36,
+    "tool": "pil_alignment"
+  },
+  {
+    "exit_code": 0,
+    "label": "contrast-standard",
+    "ok": true,
+    "receipt": "contrast-standard.json",
+    "seconds": 0.3,
+    "tool": "pil_alignment"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_crop",
+    "ok": true,
+    "receipt": "pil_crop.json",
+    "seconds": 0.36,
+    "tool": "pil_crop"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_annotate",
+    "ok": true,
+    "receipt": "pil_annotate.json",
+    "seconds": 0.41,
+    "tool": "pil_annotate"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_contract_verdict",
+    "ok": true,
+    "receipt": "pil_contract_verdict.json",
+    "seconds": 0.42,
+    "tool": "pil_contract_verdict"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_ocr",
+    "ok": true,
+    "receipt": "pil_ocr.json",
+    "seconds": 0.47,
+    "tool": "pil_ocr"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_semantic_record",
+    "ok": true,
+    "receipt": "pil_semantic_record.json",
+    "seconds": 0.27,
+    "tool": "pil_semantic_record"
+  },
+  {
+    "exit_code": 0,
+    "label": "semantic-verify",
+    "ok": true,
+    "receipt": "semantic-verify.json",
+    "seconds": 0.27,
+    "tool": "pil_semantic_record"
+  },
+  {
+    "exit_code": 0,
+    "label": "semantic-compare",
+    "ok": true,
+    "receipt": "semantic-compare.json",
+    "seconds": 0.25,
+    "tool": "pil_semantic_record"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_embed",
+    "ok": true,
+    "receipt": "pil_embed.json",
+    "seconds": 0.51,
+    "tool": "pil_embed"
+  },
+  {
+    "exit_code": 0,
+    "label": "embed-compare",
+    "ok": true,
+    "receipt": "embed-compare.json",
+    "seconds": 0.34,
+    "tool": "pil_embed"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_bootstrap",
+    "ok": true,
+    "receipt": "pil_bootstrap.json",
+    "seconds": 3.62,
+    "tool": "pil_bootstrap"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_normalize",
+    "ok": true,
+    "receipt": "pil_normalize.json",
+    "seconds": 0.26,
+    "tool": "pil_normalize"
+  },
+  {
+    "exit_code": 0,
+    "label": "normalization-quality",
+    "ok": true,
+    "receipt": "normalization-quality.json",
+    "seconds": 0.5,
+    "tool": "pil_image_analyze"
+  },
+  {
+    "exit_code": 0,
+    "label": "pil_mask",
+    "ok": true,
+    "receipt": "pil_mask.json",
+    "seconds": 0.39,
+    "tool": "pil_mask"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-pil_palette_diff",
+    "ok": true,
+    "receipt": "pipeline-pil_palette_diff.json",
+    "seconds": 0.62,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-pil_structure_diff",
+    "ok": true,
+    "receipt": "pipeline-pil_structure_diff.json",
+    "seconds": 0.56,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-pil_image_analyze",
+    "ok": true,
+    "receipt": "pipeline-pil_image_analyze.json",
+    "seconds": 0.62,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "pipeline-pil_embed",
+    "ok": true,
+    "receipt": "pipeline-pil_embed.json",
+    "seconds": 0.84,
+    "tool": "pil_pipeline"
+  },
+  {
+    "exit_code": 0,
+    "label": "text-mask",
+    "ok": true,
+    "receipt": "text-mask.json",
+    "seconds": 0.41,
+    "tool": "pil_mask"
+  },
+  {
+    "exit_code": 2,
+    "label": "pipeline-ocr",
+    "ok": false,
+    "receipt": "pipeline-ocr.json",
+    "seconds": 0.62,
+    "tool": "pil_pipeline"
+  }
+]

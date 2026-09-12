@@ -1,0 +1,183 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "calibration_status": "requires_pipeline_specific_profile",
+    "exit_code": 0,
+    "inputs": {
+      "a": {
+        "alpha": "preserved; not colour transformed",
+        "assumed_profile": null,
+        "colour_transform_applied": false,
+        "coordinate_convention": "pixel edges; pixel centers are x+0.5,y+0.5",
+        "mask": {
+          "manifest_sha256": "4f519e4f125df380f378da715ccdec66018a903ca80497c65b996f83dc93a22b",
+          "name": "text",
+          "selected_pixels": 94501,
+          "semantics": "binary_selection_not_alpha_coverage",
+          "source": "explicit_selection"
+        },
+        "mode": "stored",
+        "orientation_applied": 1,
+        "output_colour_space": "stored channels",
+        "pipeline": "stored-v1",
+        "prepared_reference": "prepared://a",
+        "rendering_intent": null,
+        "size": [
+          800,
+          140
+        ],
+        "source": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\text.png",
+        "source_icc_sha256": null,
+        "source_orientation": 1,
+        "source_sha256": "58b84817dccb0a0eeb2d409e88b382ef37422a524dd2b733a60b0c64f7f16acb",
+        "source_size": [
+          800,
+          140
+        ],
+        "source_to_output": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      }
+    },
+    "interpretation_limits": [
+      "Result paths prepared:// identify transient prepared pixels, not the original files.",
+      "Masks select pixels; retained source alpha still supplies coverage weights.",
+      "Original threshold interpretations are not validated for this preparation pipeline."
+    ],
+    "measurement_tool": "pil_ocr",
+    "result": {
+      "claims_emitted": null,
+      "engine": "tesseract v5.4.0.20240606",
+      "flags": [],
+      "full_text": "PIL QUALITY 123",
+      "image": {
+        "path": "prepared://a",
+        "size": [
+          800,
+          140
+        ]
+      },
+      "interpretation_limits": [
+        "Every transcription here is a TESSERACT ENGINE ESTIMATE, not ground truth and not a pixel measurement: the engine can hallucinate words in texture, split or merge real ones, and misread stylised, neon, curved, handwritten or low-contrast text severely. Verify any transcription that matters by re-cropping its bbox_fractional with pil_crop.py (same parser and rounding) and looking.",
+        "confidence is Tesseract's own 0-100 word/line figure, reported raw. It is NOT calibrated by this repository: no detection limit or error rate has been measured for it, and the high/medium/low bands used by --claims-out are reporting conventions echoed in parameters, nothing more.",
+        "Word and line boxes are mapped to FULL-FRAME coordinates even when --region was used, so they remain croppable and sealable against the original file. bbox_fractional is frame-relative.",
+        "Determinism is scoped narrowly, exactly like the Blender render tools: same image, same Tesseract build, same machine reproduces this payload byte-for-byte. Cross-machine and cross-version determinism is NOT claimed; the engine block records the version so a reader can tell when two payloads are comparable.",
+        "--claims-out writes text_transcription claims for pil_semantic_record.py seal, excluding lines below claims_min_confidence. A sealed OCR claim is still a claim: sealing makes it attributable and checkable, not true, and its evidence field names the engine and confidence so a reader can weigh it.",
+        "OCR reads the composited image (alpha over black). Text rendered in transparency alone, or legible only against a different backdrop, may not be found."
+      ],
+      "lines": [
+        {
+          "bbox_fractional": [
+            0.0425,
+            0.314286,
+            0.515,
+            0.578571
+          ],
+          "bbox_pixels": [
+            34,
+            44,
+            412,
+            81
+          ],
+          "confidence_mean": 95.93,
+          "confidence_min": 95.28,
+          "text": "PIL QUALITY 123",
+          "word_count": 3
+        }
+      ],
+      "parameters": {
+        "claims_min_confidence": 60.0,
+        "confidence_bands": {
+          "high_min": 85.0,
+          "medium_min": 60.0
+        },
+        "lang": "eng",
+        "psm": 7,
+        "region": null
+      },
+      "region": null,
+      "tool": "pil_ocr",
+      "version": "0.9.0",
+      "words": [
+        {
+          "bbox_fractional": [
+            0.0425,
+            0.314286,
+            0.125,
+            0.564286
+          ],
+          "bbox_pixels": [
+            34,
+            44,
+            100,
+            79
+          ],
+          "block": 1,
+          "confidence": 96.34,
+          "line": 1,
+          "paragraph": 1,
+          "text": "PIL",
+          "word": 1
+        },
+        {
+          "bbox_fractional": [
+            0.14625,
+            0.314286,
+            0.39875,
+            0.578571
+          ],
+          "bbox_pixels": [
+            117,
+            44,
+            319,
+            81
+          ],
+          "block": 1,
+          "confidence": 96.17,
+          "line": 1,
+          "paragraph": 1,
+          "text": "QUALITY",
+          "word": 2
+        },
+        {
+          "bbox_fractional": [
+            0.4225,
+            0.314286,
+            0.515,
+            0.564286
+          ],
+          "bbox_pixels": [
+            338,
+            44,
+            412,
+            79
+          ],
+          "block": 1,
+          "confidence": 95.28,
+          "line": 1,
+          "paragraph": 1,
+          "text": "123",
+          "word": 3
+        }
+      ]
+    },
+    "tool": "pil_pipeline",
+    "version": "0.9.0"
+  }
+}
