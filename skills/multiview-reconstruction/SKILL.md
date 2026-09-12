@@ -1,82 +1,68 @@
 ---
 name: multiview-reconstruction
-description: Prepares calibrated multi-view concept images, fits a template mesh with OpenCV and SciPy constraints, checks Blender garment clearance with BVH, renders arbitrary locked-framing views, and performs worst-case image review. Use for reconstructing or fitting an existing 3D mesh from several image views when camera projections, correspondences, and scale anchors can be supplied. Does not infer hidden topology or metric 3D geometry from pixels alone.
+description: Fit an existing 3D template to calibrated multi-view image constraints, probe Blender clearance, and review locked renders. Use when projections, correspondences, and scale anchors are available.
 ---
 
 # Multi-view reconstruction
 
-Use this skill when the task is to turn several reference views into measured
-constraints on an existing template mesh, then evaluate the result in Blender.
-Use `image-measurement` instead for ordinary image inspection or two-image
-comparison that does not require a 3D solve.
+Use this skill to constrain an existing template mesh from several calibrated
+views and evaluate the result in Blender. It does not infer hidden topology or
+metric 3D geometry from images alone.
 
-If the request spans semantic image inspection, quantitative pixel comparison,
-template fitting, Blender clearance, and final matched-render review, route
-through the sibling `image-analysis` umbrella skill and load both specialized
-skills beneath it.
+Use [`image-measurement`](../image-measurement/SKILL.md) for ordinary image
+inspection or pair comparison. Use the
+[`image-analysis`](../image-analysis/SKILL.md) umbrella when the request also
+needs semantic inspection, pixel comparison, or a full concept-to-model review.
 
-## Environment
+## Required evidence
 
-The reconstruction tools are an optional install so the core image-measurement
-plugin remains Pillow + NumPy only:
+A solve needs named views, calibrated projection matrices, explicit template
+correspondences, and scale anchors or fixed coordinates. Do not invent hidden or
+ambiguous landmarks. If independent observation rank is insufficient or views
+conflict, preserve the tool's `UNDERDETERMINED` or `VIEW_CONFLICT` result.
 
-```powershell
-uv sync --project "${CLAUDE_PLUGIN_ROOT}" --extra reconstruction
-```
+Contours and landmarks are projected-appearance evidence. Probe clipping and
+body clearance from the Blender scene with `pil_blender_fit.py`; silhouettes do
+not prove collision state. Keep every required view in preparation, rendering,
+and review so a failure cannot disappear from the aggregate.
 
-Agent Plugins hosts may expose the root as `${PLUGIN_ROOT}` instead. Direct
-Python use requires Pillow, NumPy, `opencv-python-headless`, and SciPy. Blender
-tools additionally require a local Blender executable; `bpy` is used only in
-Blender's bundled interpreter.
+## Run the needed stages
 
-## Evidence boundary
+Discover current commands and readiness with `pil_capabilities.py --tool NAME`.
+If reconstruction dependencies are missing and setup is part of the request,
+use the sibling [`bootstrap`](../bootstrap/SKILL.md) workflow with
+`--reconstruction`. Blender remains a separate prerequisite.
 
-- Treat OpenCV contours and landmarks as 2D rendered-appearance evidence.
-- Do not claim metric depth unless the correspondence file contains calibrated
-  projection matrices and enough independent views or fixed coordinates.
-- Do not invent correspondences for hidden or ambiguous landmarks. A solver
-  refusal is the correct result when depth is underconstrained.
-- Measure clipping and body clearance through `pil_blender_fit.py`; silhouettes
-  can hide penetration and are not collision evidence.
-- Keep every requested view in preparation and review. A failed view blocks or
-  makes the aggregate unmeasurable; never discard it to improve the result.
-- `apply-copy` creates a new `.blend`. It refuses to overwrite the source or an
-  existing output.
+Use these stages as the task requires:
 
-## Workflow
+- `pil_multiview_prepare.py`: normalize each named view and retain its ordered
+  contour or refusal state.
+- `pil_multiview_solve.py`: fit the template under correspondence and geometry
+  constraints. Geometry mutation is eligible only from `SOLVED`.
+- `pil_blender_fit.py`: run `probe` first; use `apply-copy` only for an
+  authorized bounded edit. It creates a new `.blend` and does not overwrite an
+  existing file.
+- `pil_multiview_render.py`: render the decisive views with locked framing and
+  an explicit `analysis`, `beauty`, or `silhouette` mode.
+- `pil_multiview_review.py`: compare every required render to its matching
+  reference using worst-case aggregation.
 
-1. Create a `multiview-spec-v1` manifest and run `pil_multiview_prepare.py`.
-   It uses the shared alpha/border foreground definition, then OpenCV traces and
-   simplifies an ordered normalized contour for each view.
-2. Supply a `template-mesh-v1`, `correspondences-v1`, and
-   `geometry-constraints-v1`. Run `pil_multiview_solve.py`. Continue only from
-   `SOLVED`; report `UNDERDETERMINED` or `VIEW_CONFLICT` without smoothing it
-   into a success claim.
-3. Run `pil_blender_fit.py` in `probe` mode first. If the requested operation is
-   authorized and bounded displacement can meet clearance, use `apply-copy`.
-4. Render the decisive views with `pil_multiview_render.py`. Use locked framing
-   for comparisons; choose `analysis`, `beauty`, or `silhouette` deliberately.
-5. Pair every render with its matching reference in `review-views-v1` and run
-   `pil_multiview_review.py`. Its verdict is worst-case across views.
+For a repeatable end-to-end job, `pil_reconstruct.py` composes the stages from a
+`reconstruction-job-v1` manifest and stops at `UNDERDETERMINED`,
+`VIEW_CONFLICT`, `FIT_BLOCKED`, or `RENDER_BLOCKED`.
 
-For a repeatable job, `pil_reconstruct.py` composes those stages from a
-`reconstruction-job-v1` file and stops at `UNDERDETERMINED`, `VIEW_CONFLICT`,
-`FIT_BLOCKED`, or `RENDER_BLOCKED`.
+Schemas live under [`schemas/`](../../schemas/); the numerical model, dependency
+boundary, and field-level scope are in
+[`docs/phase4-scope.md`](../../docs/phase4-scope.md). Read only the schema or
+section needed for the current stage.
 
-Schemas and a complete field reference live under
-[`schemas/`](../../schemas/) and
-[`docs/phase4-scope.md`](../../docs/phase4-scope.md).
+## Report and finish
 
-## Commands
+Read each payload's status, flags, residuals, and `interpretation_limits`.
+Report per-view evidence and the weakest required view. A high image similarity
+does not establish clearance, topology, rig deformation, or cloth behavior.
 
-```powershell
-uv run --project "${CLAUDE_PLUGIN_ROOT}" --extra reconstruction python "${CLAUDE_PLUGIN_ROOT}/scripts/pil_multiview_prepare.py" views.json
-uv run --project "${CLAUDE_PLUGIN_ROOT}" --extra reconstruction python "${CLAUDE_PLUGIN_ROOT}/scripts/pil_multiview_solve.py" --template template.json --correspondences correspondences.json --constraints constraints.json --prepared prepared.json --output solution.json
-uv run --project "${CLAUDE_PLUGIN_ROOT}" python "${CLAUDE_PLUGIN_ROOT}/scripts/pil_blender_fit.py" scene.blend --body-object Body --garment-object Cloak --clearance 0.01 --mode probe
-uv run --project "${CLAUDE_PLUGIN_ROOT}" python "${CLAUDE_PLUGIN_ROOT}/scripts/pil_multiview_render.py" scene.blend --manifest render-views.json --output-dir renders --mode analysis
-uv run --project "${CLAUDE_PLUGIN_ROOT}" python "${CLAUDE_PLUGIN_ROOT}/scripts/pil_multiview_review.py" --manifest review-views.json --contract contract.json
-```
-
-Read each JSON payload's `status`, flags, residuals, and
-`interpretation_limits` before describing the result. A high image similarity
-is not proof of clearance, rig deformation, cloth behavior, or topology.
+The task is complete when each requested stage either succeeds with retained
+artifacts or ends in its explicit blocking status. If the request includes the
+full reconstruction loop, continue through locked renders and worst-case review
+rather than returning after the first solved mesh.

@@ -1,9 +1,12 @@
 # pil-agent-plugin documentation
 
-Last updated: 2026-09-05
+Last updated: 2026-09-12
 
 ## Contents
 
+- [0.9.1 Astra skill audit](astra-skill-audit-2026-09-12.html) — concise
+  activation, progressive disclosure, preserved evidence boundaries, and
+  focused validation.
 - [0.9.0 measurement workflows](measurement-workflows.md) — normalization,
   masks, registration, domain profiles, local differences, discovery and MCP.
 - [0.9.0 execution evidence](verification-0.9.0.md) — original and new tool
@@ -101,6 +104,13 @@ box, byte-equal to pre-cropping with `pil_crop`.
 All are deterministic and emit JSON.
 
 ## Status
+
+**0.9.1 — Astra-ready skill guidance.** The four shipped skills now use short,
+discriminating descriptions and compact decision routers. Detailed commands and
+mode-specific guidance are loaded only when relevant. Measurement algorithms,
+calibration bundles, schemas, model gates, and runtime behavior are unchanged.
+The [audit](astra-skill-audit-2026-09-12.html) records the before/after context
+size and focused verification.
 
 Phase 1 complete: tools built and validated, plugin packaged,
 `claude plugin validate --strict` passing, and the package

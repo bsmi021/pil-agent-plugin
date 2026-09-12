@@ -13,11 +13,14 @@ hand-made ones before it.
 
 from __future__ import annotations
 
+import json
+import os
 import re
 import sys
 from pathlib import Path
 
 README = Path("README.md")
+MANIFEST = Path(".claude-plugin/plugin.json")
 
 
 def extract(version, text):
@@ -73,8 +76,12 @@ def main(argv):
         return 1
     print(notes)
     print()
+    plugin_name = json.loads(MANIFEST.read_text(encoding="utf-8"))["name"]
+    tag = f"{plugin_name}--v{version}"
     print(
-        f"Full diff: https://github.com/{__import__('os').environ.get('GITHUB_REPOSITORY', 'bsmi021/pil-agent-plugin')}/commits/v{version}"
+        f"Full diff: https://github.com/"
+        f"{os.environ.get('GITHUB_REPOSITORY', 'bsmi021/pil-agent-plugin')}"
+        f"/commits/{tag}"
     )
     return 0
 

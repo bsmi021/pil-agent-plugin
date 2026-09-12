@@ -1,90 +1,68 @@
 ---
 name: bootstrap
-description: Install or diagnose PIL Agent Plugin dependencies on Windows, macOS, and Linux, and check whether bootstrap has already completed for the current plugin environment. Use for initial plugin setup, missing dependencies, or bootstrap status requests.
+description: Check or install PIL Agent Plugin dependencies for a requested capability. Use for setup, missing-dependency repair, or bootstrap status.
 ---
 
 # PIL Agent Plugin bootstrap
 
-Optional flags added in 0.9.0: `--comparison` installs/checks scikit-image for
-standard SSIM, and `--mcp` installs/checks the stdio adapter dependency. Use the
-same flags for `install` and `check`. See
-[workflow setup](../../docs/measurement-workflows.md) for host configuration.
+Use the bundled `scripts/pil_bootstrap.py` against the plugin copy that will
+actually run the tools. Resolve the plugin root two levels above this file;
+do not assume the current working directory or modify a separate source clone.
 
-Use the bundled [bootstrap script](../../scripts/pil_bootstrap.py). Resolve the
-plugin root two levels above the directory containing this SKILL.md, rather
-than assuming the user's working directory is the plugin checkout. Operate on
-the plugin copy that will actually run the image tools. Installation in a source
-clone does not configure a separate installed plugin cache.
-
-## Check first
-
-Use an available Python 3.11+ interpreter. The script itself needs only stdlib;
-it checks and installs packages in `<plugin-root>/.venv`, independently of the
-launcher's packages. On Windows use `py -3` or a verified Python executable;
-on macOS/Linux use `python3`. An existing plugin venv interpreter also works.
-
-```powershell
-py -3 '<plugin-root>\scripts\pil_bootstrap.py' check
-```
-
-```sh
-python3 '<plugin-root>/scripts/pil_bootstrap.py' check
-```
-
-Select only the capabilities needed for the request, using the same flags for
-check and install:
+## Choose the requested capability
 
 - No flags: Pillow and NumPy.
-- `--ocr`: also Tesseract and English language-data diagnostics.
-- `--embedding`: also ONNX Runtime and diagnostics for the configured model.
-- `--reconstruction`: also OpenCV and SciPy. Blender is separately installed
-  and is outside this bootstrap's scope.
-- `--model '<existing-file.onnx>' --preprocessing imagenet|clip`: implies
-  embedding; overrides `PIL_AGENT_EMBED_MODEL` and
-  `PIL_AGENT_EMBED_PREPROCESSING` for this invocation.
+- `--comparison`: scikit-image for standard SSIM.
+- `--ocr`: Tesseract and English language data.
+- `--embedding`: ONNX Runtime and the caller's model.
+- `--reconstruction`: OpenCV and SciPy. Blender remains a separate install.
+- `--mcp`: the optional stdio adapter dependency.
+- `--model <file> --preprocessing imagenet|clip`: select and diagnose an
+  existing embedding model; this implies `--embedding`.
 
-Interpret the JSON and exit code together:
+Use the same capability flags for `check` and `install`. See the
+[setup workflow](../../docs/measurement-workflows.md) for host configuration.
 
-- `already_bootstrapped: true`, exit 0: a matching successful receipt exists and
-  all selected live probes pass. Proceed without reinstalling.
-- `previously_run: true` alone is historical evidence, not readiness. A stale
-  manifest, changed selection, or broken dependency requires attention.
-- `ready: true` with no matching receipt: dependencies work but bootstrap has
-  not recorded this configuration. A status-only request needs no installation.
-- Exit 2 with status JSON: inspect `checks` for the current failure. `check`
-  does not install anything or write a receipt.
-- Exit 2 with empty stdout: read the named error on stderr. Do not infer success
-  from installer output or a receipt alone.
+## Check before changing the environment
 
-## Install when setup is requested
-
-If the user requested setup or authorized repairing missing dependencies, run
-the same command with `install` in place of `check`. A status question alone
-does not authorize installation. Honor existing authorization without asking
-again. Core-only is the default; do not install all extras speculatively.
+Run `check` with Python 3.11 or newer. The script uses only the standard
+library and probes `<plugin-root>/.venv` independently of the launcher's
+packages.
 
 ```powershell
-py -3 '<plugin-root>\scripts\pil_bootstrap.py' install --ocr
 py -3 '<plugin-root>\scripts\pil_bootstrap.py' check --ocr
 ```
 
-The script uses uv when available, otherwise venv/pip. OCR installation uses
-winget on Windows, Homebrew on macOS, or apt-get/dnf on Linux (root/sudo may be
-needed). Package-manager prompts belong to the user; do not bypass elevation
-restrictions or silently change package managers after an installer failure.
-If Python or the platform package manager is unavailable, report that specific
-prerequisite and consult the [README setup section](../../README.md#bootstrap)
-instead of repeatedly retrying.
+```sh
+python3 '<plugin-root>/scripts/pil_bootstrap.py' check --ocr
+```
 
-Model weights are never downloaded. Use the user's model and matching profile;
-if absent, explain that Python packages may have installed but embedding setup
-cannot complete until the model is supplied. A wrong profile can pass the
-shape check; diagnostics do not establish model quality or recalibrate claims.
-Keep capabilities, model gates, calibration artifacts, and version unchanged.
+Interpret the exit code and JSON together:
 
-A receipt is written to `.venv/pil-agent-bootstrap.json` only after all selected
-checks pass. It is local state and must not be committed or manually fabricated.
-On failure, resolve the named cause before retrying; preserve existing working
-dependencies and do not delete the venv as a routine repair step. Report selected
-capabilities, the interpreter/environment used, the live check outcome, and any
-remaining model or system prerequisite.
+- Exit 0 with `already_bootstrapped: true`: the matching receipt and live
+  probes pass.
+- `ready: true` without a matching receipt: dependencies work; a status-only
+  request is complete and does not require installation.
+- `previously_run: true` alone is historical, not current readiness.
+- Exit 2 with JSON: report the named failed check.
+- Exit 2 with empty stdout: report the named stderr error; do not infer success.
+
+## Install only when the request includes setup or repair
+
+Replace `check` with `install`, preserving the selected flags, then rerun
+`check`. Existing authorization for setup is enough; a status question alone
+does not authorize installation. Install only requested capabilities.
+
+The script prefers uv and otherwise uses venv/pip. OCR may invoke the platform
+package manager and can require an interactive elevation prompt. Do not bypass
+that prompt, switch package managers silently after a failure, delete a working
+venv as routine repair, or fabricate the local receipt.
+
+Model weights are not downloaded. If a model or matching preprocessing profile
+is absent, distinguish successful package setup from incomplete embedding
+readiness. Diagnostics validate loading and declared input shape, not model
+quality or calibration.
+
+Finish by reporting the active plugin root, interpreter, selected capabilities,
+live check result, and any remaining model or system prerequisite. The detailed
+manual setup alternatives are in the [README](../../README.md#bootstrap).
