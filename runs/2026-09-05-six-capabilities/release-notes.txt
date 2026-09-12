@@ -1,0 +1,15 @@
+**0.9.0 — explicit measurement workflows and agent tooling.** Adds EXIF/ICC
+normalization with preserved alpha and coordinate provenance; model/profile
+configuration-aware embedding claims; image-bound raster/polygon masks and a
+pipeline that composes the original image tools; bounded translation/rigid/affine
+registration with raw/aligned evidence; native ΔE/alpha change regions, heatmaps,
+crops and optional standard SSIM; domain profiles with source-group holdouts,
+leakage checks, measured error rates and profile identity checks; and a public
+tool catalog, failure-preserving batches and optional stdio MCP adapter.
+Bootstrap accepts `--comparison` and `--mcp`. Legacy default measurements remain
+unchanged apart from the release version and corrected embedding eligibility.
+New defaults remain diagnostic unless a compatible evaluated profile is used.
+See [usage](docs/measurement-workflows.md) and
+[execution evidence](docs/verification-0.9.0.md).
+
+Full diff: https://github.com/bsmi021/pil-agent-plugin/commits/v0.9.0

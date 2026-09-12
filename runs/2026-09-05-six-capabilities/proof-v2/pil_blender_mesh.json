@@ -1,0 +1,73 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "interpretation_limits": [
+      "Counts are read from Blender's scene data (`Mesh.polygons`/`vertices`/`edges`, `Object.material_slots`) as declared on the base mesh -- unapplied modifiers (Subdivision, Mirror, Solidify, ...) mean the render-visible density can differ from these counts. Apply the modifiers in Blender first if that difference matters, or compare two scenes whose modifier states you know match.",
+      "`bounding_dimensions_world` is an axis-aligned box over every mesh object's world-space bound_box corners; it reflects Blender scene units without unit conversion (a scene authored in metres reports metres).",
+      "`mesh_objects` is keyed by Blender object name, not by mesh datablock. Two objects that instance one mesh appear as two entries reporting the same counts.",
+      "This tool measures the .blend file's scene; it does not render or otherwise consult pixels. A geometry answer this tool cannot produce -- Blender absent, .blend unreadable, probe failed -- is a clean UNMEASURABLE at the contract layer, never a pixel-derived approximation."
+    ],
+    "parameters": {
+      "blend": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\scene.blend",
+      "blender_executable": "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe",
+      "blender_version": "5.2.0",
+      "timeout_seconds": 300
+    },
+    "scene": {
+      "bounding_dimensions_world": {
+        "dimensions": [
+          2.0,
+          2.0,
+          2.005
+        ],
+        "max": [
+          1.0,
+          1.0,
+          1.005
+        ],
+        "min": [
+          -1.0,
+          -1.0,
+          -1.0
+        ]
+      },
+      "mesh_objects": {
+        "Body": {
+          "dimensions": [
+            2.0,
+            2.0,
+            2.0
+          ],
+          "edges": 12,
+          "material_slot_count": 0,
+          "materials": [],
+          "polys": 6,
+          "verts": 8
+        },
+        "Garment": {
+          "dimensions": [
+            1.6,
+            1.6,
+            0.0
+          ],
+          "edges": 4,
+          "material_slot_count": 0,
+          "materials": [],
+          "polys": 1,
+          "verts": 4
+        }
+      },
+      "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\scene.blend",
+      "totals": {
+        "edges": 16,
+        "mesh_object_count": 2,
+        "polys": 7,
+        "verts": 12
+      }
+    },
+    "tool": "pil_blender_mesh",
+    "version": "0.9.0"
+  }
+}

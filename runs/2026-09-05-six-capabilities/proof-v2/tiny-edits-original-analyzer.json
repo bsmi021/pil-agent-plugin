@@ -1,0 +1,1020 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "diff": {
+      "colour": {
+        "accent_fraction_delta": 6.9e-05,
+        "accent_hue_shift_detected": false,
+        "accent_palette_distance": null,
+        "accent_palette_distance_de2000": null,
+        "base_palette_distance": 0.0076,
+        "base_palette_distance_de2000": 0.0012,
+        "entropy_delta": 0.0011,
+        "flags": [
+          "accent_comparison_unavailable",
+          "accent_support_low"
+        ],
+        "hue_families_amplified": [],
+        "hue_families_diminished": [],
+        "hue_families_gained": [],
+        "hue_families_lost": [],
+        "hue_family_fraction_deltas": {
+          "blue": 0.0,
+          "cyan": 0.0,
+          "green": 0.0,
+          "magenta": 0.0,
+          "orange": 0.0,
+          "purple": 0.64,
+          "red": 0.36,
+          "yellow": 0.0
+        },
+        "luminance_mean_delta": -0.006,
+        "saturation_mean_delta": 0.018
+      },
+      "file": {
+        "format_match": true,
+        "identical_bytes": false,
+        "mode_match": true,
+        "size_match": true
+      },
+      "fingerprints": {
+        "full_frame_ahash_distance": 0,
+        "full_frame_dhash_distance": 0,
+        "subject_ahash_distance": 0,
+        "subject_dhash_distance": 0
+      },
+      "flags": [
+        "accent_comparison_unavailable",
+        "accent_support_low",
+        "background_dominant"
+      ],
+      "structure": {
+        "ahash_distance": 0,
+        "cells_compared": 12,
+        "cells_skipped_low_support": 0,
+        "changed_area_fraction": 0.000107,
+        "changed_region_bbox_fractional": [
+          0.0156,
+          0.0156,
+          0.8398,
+          0.8398
+        ],
+        "dhash_distance": 0,
+        "entropy_delta": 0.0011,
+        "flags": [
+          "background_dominant"
+        ],
+        "luminance_mean_delta": -0.006,
+        "most_divergent_cells": [
+          {
+            "bounds_fractional": [
+              0.75,
+              0.6667,
+              1.0,
+              1.0
+            ],
+            "col": 3,
+            "divergence": 0.006,
+            "row": 2
+          },
+          {
+            "bounds_fractional": [
+              0.0,
+              0.0,
+              0.25,
+              0.3333
+            ],
+            "col": 0,
+            "divergence": 0.0026,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.25,
+              0.0,
+              0.5,
+              0.3333
+            ],
+            "col": 1,
+            "divergence": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.5,
+              0.0,
+              0.75,
+              0.3333
+            ],
+            "col": 2,
+            "divergence": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.75,
+              0.0,
+              1.0,
+              0.3333
+            ],
+            "col": 3,
+            "divergence": 0.0,
+            "row": 0
+          }
+        ],
+        "structural_similarity": 0.99928
+      }
+    },
+    "images": {
+      "a": {
+        "channels": {
+          "all_channels_equal": true,
+          "mean": {
+            "b": 128.0,
+            "g": 128.0,
+            "r": 128.0
+          },
+          "std": {
+            "b": 0.0,
+            "g": 0.0,
+            "r": 0.0
+          },
+          "unique_colours": 1
+        },
+        "colour": {
+          "accent_palette": [],
+          "accent_pixel_fraction": 0.0,
+          "aspect_ratio": 1.0,
+          "base_palette": [
+            {
+              "coverage": 1.0,
+              "hex": "#808080",
+              "rgb": [
+                128,
+                128,
+                128
+              ]
+            }
+          ],
+          "entropy": -0.0,
+          "flags": [
+            "background_dominant",
+            "no_accent_pixels"
+          ],
+          "foreground": {
+            "applied": false,
+            "background_estimate": "#808080",
+            "fraction_of_frame": 0.0,
+            "source": "background_estimate"
+          },
+          "hue_families": {
+            "blue": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "cyan": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "green": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "magenta": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "orange": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "purple": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "red": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "yellow": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            }
+          },
+          "luminance": {
+            "mean": 128.0,
+            "std": 0.0
+          },
+          "mode": "RGB",
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\base.png",
+          "region": null,
+          "saturation": {
+            "mean": 0.0,
+            "std": 0.0
+          },
+          "size": [
+            600,
+            600
+          ],
+          "source_size": [
+            600,
+            600
+          ]
+        },
+        "detail": {
+          "edge_magnitude_mean": 0.0,
+          "edge_magnitude_p95": 0.0,
+          "edge_magnitude_std": 0.0,
+          "laplacian_variance": 0.0
+        },
+        "file": {
+          "alpha_max": null,
+          "alpha_min": null,
+          "bands": [
+            "R",
+            "G",
+            "B"
+          ],
+          "bit_depth_per_channel": 8,
+          "dpi": null,
+          "exif": null,
+          "exif_present": false,
+          "file_bytes": 2336,
+          "flags": [],
+          "format": "PNG",
+          "has_alpha_channel": false,
+          "height": 600,
+          "icc_profile_bytes": null,
+          "icc_profile_description": null,
+          "icc_profile_present": false,
+          "is_animated": false,
+          "mode": "RGB",
+          "n_frames": 1,
+          "palette_size": null,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\base.png",
+          "readable": true,
+          "reason": null,
+          "sha256": "34f204d7217058bd222d59a4f79592afc18faf15a6ce492202310c8540655ea5",
+          "size": [
+            600,
+            600
+          ],
+          "transparency_key": null,
+          "uses_transparency": false,
+          "width": 600
+        },
+        "fingerprints": {
+          "full_frame": {
+            "ahash": "0000000000000000",
+            "dhash": "0000000000000000"
+          },
+          "subject": {
+            "ahash": "0000000000000000",
+            "dhash": "0000000000000000"
+          }
+        },
+        "flags": [
+          "background_dominant",
+          "no_accent_pixels"
+        ],
+        "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\base.png",
+        "structure": {
+          "aspect_ratio": 1.0,
+          "cells": [
+            {
+              "bounds_fractional": [
+                0.0,
+                0.0,
+                0.25,
+                0.3333
+              ],
+              "col": 0,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.0,
+                0.5,
+                0.3333
+              ],
+              "col": 1,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.0,
+                0.75,
+                0.3333
+              ],
+              "col": 2,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.0,
+                1.0,
+                0.3333
+              ],
+              "col": 3,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.0,
+                0.3333,
+                0.25,
+                0.6667
+              ],
+              "col": 0,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.3333,
+                0.5,
+                0.6667
+              ],
+              "col": 1,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.3333,
+                0.75,
+                0.6667
+              ],
+              "col": 2,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.3333,
+                1.0,
+                0.6667
+              ],
+              "col": 3,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.0,
+                0.6667,
+                0.25,
+                1.0
+              ],
+              "col": 0,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.6667,
+                0.5,
+                1.0
+              ],
+              "col": 1,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.6667,
+                0.75,
+                1.0
+              ],
+              "col": 2,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.6667,
+                1.0,
+                1.0
+              ],
+              "col": 3,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 2
+            }
+          ],
+          "entropy": -0.0,
+          "flags": [
+            "background_dominant"
+          ],
+          "foreground": {
+            "applied": false,
+            "background_estimate": "#808080",
+            "fraction_of_frame": 0.0,
+            "source": "background_estimate"
+          },
+          "grid": {
+            "cols": 4,
+            "rows": 3
+          },
+          "luminance": {
+            "mean": 128.0,
+            "std": 0.0
+          },
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\base.png",
+          "region": null,
+          "size": [
+            600,
+            600
+          ],
+          "source_size": [
+            600,
+            600
+          ],
+          "symmetry": {
+            "left_right_diff": 0.0,
+            "top_bottom_diff": 0.0
+          },
+          "working_size": [
+            256,
+            256
+          ]
+        },
+        "tonal": {
+          "clipped_black_fraction": 0.0,
+          "clipped_white_fraction": 0.0,
+          "max": 128,
+          "min": 128,
+          "near_black_fraction": 0.0,
+          "near_white_fraction": 0.0,
+          "percentiles": {
+            "p01": 128.0,
+            "p05": 128.0,
+            "p25": 128.0,
+            "p50": 128.0,
+            "p75": 128.0,
+            "p95": 128.0,
+            "p99": 128.0
+          }
+        }
+      },
+      "b": {
+        "channels": {
+          "all_channels_equal": false,
+          "mean": {
+            "b": 128.002,
+            "g": 127.991,
+            "r": 127.997
+          },
+          "std": {
+            "b": 1.061,
+            "g": 1.067,
+            "r": 1.064
+          },
+          "unique_colours": 3
+        },
+        "colour": {
+          "accent_palette": [
+            {
+              "coverage": 0.64,
+              "hex": "#0000ff",
+              "rgb": [
+                0,
+                0,
+                255
+              ]
+            },
+            {
+              "coverage": 0.36,
+              "hex": "#ff0000",
+              "rgb": [
+                255,
+                0,
+                0
+              ]
+            }
+          ],
+          "accent_pixel_fraction": 6.9e-05,
+          "aspect_ratio": 1.0,
+          "base_palette": [
+            {
+              "coverage": 0.999931,
+              "hex": "#808080",
+              "rgb": [
+                128,
+                128,
+                128
+              ]
+            },
+            {
+              "coverage": 4.4e-05,
+              "hex": "#0000ff",
+              "rgb": [
+                0,
+                0,
+                255
+              ]
+            },
+            {
+              "coverage": 2.5e-05,
+              "hex": "#ff0000",
+              "rgb": [
+                255,
+                0,
+                0
+              ]
+            }
+          ],
+          "entropy": 0.0011,
+          "flags": [
+            "background_dominant",
+            "accent_area_very_small"
+          ],
+          "foreground": {
+            "applied": false,
+            "background_estimate": "#808080",
+            "fraction_of_frame": 0.000183,
+            "source": "background_estimate"
+          },
+          "hue_families": {
+            "blue": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "cyan": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "green": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "magenta": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "orange": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            },
+            "purple": {
+              "fraction_of_accents": 0.64,
+              "fraction_of_frame": 4.4e-05,
+              "negligible": false,
+              "pixels": 16
+            },
+            "red": {
+              "fraction_of_accents": 0.36,
+              "fraction_of_frame": 2.5e-05,
+              "negligible": false,
+              "pixels": 9
+            },
+            "yellow": {
+              "fraction_of_accents": 0.0,
+              "fraction_of_frame": 0.0,
+              "negligible": false,
+              "pixels": 0
+            }
+          },
+          "luminance": {
+            "mean": 127.994,
+            "std": 0.709
+          },
+          "mode": "RGB",
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\changes.png",
+          "region": null,
+          "saturation": {
+            "mean": 0.018,
+            "std": 2.125
+          },
+          "size": [
+            600,
+            600
+          ],
+          "source_size": [
+            600,
+            600
+          ]
+        },
+        "detail": {
+          "edge_magnitude_mean": 0.006,
+          "edge_magnitude_p95": 0.0,
+          "edge_magnitude_std": 0.226,
+          "laplacian_variance": 2.588
+        },
+        "file": {
+          "alpha_max": null,
+          "alpha_min": null,
+          "bands": [
+            "R",
+            "G",
+            "B"
+          ],
+          "bit_depth_per_channel": 8,
+          "dpi": null,
+          "exif": null,
+          "exif_present": false,
+          "file_bytes": 2378,
+          "flags": [],
+          "format": "PNG",
+          "has_alpha_channel": false,
+          "height": 600,
+          "icc_profile_bytes": null,
+          "icc_profile_description": null,
+          "icc_profile_present": false,
+          "is_animated": false,
+          "mode": "RGB",
+          "n_frames": 1,
+          "palette_size": null,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\changes.png",
+          "readable": true,
+          "reason": null,
+          "sha256": "2cac18f9026f742dc947e59800037a043be4fd0ea1396ead0be4ce52f847383a",
+          "size": [
+            600,
+            600
+          ],
+          "transparency_key": null,
+          "uses_transparency": false,
+          "width": 600
+        },
+        "fingerprints": {
+          "full_frame": {
+            "ahash": "0000000000000000",
+            "dhash": "0000000000000000"
+          },
+          "subject": {
+            "ahash": "0000000000000000",
+            "dhash": "0000000000000000"
+          }
+        },
+        "flags": [
+          "accent_area_very_small",
+          "background_dominant"
+        ],
+        "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\changes.png",
+        "structure": {
+          "aspect_ratio": 1.0,
+          "cells": [
+            {
+              "bounds_fractional": [
+                0.0,
+                0.0,
+                0.25,
+                0.3333
+              ],
+              "col": 0,
+              "edge_mean": 0.019,
+              "entropy": 0.0347,
+              "luminance_mean": 127.985,
+              "luminance_std": 0.736,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.0,
+                0.5,
+                0.3333
+              ],
+              "col": 1,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.0,
+                0.75,
+                0.3333
+              ],
+              "col": 2,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.0,
+                1.0,
+                0.3333
+              ],
+              "col": 3,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.0,
+                0.3333,
+                0.25,
+                0.6667
+              ],
+              "col": 0,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.3333,
+                0.5,
+                0.6667
+              ],
+              "col": 1,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.3333,
+                0.75,
+                0.6667
+              ],
+              "col": 2,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.3333,
+                1.0,
+                0.6667
+              ],
+              "col": 3,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.0,
+                0.6667,
+                0.25,
+                1.0
+              ],
+              "col": 0,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.6667,
+                0.5,
+                1.0
+              ],
+              "col": 1,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.6667,
+                0.75,
+                1.0
+              ],
+              "col": 2,
+              "edge_mean": 0.0,
+              "entropy": -0.0,
+              "luminance_mean": 128.0,
+              "luminance_std": 0.0,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.6667,
+                1.0,
+                1.0
+              ],
+              "col": 3,
+              "edge_mean": 0.054,
+              "entropy": 0.0608,
+              "luminance_mean": 127.949,
+              "luminance_std": 1.982,
+              "row": 2
+            }
+          ],
+          "entropy": 0.0011,
+          "flags": [
+            "background_dominant"
+          ],
+          "foreground": {
+            "applied": false,
+            "background_estimate": "#808080",
+            "fraction_of_frame": 0.000183,
+            "source": "background_estimate"
+          },
+          "grid": {
+            "cols": 4,
+            "rows": 3
+          },
+          "luminance": {
+            "mean": 127.994,
+            "std": 0.709
+          },
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\changes.png",
+          "region": null,
+          "size": [
+            600,
+            600
+          ],
+          "source_size": [
+            600,
+            600
+          ],
+          "symmetry": {
+            "left_right_diff": 0.015,
+            "top_bottom_diff": 0.015
+          },
+          "working_size": [
+            256,
+            256
+          ]
+        },
+        "tonal": {
+          "clipped_black_fraction": 0.0,
+          "clipped_white_fraction": 0.0,
+          "max": 128,
+          "min": 29,
+          "near_black_fraction": 0.0,
+          "near_white_fraction": 0.0,
+          "percentiles": {
+            "p01": 128.0,
+            "p05": 128.0,
+            "p25": 128.0,
+            "p50": 128.0,
+            "p75": 128.0,
+            "p95": 128.0,
+            "p99": 128.0
+          }
+        }
+      }
+    },
+    "interpretation_limits": [
+      "This tool composes pil_image_info, pil_palette_diff and pil_structure_diff through their own analyse functions: the file, colour and structure blocks match those tools' standalone output content for the same options, and every limit those tools publish (reproduced below) applies unchanged to the matching block here.",
+      "fingerprints are 64-bit perceptual hashes serialised as 16 hex characters. They are stable across runs and machines for the same Pillow resampling implementation, and two fingerprints -- from different runs, files, or days -- compare by Hamming distance over their bits. They detect near-duplicates and survive rescaling; they are luminance-based and therefore blind to hue (a pure recolour can measure distance 0), and weak at fine-detail differences. full_frame hashes the analysis frame; subject hashes the same pixels the structure block scored (the masked, bbox-cropped foreground in --foreground mode; identical to full_frame otherwise).",
+      "tonal percentiles, min/max and clipped fractions are exact order statistics of the analysis frame's full-resolution luminance (ITU-R 601-2, the same conversion every other tool here uses). clipped_black/white_fraction count exactly 0 and exactly 255; near_black/white_fraction use the reporting thresholds echoed in parameters, which are conventions, not calibrated limits. In --foreground mode these remain FRAME statistics (of the region crop when --region is given): background pixels are included. Read the colour block's luminance for foreground-masked figures.",
+      "channels.unique_colours counts exact distinct RGB byte triples of the analysis frame after alpha compositing onto black -- a decoder-level fact, not a perceptual colour count: anti-aliasing and gradients inflate it without adding perceptually distinct colours. channels.all_channels_equal is an exact per-pixel R==G==B test -- true means the decoded image is arithmetically greyscale, but false does not mean it LOOKS colourful; read the colour block's saturation for that.",
+      "detail.edge_magnitude_* and detail.laplacian_variance are UNCALIBRATED 2D image-complexity diagnostics computed on the working-resolution copy. No discrimination gate has validated either as a sharpness or detail verdict, so treat them as relative signals between like-resolution, like-content images -- never as an absolute quality score. They are NOT geometry: shading, normal maps, lighting and camera angle all move them independently of any underlying model, exactly as the structure block's own limits state.",
+      "Base-palette coverage is area-weighted: a visually dominant accent that occupies few pixels will rank low or be absent. Read accent_palette for perceptual identity, base_palette for bulk tone.",
+      "base_palette_distance_de2000 and accent_palette_distance_de2000 are the primary colour-distance signal: the same coverage-weighted symmetric Chamfer construction, but measured with CIEDE2000 over D65 CIELAB. Read these first.",
+      "base_palette_distance and accent_palette_distance are Euclidean in RGB, which is not perceptually uniform. They are kept for continuity with phase 1 and are now demoted to supporting detail; where the two disagree, the de2000 figure is the one to trust.",
+      "dE2000 has NO authoritative perceptibility bands. The widely-copied 0-1 / 1-2 / 2-10 banding table is disclaimed by its own author, and 'dE 1.0 = just noticeable difference' has no traceable primary source, so this tool emits no verbal band. The numbers are raw: dE2000 is not a percentage and is not bounded at 100 (black vs white is exactly 100.0, but the sRGB maximum measured is 119.22), so never normalise it. A decision threshold has to come from calibration, not from this scale.",
+      "Accent membership is a hard threshold in the space named by accent_space, with both spaces' thresholds echoed in accent_thresholds; only the pair belonging to accent_space is active. Colours near the boundary may flip between the two palettes. Hue-family bucketing runs on the HSV hue channel in both spaces -- no authoritative CIELAB hue-angle boundaries for basic colour names exist to port to.",
+      "accent_palette is itself area-weighted, so a dominant accent hue can crowd out smaller ones. Use hue_families to establish which hues are present at all, and hue_families_lost/gained to detect a dropped accent -- a hue can matter semantically at well under 1% of the frame.",
+      "In full-frame mode every statistic includes the background. When background_dominant or accent_support_low is flagged, hue and palette numbers mostly describe background and noise; re-run with --foreground before letting them influence a verdict or a ranking.",
+      "In --foreground mode all fractions (accent_pixel_fraction, hue_families fraction_of_frame) are shares of the foreground, not of the frame. The foreground block records how the mask was derived.",
+      "--region crops BOTH images to the same fractional box at full resolution before any measurement runs -- never after, which is what keeps a --region measurement resolution-independent and identical to pre-cropping the file with pil_crop.py and measuring the result -- with exactly one exception: the flags list. region_background_estimate_diverged (below) can appear on a --region run and never on the equivalent pre-cropped-file run, because it compares the crop's own border-median colour against the ORIGINAL, un-cropped frame's -- a comparison a pre-cropped file structurally cannot make, having no frame left to compare against. Every other field, including every colour and structure statistic, is unaffected. Composed with --foreground, the order is: region crop first, then the foreground mask -- and, on the border-median path, the background estimate -- is re-derived from the crop's own pixels, never inherited from the whole frame. region_background_estimate_diverged fires when that re-derived estimate lands further than --background-delta (in OKLab) from the whole frame's own border-median colour -- the signature of a region that contains little or no backdrop, where the re-derived estimate is the more honest one but also the more surprising one.",
+      "edge_mean and entropy are 2D image-complexity proxies, NOT geometry: they do not measure polygon count, mesh density or topology. Shading, normal maps, lighting and camera angle all move these numbers independently of the underlying model. For polygon or topology questions, query the 3D scene's mesh statistics directly instead of analysing a render.",
+      "The grid is rectangular and ignores real object boundaries, so a cell may mix unrelated content; per-cell numbers describe pixel neighbourhoods, not semantic regions.",
+      "structural_similarity is a normalised mean absolute difference over cell statistics. It is sensitive to global lighting and exposure shifts, which can lower the score even when layout is unchanged.",
+      "Perceptual hash distance detects near-duplicates and survives rescaling, but is weak at distinguishing images that differ only in fine detail.",
+      "In full-frame mode structural_similarity includes the background. Two different objects on the same large background will score near 1.0 -- the shared background is doing the scoring, not the objects. When the background_dominant flag appears (or similarity is high while changed_area_fraction is tiny), re-run with --foreground before drawing any conclusion about the subjects.",
+      "In --foreground mode both images are cropped to their foreground bounding boxes before gridding, so cells correspond object-to-object rather than frame-to-frame, and cells without foreground support are excluded from the score (see cells_compared / cells_skipped_low_support).",
+      "Foreground statistics of a THIN object degrade across resolutions: when the object is a few pixels wide, most of its pixels are edge-blended with the background, so a rescaled copy reads moderately different even though dhash still reports the same layout. Compare like-resolution renders where possible; rely on relative ranking otherwise.",
+      "entropy_delta is DEMOTED: WP2 calibration (runs/2026-08-19-phase2-calibration) found it unable to resolve 24 of 26 perturbation families at any tested magnitude, with 9 non-monotonic response curves. It is kept for continuity; do not let it decide anything.",
+      "--region crops BOTH images to the same fractional box at full resolution before any measurement runs, including the working-resolution resample -- never after, which is what keeps a --region measurement resolution-independent and identical to pre-cropping the file with pil_crop.py and measuring the result -- with exactly one exception: the flags list. region_background_estimate_diverged (below) can appear on a --region run and never on the equivalent pre-cropped-file run, because it compares the crop's own border-median colour against the ORIGINAL, un-cropped frame's -- a comparison a pre-cropped file structurally cannot make, having no frame left to compare against. Every other field, including every structure and similarity statistic, is unaffected. Composed with --foreground, the order is: region crop first, then the foreground mask -- and, on the border-median path, the background estimate -- is re-derived from the crop's own pixels, never inherited from the whole frame. region_background_estimate_diverged fires when that re-derived estimate lands further than --background-delta (in OKLab) from the whole frame's own border-median colour -- the signature of a region that contains little or no backdrop, where the re-derived estimate is the more honest one but also the more surprising one.",
+      "`uses_transparency` follows `pil_common.load_rgb_alpha`'s rule: an entirely opaque alpha channel carries no foreground information and reports false; `has_alpha_channel` reports an alpha channel or a PALETTE transparency key. Colour-key transparency in RGB/L images is reported only by `transparency_key`.",
+      "An ICC profile is reported only as file metadata: this tool does not validate it, infer a colour space from it, convert pixels, or establish that the image is correctly colour-managed.",
+      "EXIF values are producer-supplied file claims, not verified facts about the image, camera, subject, date, or provenance. Absent metadata is null; unreadable metadata is null plus a flag.",
+      "`readable` means Pillow parsed the image header; pixel integrity is unverified unless alpha facts require pixels to be decoded. Dimensions, frame count, and DPI describe decoded file/header metadata. DPI is not a physical measurement, and none of these fields establishes image quality, provenance, or whether an earlier system resampled the image.",
+      "`bit_depth_per_channel` describes Pillow's decoder mode, not necessarily the image file's stored bit depth.",
+      "`sha256` identifies the file bytes, not the depicted image: visually identical files written by different encoders can have different hashes."
+    ],
+    "parameters": {
+      "accent_space": "hsv",
+      "accent_thresholds": {
+        "saturation_min": 100,
+        "value_min": 60
+      },
+      "background_delta": 0.035,
+      "colors": 8,
+      "foreground": false,
+      "grid": {
+        "cols": 4,
+        "rows": 3
+      },
+      "near_black_max": 5,
+      "near_white_min": 250,
+      "region": null,
+      "region_space": "frame",
+      "tonal_percentiles": [
+        1,
+        5,
+        25,
+        50,
+        75,
+        95,
+        99
+      ]
+    },
+    "tool": "pil_image_analyze",
+    "version": "0.9.0"
+  }
+}

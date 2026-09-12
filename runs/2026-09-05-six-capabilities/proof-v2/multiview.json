@@ -1,0 +1,33 @@
+{
+  "schema": "multiview-spec-v1",
+  "views": [
+    {
+      "image": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front.png",
+      "name": "front"
+    },
+    {
+      "image": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front_right.png",
+      "name": "front_right"
+    },
+    {
+      "image": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\right.png",
+      "name": "right"
+    },
+    {
+      "image": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back_right.png",
+      "name": "back_right"
+    },
+    {
+      "image": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back.png",
+      "name": "back"
+    },
+    {
+      "image": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\back_left.png",
+      "name": "back_left"
+    },
+    {
+      "image": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\views\\front_left.png",
+      "name": "front_left"
+    }
+  ]
+}

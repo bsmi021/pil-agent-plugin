@@ -1,0 +1,1226 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "diff": {
+      "colour": {
+        "accent_fraction_delta": 0.0,
+        "accent_hue_shift_detected": false,
+        "accent_palette_distance": 0.0,
+        "accent_palette_distance_de2000": 0.0,
+        "base_palette_distance": 0.0,
+        "base_palette_distance_de2000": 0.0,
+        "entropy_delta": 0.0,
+        "flags": [],
+        "hue_families_amplified": [],
+        "hue_families_diminished": [],
+        "hue_families_gained": [],
+        "hue_families_lost": [],
+        "hue_family_fraction_deltas": {
+          "blue": 0.0,
+          "cyan": 0.0,
+          "green": 0.0,
+          "magenta": 0.0,
+          "orange": 0.0,
+          "purple": 0.0,
+          "red": 0.0,
+          "yellow": 0.0
+        },
+        "luminance_mean_delta": 0.0,
+        "saturation_mean_delta": 0.0
+      },
+      "file": {
+        "format_match": true,
+        "identical_bytes": false,
+        "mode_match": false,
+        "size_match": true
+      },
+      "fingerprints": {
+        "full_frame_ahash_distance": 0,
+        "full_frame_dhash_distance": 0,
+        "subject_ahash_distance": 0,
+        "subject_dhash_distance": 0
+      },
+      "flags": [],
+      "structure": {
+        "ahash_distance": 0,
+        "cells_compared": 12,
+        "cells_skipped_low_support": 0,
+        "changed_area_fraction": 0.0,
+        "changed_region_bbox_fractional": null,
+        "dhash_distance": 0,
+        "entropy_delta": 0.0,
+        "flags": [],
+        "luminance_mean_delta": 0.0,
+        "most_divergent_cells": [
+          {
+            "bounds_fractional": [
+              0.0,
+              0.0,
+              0.25,
+              0.3333
+            ],
+            "col": 0,
+            "divergence": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.25,
+              0.0,
+              0.5,
+              0.3333
+            ],
+            "col": 1,
+            "divergence": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.5,
+              0.0,
+              0.75,
+              0.3333
+            ],
+            "col": 2,
+            "divergence": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.75,
+              0.0,
+              1.0,
+              0.3333
+            ],
+            "col": 3,
+            "divergence": 0.0,
+            "row": 0
+          },
+          {
+            "bounds_fractional": [
+              0.0,
+              0.3333,
+              0.25,
+              0.6667
+            ],
+            "col": 0,
+            "divergence": 0.0,
+            "row": 1
+          }
+        ],
+        "structural_similarity": 1.0
+      }
+    },
+    "images": {
+      "a": {
+        "channels": {
+          "all_channels_equal": false,
+          "mean": {
+            "b": 119.478,
+            "g": 119.772,
+            "r": 119.821
+          },
+          "std": {
+            "b": 51.892,
+            "g": 51.842,
+            "r": 51.497
+          },
+          "unique_colours": 20446
+        },
+        "colour": {
+          "accent_palette": [
+            {
+              "coverage": 0.145719,
+              "hex": "#3fba76",
+              "rgb": [
+                63,
+                186,
+                118
+              ]
+            },
+            {
+              "coverage": 0.132969,
+              "hex": "#978758",
+              "rgb": [
+                151,
+                135,
+                88
+              ]
+            },
+            {
+              "coverage": 0.131082,
+              "hex": "#398877",
+              "rgb": [
+                57,
+                136,
+                119
+              ]
+            },
+            {
+              "coverage": 0.130172,
+              "hex": "#a83178",
+              "rgb": [
+                168,
+                49,
+                120
+              ]
+            },
+            {
+              "coverage": 0.123211,
+              "hex": "#522e81",
+              "rgb": [
+                82,
+                46,
+                129
+              ]
+            },
+            {
+              "coverage": 0.114559,
+              "hex": "#ab5678",
+              "rgb": [
+                171,
+                86,
+                120
+              ]
+            },
+            {
+              "coverage": 0.111632,
+              "hex": "#91bb58",
+              "rgb": [
+                145,
+                187,
+                88
+              ]
+            },
+            {
+              "coverage": 0.110656,
+              "hex": "#4b5580",
+              "rgb": [
+                75,
+                85,
+                128
+              ]
+            }
+          ],
+          "accent_pixel_fraction": 0.750586,
+          "aspect_ratio": 0.8,
+          "base_palette": [
+            {
+              "coverage": 0.12876,
+              "hex": "#a48e78",
+              "rgb": [
+                164,
+                142,
+                120
+              ]
+            },
+            {
+              "coverage": 0.127539,
+              "hex": "#a4ba77",
+              "rgb": [
+                164,
+                186,
+                119
+              ]
+            },
+            {
+              "coverage": 0.125537,
+              "hex": "#a56177",
+              "rgb": [
+                165,
+                97,
+                119
+              ]
+            },
+            {
+              "coverage": 0.125146,
+              "hex": "#4cbb77",
+              "rgb": [
+                76,
+                187,
+                119
+              ]
+            },
+            {
+              "coverage": 0.124268,
+              "hex": "#4b3378",
+              "rgb": [
+                75,
+                51,
+                120
+              ]
+            },
+            {
+              "coverage": 0.12417,
+              "hex": "#4a8e77",
+              "rgb": [
+                74,
+                142,
+                119
+              ]
+            },
+            {
+              "coverage": 0.123145,
+              "hex": "#a43479",
+              "rgb": [
+                164,
+                52,
+                121
+              ]
+            },
+            {
+              "coverage": 0.121436,
+              "hex": "#4b6078",
+              "rgb": [
+                75,
+                96,
+                120
+              ]
+            }
+          ],
+          "entropy": 7.1126,
+          "flags": [],
+          "foreground": {
+            "applied": false,
+            "background_estimate": "#72629a",
+            "fraction_of_frame": 0.989882,
+            "source": "background_estimate"
+          },
+          "hue_families": {
+            "blue": {
+              "fraction_of_accents": 0.134205,
+              "fraction_of_frame": 0.100732,
+              "negligible": false,
+              "pixels": 2063
+            },
+            "cyan": {
+              "fraction_of_accents": 0.131798,
+              "fraction_of_frame": 0.098926,
+              "negligible": false,
+              "pixels": 2026
+            },
+            "green": {
+              "fraction_of_accents": 0.21396,
+              "fraction_of_frame": 0.160596,
+              "negligible": false,
+              "pixels": 3289
+            },
+            "magenta": {
+              "fraction_of_accents": 0.179742,
+              "fraction_of_frame": 0.134912,
+              "negligible": false,
+              "pixels": 2763
+            },
+            "orange": {
+              "fraction_of_accents": 0.055491,
+              "fraction_of_frame": 0.04165,
+              "negligible": false,
+              "pixels": 853
+            },
+            "purple": {
+              "fraction_of_accents": 0.137718,
+              "fraction_of_frame": 0.103369,
+              "negligible": false,
+              "pixels": 2117
+            },
+            "red": {
+              "fraction_of_accents": 0.076958,
+              "fraction_of_frame": 0.057764,
+              "negligible": false,
+              "pixels": 1183
+            },
+            "yellow": {
+              "fraction_of_accents": 0.070128,
+              "fraction_of_frame": 0.052637,
+              "negligible": false,
+              "pixels": 1078
+            }
+          },
+          "luminance": {
+            "mean": 119.751,
+            "std": 34.662
+          },
+          "mode": "RGB",
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\normalized.png",
+          "region": null,
+          "saturation": {
+            "mean": 136.393,
+            "std": 50.02
+          },
+          "size": [
+            128,
+            160
+          ],
+          "source_size": [
+            128,
+            160
+          ]
+        },
+        "detail": {
+          "edge_magnitude_mean": 10.845,
+          "edge_magnitude_p95": 20.718,
+          "edge_magnitude_std": 5.503,
+          "laplacian_variance": 4503.0
+        },
+        "file": {
+          "alpha_max": 255,
+          "alpha_min": 255,
+          "bands": [
+            "R",
+            "G",
+            "B",
+            "A"
+          ],
+          "bit_depth_per_channel": 8,
+          "dpi": null,
+          "exif": null,
+          "exif_present": false,
+          "file_bytes": 69686,
+          "flags": [],
+          "format": "PNG",
+          "has_alpha_channel": true,
+          "height": 160,
+          "icc_profile_bytes": null,
+          "icc_profile_description": null,
+          "icc_profile_present": false,
+          "is_animated": false,
+          "mode": "RGBA",
+          "n_frames": 1,
+          "palette_size": null,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\normalized.png",
+          "readable": true,
+          "reason": null,
+          "sha256": "2e4414133bee1005fa1f6905a8fbe325cd371f1d9592de6f6a7d58ef4e90fcd9",
+          "size": [
+            128,
+            160
+          ],
+          "transparency_key": null,
+          "uses_transparency": false,
+          "width": 128
+        },
+        "fingerprints": {
+          "full_frame": {
+            "ahash": "e0fdbff317c6819a",
+            "dhash": "d64561a634142972"
+          },
+          "subject": {
+            "ahash": "e0fdbff317c6819a",
+            "dhash": "d64561a634142972"
+          }
+        },
+        "flags": [],
+        "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\normalized.png",
+        "structure": {
+          "aspect_ratio": 0.8,
+          "cells": [
+            {
+              "bounds_fractional": [
+                0.0,
+                0.0,
+                0.25,
+                0.3333
+              ],
+              "col": 0,
+              "edge_mean": 11.339,
+              "entropy": 6.983,
+              "luminance_mean": 120.027,
+              "luminance_std": 31.671,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.0,
+                0.5,
+                0.3333
+              ],
+              "col": 1,
+              "edge_mean": 10.98,
+              "entropy": 6.9714,
+              "luminance_mean": 121.32,
+              "luminance_std": 31.248,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.0,
+                0.75,
+                0.3333
+              ],
+              "col": 2,
+              "edge_mean": 10.541,
+              "entropy": 6.9504,
+              "luminance_mean": 119.876,
+              "luminance_std": 30.748,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.0,
+                1.0,
+                0.3333
+              ],
+              "col": 3,
+              "edge_mean": 10.779,
+              "entropy": 6.9564,
+              "luminance_mean": 119.256,
+              "luminance_std": 30.855,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.0,
+                0.3333,
+                0.25,
+                0.6667
+              ],
+              "col": 0,
+              "edge_mean": 10.558,
+              "entropy": 6.9296,
+              "luminance_mean": 119.482,
+              "luminance_std": 30.36,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.3333,
+                0.5,
+                0.6667
+              ],
+              "col": 1,
+              "edge_mean": 10.666,
+              "entropy": 6.9584,
+              "luminance_mean": 120.72,
+              "luminance_std": 30.949,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.3333,
+                0.75,
+                0.6667
+              ],
+              "col": 2,
+              "edge_mean": 10.636,
+              "entropy": 6.9299,
+              "luminance_mean": 118.961,
+              "luminance_std": 30.25,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.3333,
+                1.0,
+                0.6667
+              ],
+              "col": 3,
+              "edge_mean": 10.838,
+              "entropy": 6.9681,
+              "luminance_mean": 119.732,
+              "luminance_std": 31.186,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.0,
+                0.6667,
+                0.25,
+                1.0
+              ],
+              "col": 0,
+              "edge_mean": 11.154,
+              "entropy": 6.9871,
+              "luminance_mean": 119.891,
+              "luminance_std": 31.585,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.6667,
+                0.5,
+                1.0
+              ],
+              "col": 1,
+              "edge_mean": 11.087,
+              "entropy": 6.9626,
+              "luminance_mean": 119.237,
+              "luminance_std": 31.149,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.6667,
+                0.75,
+                1.0
+              ],
+              "col": 2,
+              "edge_mean": 10.762,
+              "entropy": 6.9605,
+              "luminance_mean": 119.147,
+              "luminance_std": 31.033,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.6667,
+                1.0,
+                1.0
+              ],
+              "col": 3,
+              "edge_mean": 10.796,
+              "entropy": 6.9593,
+              "luminance_mean": 119.449,
+              "luminance_std": 31.04,
+              "row": 2
+            }
+          ],
+          "entropy": 7.1126,
+          "flags": [],
+          "foreground": {
+            "applied": false,
+            "background_estimate": "#72629a",
+            "fraction_of_frame": 0.989882,
+            "source": "background_estimate"
+          },
+          "grid": {
+            "cols": 4,
+            "rows": 3
+          },
+          "luminance": {
+            "mean": 119.751,
+            "std": 34.662
+          },
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\normalized.png",
+          "region": null,
+          "size": [
+            128,
+            160
+          ],
+          "source_size": [
+            128,
+            160
+          ],
+          "symmetry": {
+            "left_right_diff": 34.982,
+            "top_bottom_diff": 35.523
+          },
+          "working_size": [
+            205,
+            256
+          ]
+        },
+        "tonal": {
+          "clipped_black_fraction": 0.0,
+          "clipped_white_fraction": 0.0,
+          "max": 206,
+          "min": 32,
+          "near_black_fraction": 0.0,
+          "near_white_fraction": 0.0,
+          "percentiles": {
+            "p01": 49.0,
+            "p05": 63.0,
+            "p25": 93.0,
+            "p50": 120.0,
+            "p75": 147.0,
+            "p95": 176.0,
+            "p99": 190.0
+          }
+        }
+      },
+      "b": {
+        "channels": {
+          "all_channels_equal": false,
+          "mean": {
+            "b": 119.478,
+            "g": 119.772,
+            "r": 119.821
+          },
+          "std": {
+            "b": 51.892,
+            "g": 51.842,
+            "r": 51.497
+          },
+          "unique_colours": 20446
+        },
+        "colour": {
+          "accent_palette": [
+            {
+              "coverage": 0.145719,
+              "hex": "#3fba76",
+              "rgb": [
+                63,
+                186,
+                118
+              ]
+            },
+            {
+              "coverage": 0.132969,
+              "hex": "#978758",
+              "rgb": [
+                151,
+                135,
+                88
+              ]
+            },
+            {
+              "coverage": 0.131082,
+              "hex": "#398877",
+              "rgb": [
+                57,
+                136,
+                119
+              ]
+            },
+            {
+              "coverage": 0.130172,
+              "hex": "#a83178",
+              "rgb": [
+                168,
+                49,
+                120
+              ]
+            },
+            {
+              "coverage": 0.123211,
+              "hex": "#522e81",
+              "rgb": [
+                82,
+                46,
+                129
+              ]
+            },
+            {
+              "coverage": 0.114559,
+              "hex": "#ab5678",
+              "rgb": [
+                171,
+                86,
+                120
+              ]
+            },
+            {
+              "coverage": 0.111632,
+              "hex": "#91bb58",
+              "rgb": [
+                145,
+                187,
+                88
+              ]
+            },
+            {
+              "coverage": 0.110656,
+              "hex": "#4b5580",
+              "rgb": [
+                75,
+                85,
+                128
+              ]
+            }
+          ],
+          "accent_pixel_fraction": 0.750586,
+          "aspect_ratio": 0.8,
+          "base_palette": [
+            {
+              "coverage": 0.12876,
+              "hex": "#a48e78",
+              "rgb": [
+                164,
+                142,
+                120
+              ]
+            },
+            {
+              "coverage": 0.127539,
+              "hex": "#a4ba77",
+              "rgb": [
+                164,
+                186,
+                119
+              ]
+            },
+            {
+              "coverage": 0.125537,
+              "hex": "#a56177",
+              "rgb": [
+                165,
+                97,
+                119
+              ]
+            },
+            {
+              "coverage": 0.125146,
+              "hex": "#4cbb77",
+              "rgb": [
+                76,
+                187,
+                119
+              ]
+            },
+            {
+              "coverage": 0.124268,
+              "hex": "#4b3378",
+              "rgb": [
+                75,
+                51,
+                120
+              ]
+            },
+            {
+              "coverage": 0.12417,
+              "hex": "#4a8e77",
+              "rgb": [
+                74,
+                142,
+                119
+              ]
+            },
+            {
+              "coverage": 0.123145,
+              "hex": "#a43479",
+              "rgb": [
+                164,
+                52,
+                121
+              ]
+            },
+            {
+              "coverage": 0.121436,
+              "hex": "#4b6078",
+              "rgb": [
+                75,
+                96,
+                120
+              ]
+            }
+          ],
+          "entropy": 7.1126,
+          "flags": [],
+          "foreground": {
+            "applied": false,
+            "background_estimate": "#72629a",
+            "fraction_of_frame": 0.989882,
+            "source": "background_estimate"
+          },
+          "hue_families": {
+            "blue": {
+              "fraction_of_accents": 0.134205,
+              "fraction_of_frame": 0.100732,
+              "negligible": false,
+              "pixels": 2063
+            },
+            "cyan": {
+              "fraction_of_accents": 0.131798,
+              "fraction_of_frame": 0.098926,
+              "negligible": false,
+              "pixels": 2026
+            },
+            "green": {
+              "fraction_of_accents": 0.21396,
+              "fraction_of_frame": 0.160596,
+              "negligible": false,
+              "pixels": 3289
+            },
+            "magenta": {
+              "fraction_of_accents": 0.179742,
+              "fraction_of_frame": 0.134912,
+              "negligible": false,
+              "pixels": 2763
+            },
+            "orange": {
+              "fraction_of_accents": 0.055491,
+              "fraction_of_frame": 0.04165,
+              "negligible": false,
+              "pixels": 853
+            },
+            "purple": {
+              "fraction_of_accents": 0.137718,
+              "fraction_of_frame": 0.103369,
+              "negligible": false,
+              "pixels": 2117
+            },
+            "red": {
+              "fraction_of_accents": 0.076958,
+              "fraction_of_frame": 0.057764,
+              "negligible": false,
+              "pixels": 1183
+            },
+            "yellow": {
+              "fraction_of_accents": 0.070128,
+              "fraction_of_frame": 0.052637,
+              "negligible": false,
+              "pixels": 1078
+            }
+          },
+          "luminance": {
+            "mean": 119.751,
+            "std": 34.662
+          },
+          "mode": "RGB",
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\display.png",
+          "region": null,
+          "saturation": {
+            "mean": 136.393,
+            "std": 50.02
+          },
+          "size": [
+            128,
+            160
+          ],
+          "source_size": [
+            128,
+            160
+          ]
+        },
+        "detail": {
+          "edge_magnitude_mean": 10.845,
+          "edge_magnitude_p95": 20.718,
+          "edge_magnitude_std": 5.503,
+          "laplacian_variance": 4503.0
+        },
+        "file": {
+          "alpha_max": null,
+          "alpha_min": null,
+          "bands": [
+            "R",
+            "G",
+            "B"
+          ],
+          "bit_depth_per_channel": 8,
+          "dpi": null,
+          "exif": null,
+          "exif_present": false,
+          "file_bytes": 61673,
+          "flags": [],
+          "format": "PNG",
+          "has_alpha_channel": false,
+          "height": 160,
+          "icc_profile_bytes": null,
+          "icc_profile_description": null,
+          "icc_profile_present": false,
+          "is_animated": false,
+          "mode": "RGB",
+          "n_frames": 1,
+          "palette_size": null,
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\display.png",
+          "readable": true,
+          "reason": null,
+          "sha256": "458fda75173717111a4e982bb21539aad32b1711a17d8e14a4652a23a56a8d74",
+          "size": [
+            128,
+            160
+          ],
+          "transparency_key": null,
+          "uses_transparency": false,
+          "width": 128
+        },
+        "fingerprints": {
+          "full_frame": {
+            "ahash": "e0fdbff317c6819a",
+            "dhash": "d64561a634142972"
+          },
+          "subject": {
+            "ahash": "e0fdbff317c6819a",
+            "dhash": "d64561a634142972"
+          }
+        },
+        "flags": [],
+        "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\display.png",
+        "structure": {
+          "aspect_ratio": 0.8,
+          "cells": [
+            {
+              "bounds_fractional": [
+                0.0,
+                0.0,
+                0.25,
+                0.3333
+              ],
+              "col": 0,
+              "edge_mean": 11.339,
+              "entropy": 6.983,
+              "luminance_mean": 120.027,
+              "luminance_std": 31.671,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.0,
+                0.5,
+                0.3333
+              ],
+              "col": 1,
+              "edge_mean": 10.98,
+              "entropy": 6.9714,
+              "luminance_mean": 121.32,
+              "luminance_std": 31.248,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.0,
+                0.75,
+                0.3333
+              ],
+              "col": 2,
+              "edge_mean": 10.541,
+              "entropy": 6.9504,
+              "luminance_mean": 119.876,
+              "luminance_std": 30.748,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.0,
+                1.0,
+                0.3333
+              ],
+              "col": 3,
+              "edge_mean": 10.779,
+              "entropy": 6.9564,
+              "luminance_mean": 119.256,
+              "luminance_std": 30.855,
+              "row": 0
+            },
+            {
+              "bounds_fractional": [
+                0.0,
+                0.3333,
+                0.25,
+                0.6667
+              ],
+              "col": 0,
+              "edge_mean": 10.558,
+              "entropy": 6.9296,
+              "luminance_mean": 119.482,
+              "luminance_std": 30.36,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.3333,
+                0.5,
+                0.6667
+              ],
+              "col": 1,
+              "edge_mean": 10.666,
+              "entropy": 6.9584,
+              "luminance_mean": 120.72,
+              "luminance_std": 30.949,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.3333,
+                0.75,
+                0.6667
+              ],
+              "col": 2,
+              "edge_mean": 10.636,
+              "entropy": 6.9299,
+              "luminance_mean": 118.961,
+              "luminance_std": 30.25,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.3333,
+                1.0,
+                0.6667
+              ],
+              "col": 3,
+              "edge_mean": 10.838,
+              "entropy": 6.9681,
+              "luminance_mean": 119.732,
+              "luminance_std": 31.186,
+              "row": 1
+            },
+            {
+              "bounds_fractional": [
+                0.0,
+                0.6667,
+                0.25,
+                1.0
+              ],
+              "col": 0,
+              "edge_mean": 11.154,
+              "entropy": 6.9871,
+              "luminance_mean": 119.891,
+              "luminance_std": 31.585,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.25,
+                0.6667,
+                0.5,
+                1.0
+              ],
+              "col": 1,
+              "edge_mean": 11.087,
+              "entropy": 6.9626,
+              "luminance_mean": 119.237,
+              "luminance_std": 31.149,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.5,
+                0.6667,
+                0.75,
+                1.0
+              ],
+              "col": 2,
+              "edge_mean": 10.762,
+              "entropy": 6.9605,
+              "luminance_mean": 119.147,
+              "luminance_std": 31.033,
+              "row": 2
+            },
+            {
+              "bounds_fractional": [
+                0.75,
+                0.6667,
+                1.0,
+                1.0
+              ],
+              "col": 3,
+              "edge_mean": 10.796,
+              "entropy": 6.9593,
+              "luminance_mean": 119.449,
+              "luminance_std": 31.04,
+              "row": 2
+            }
+          ],
+          "entropy": 7.1126,
+          "flags": [],
+          "foreground": {
+            "applied": false,
+            "background_estimate": "#72629a",
+            "fraction_of_frame": 0.989882,
+            "source": "background_estimate"
+          },
+          "grid": {
+            "cols": 4,
+            "rows": 3
+          },
+          "luminance": {
+            "mean": 119.751,
+            "std": 34.662
+          },
+          "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\display.png",
+          "region": null,
+          "size": [
+            128,
+            160
+          ],
+          "source_size": [
+            128,
+            160
+          ],
+          "symmetry": {
+            "left_right_diff": 34.982,
+            "top_bottom_diff": 35.523
+          },
+          "working_size": [
+            205,
+            256
+          ]
+        },
+        "tonal": {
+          "clipped_black_fraction": 0.0,
+          "clipped_white_fraction": 0.0,
+          "max": 206,
+          "min": 32,
+          "near_black_fraction": 0.0,
+          "near_white_fraction": 0.0,
+          "percentiles": {
+            "p01": 49.0,
+            "p05": 63.0,
+            "p25": 93.0,
+            "p50": 120.0,
+            "p75": 147.0,
+            "p95": 176.0,
+            "p99": 190.0
+          }
+        }
+      }
+    },
+    "interpretation_limits": [
+      "This tool composes pil_image_info, pil_palette_diff and pil_structure_diff through their own analyse functions: the file, colour and structure blocks match those tools' standalone output content for the same options, and every limit those tools publish (reproduced below) applies unchanged to the matching block here.",
+      "fingerprints are 64-bit perceptual hashes serialised as 16 hex characters. They are stable across runs and machines for the same Pillow resampling implementation, and two fingerprints -- from different runs, files, or days -- compare by Hamming distance over their bits. They detect near-duplicates and survive rescaling; they are luminance-based and therefore blind to hue (a pure recolour can measure distance 0), and weak at fine-detail differences. full_frame hashes the analysis frame; subject hashes the same pixels the structure block scored (the masked, bbox-cropped foreground in --foreground mode; identical to full_frame otherwise).",
+      "tonal percentiles, min/max and clipped fractions are exact order statistics of the analysis frame's full-resolution luminance (ITU-R 601-2, the same conversion every other tool here uses). clipped_black/white_fraction count exactly 0 and exactly 255; near_black/white_fraction use the reporting thresholds echoed in parameters, which are conventions, not calibrated limits. In --foreground mode these remain FRAME statistics (of the region crop when --region is given): background pixels are included. Read the colour block's luminance for foreground-masked figures.",
+      "channels.unique_colours counts exact distinct RGB byte triples of the analysis frame after alpha compositing onto black -- a decoder-level fact, not a perceptual colour count: anti-aliasing and gradients inflate it without adding perceptually distinct colours. channels.all_channels_equal is an exact per-pixel R==G==B test -- true means the decoded image is arithmetically greyscale, but false does not mean it LOOKS colourful; read the colour block's saturation for that.",
+      "detail.edge_magnitude_* and detail.laplacian_variance are UNCALIBRATED 2D image-complexity diagnostics computed on the working-resolution copy. No discrimination gate has validated either as a sharpness or detail verdict, so treat them as relative signals between like-resolution, like-content images -- never as an absolute quality score. They are NOT geometry: shading, normal maps, lighting and camera angle all move them independently of any underlying model, exactly as the structure block's own limits state.",
+      "Base-palette coverage is area-weighted: a visually dominant accent that occupies few pixels will rank low or be absent. Read accent_palette for perceptual identity, base_palette for bulk tone.",
+      "base_palette_distance_de2000 and accent_palette_distance_de2000 are the primary colour-distance signal: the same coverage-weighted symmetric Chamfer construction, but measured with CIEDE2000 over D65 CIELAB. Read these first.",
+      "base_palette_distance and accent_palette_distance are Euclidean in RGB, which is not perceptually uniform. They are kept for continuity with phase 1 and are now demoted to supporting detail; where the two disagree, the de2000 figure is the one to trust.",
+      "dE2000 has NO authoritative perceptibility bands. The widely-copied 0-1 / 1-2 / 2-10 banding table is disclaimed by its own author, and 'dE 1.0 = just noticeable difference' has no traceable primary source, so this tool emits no verbal band. The numbers are raw: dE2000 is not a percentage and is not bounded at 100 (black vs white is exactly 100.0, but the sRGB maximum measured is 119.22), so never normalise it. A decision threshold has to come from calibration, not from this scale.",
+      "Accent membership is a hard threshold in the space named by accent_space, with both spaces' thresholds echoed in accent_thresholds; only the pair belonging to accent_space is active. Colours near the boundary may flip between the two palettes. Hue-family bucketing runs on the HSV hue channel in both spaces -- no authoritative CIELAB hue-angle boundaries for basic colour names exist to port to.",
+      "accent_palette is itself area-weighted, so a dominant accent hue can crowd out smaller ones. Use hue_families to establish which hues are present at all, and hue_families_lost/gained to detect a dropped accent -- a hue can matter semantically at well under 1% of the frame.",
+      "In full-frame mode every statistic includes the background. When background_dominant or accent_support_low is flagged, hue and palette numbers mostly describe background and noise; re-run with --foreground before letting them influence a verdict or a ranking.",
+      "In --foreground mode all fractions (accent_pixel_fraction, hue_families fraction_of_frame) are shares of the foreground, not of the frame. The foreground block records how the mask was derived.",
+      "--region crops BOTH images to the same fractional box at full resolution before any measurement runs -- never after, which is what keeps a --region measurement resolution-independent and identical to pre-cropping the file with pil_crop.py and measuring the result -- with exactly one exception: the flags list. region_background_estimate_diverged (below) can appear on a --region run and never on the equivalent pre-cropped-file run, because it compares the crop's own border-median colour against the ORIGINAL, un-cropped frame's -- a comparison a pre-cropped file structurally cannot make, having no frame left to compare against. Every other field, including every colour and structure statistic, is unaffected. Composed with --foreground, the order is: region crop first, then the foreground mask -- and, on the border-median path, the background estimate -- is re-derived from the crop's own pixels, never inherited from the whole frame. region_background_estimate_diverged fires when that re-derived estimate lands further than --background-delta (in OKLab) from the whole frame's own border-median colour -- the signature of a region that contains little or no backdrop, where the re-derived estimate is the more honest one but also the more surprising one.",
+      "edge_mean and entropy are 2D image-complexity proxies, NOT geometry: they do not measure polygon count, mesh density or topology. Shading, normal maps, lighting and camera angle all move these numbers independently of the underlying model. For polygon or topology questions, query the 3D scene's mesh statistics directly instead of analysing a render.",
+      "The grid is rectangular and ignores real object boundaries, so a cell may mix unrelated content; per-cell numbers describe pixel neighbourhoods, not semantic regions.",
+      "structural_similarity is a normalised mean absolute difference over cell statistics. It is sensitive to global lighting and exposure shifts, which can lower the score even when layout is unchanged.",
+      "Perceptual hash distance detects near-duplicates and survives rescaling, but is weak at distinguishing images that differ only in fine detail.",
+      "In full-frame mode structural_similarity includes the background. Two different objects on the same large background will score near 1.0 -- the shared background is doing the scoring, not the objects. When the background_dominant flag appears (or similarity is high while changed_area_fraction is tiny), re-run with --foreground before drawing any conclusion about the subjects.",
+      "In --foreground mode both images are cropped to their foreground bounding boxes before gridding, so cells correspond object-to-object rather than frame-to-frame, and cells without foreground support are excluded from the score (see cells_compared / cells_skipped_low_support).",
+      "Foreground statistics of a THIN object degrade across resolutions: when the object is a few pixels wide, most of its pixels are edge-blended with the background, so a rescaled copy reads moderately different even though dhash still reports the same layout. Compare like-resolution renders where possible; rely on relative ranking otherwise.",
+      "entropy_delta is DEMOTED: WP2 calibration (runs/2026-08-19-phase2-calibration) found it unable to resolve 24 of 26 perturbation families at any tested magnitude, with 9 non-monotonic response curves. It is kept for continuity; do not let it decide anything.",
+      "--region crops BOTH images to the same fractional box at full resolution before any measurement runs, including the working-resolution resample -- never after, which is what keeps a --region measurement resolution-independent and identical to pre-cropping the file with pil_crop.py and measuring the result -- with exactly one exception: the flags list. region_background_estimate_diverged (below) can appear on a --region run and never on the equivalent pre-cropped-file run, because it compares the crop's own border-median colour against the ORIGINAL, un-cropped frame's -- a comparison a pre-cropped file structurally cannot make, having no frame left to compare against. Every other field, including every structure and similarity statistic, is unaffected. Composed with --foreground, the order is: region crop first, then the foreground mask -- and, on the border-median path, the background estimate -- is re-derived from the crop's own pixels, never inherited from the whole frame. region_background_estimate_diverged fires when that re-derived estimate lands further than --background-delta (in OKLab) from the whole frame's own border-median colour -- the signature of a region that contains little or no backdrop, where the re-derived estimate is the more honest one but also the more surprising one.",
+      "`uses_transparency` follows `pil_common.load_rgb_alpha`'s rule: an entirely opaque alpha channel carries no foreground information and reports false; `has_alpha_channel` reports an alpha channel or a PALETTE transparency key. Colour-key transparency in RGB/L images is reported only by `transparency_key`.",
+      "An ICC profile is reported only as file metadata: this tool does not validate it, infer a colour space from it, convert pixels, or establish that the image is correctly colour-managed.",
+      "EXIF values are producer-supplied file claims, not verified facts about the image, camera, subject, date, or provenance. Absent metadata is null; unreadable metadata is null plus a flag.",
+      "`readable` means Pillow parsed the image header; pixel integrity is unverified unless alpha facts require pixels to be decoded. Dimensions, frame count, and DPI describe decoded file/header metadata. DPI is not a physical measurement, and none of these fields establishes image quality, provenance, or whether an earlier system resampled the image.",
+      "`bit_depth_per_channel` describes Pillow's decoder mode, not necessarily the image file's stored bit depth.",
+      "`sha256` identifies the file bytes, not the depicted image: visually identical files written by different encoders can have different hashes."
+    ],
+    "parameters": {
+      "accent_space": "hsv",
+      "accent_thresholds": {
+        "saturation_min": 100,
+        "value_min": 60
+      },
+      "background_delta": 0.035,
+      "colors": 8,
+      "foreground": false,
+      "grid": {
+        "cols": 4,
+        "rows": 3
+      },
+      "near_black_max": 5,
+      "near_white_min": 250,
+      "region": null,
+      "region_space": "frame",
+      "tonal_percentiles": [
+        1,
+        5,
+        25,
+        50,
+        75,
+        95,
+        99
+      ]
+    },
+    "tool": "pil_image_analyze",
+    "version": "0.9.0"
+  }
+}

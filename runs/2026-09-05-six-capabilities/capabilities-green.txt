@@ -1,0 +1,33 @@
+F..                                                                      [100%]
+================================== FAILURES ===================================
+_________ test_catalog_contains_original_and_new_tools_with_arguments _________
+
+    def test_catalog_contains_original_and_new_tools_with_arguments():
+>       tools={t['name']:t for t in catalog()['tools']}
+                                    ^^^^^^^^^
+
+tests\test_capabilities.py:10: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\pil_capabilities.py:102: in catalog
+    'mutates':name in MUTATING,'requirements':{r:_available(r) for r in requirements},
+                                                 ^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+dependency = 'tesseract'
+
+    def _available(dependency):
+        if dependency=='caller_model':
+            import os
+            path=os.environ.get('PIL_AGENT_EMBED_MODEL')
+            return bool(path and Path(path).is_file())
+        if dependency=='blender':
+            from pil_blender_mesh import resolve_blender_executable
+            return resolve_blender_executable(None) is not None
+        if dependency=='tesseract':
+>           from pil_ocr import _resolve_tesseract
+E           ImportError: cannot import name '_resolve_tesseract' from 'pil_ocr' (C:\Projects\pil-agent-plugin\pil-agent-plugin\scripts\pil_ocr.py)
+
+scripts\pil_capabilities.py:85: ImportError
+=========================== short test summary info ===========================
+FAILED tests/test_capabilities.py::test_catalog_contains_original_and_new_tools_with_arguments
+1 failed, 2 passed in 1.53s

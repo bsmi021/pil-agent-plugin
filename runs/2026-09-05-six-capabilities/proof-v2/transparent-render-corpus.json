@@ -1,0 +1,151 @@
+{
+  "domain": "transparent-render",
+  "pairs": [
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-0.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-0.png",
+      "changed": false,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-0",
+      "split": "train"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-0.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-0-change.png",
+      "changed": true,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-0",
+      "split": "train"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-1.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-1.png",
+      "changed": false,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-1",
+      "split": "train"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-1.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-1-change.png",
+      "changed": true,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-1",
+      "split": "train"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-2.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-2.png",
+      "changed": false,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-2",
+      "split": "train"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-2.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-2-change.png",
+      "changed": true,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-2",
+      "split": "train"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-3.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-3.png",
+      "changed": false,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-3",
+      "split": "train"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-3.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-train-3-change.png",
+      "changed": true,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-3",
+      "split": "train"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-0.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-0.png",
+      "changed": false,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-0",
+      "split": "validation"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-0.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-0-change.png",
+      "changed": true,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-0",
+      "split": "validation"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-1.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-1.png",
+      "changed": false,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-1",
+      "split": "validation"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-1.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-1-change.png",
+      "changed": true,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-1",
+      "split": "validation"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-2.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-2.png",
+      "changed": false,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-2",
+      "split": "validation"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-2.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-2-change.png",
+      "changed": true,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-2",
+      "split": "validation"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-3.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-3.png",
+      "changed": false,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-3",
+      "split": "validation"
+    },
+    {
+      "a": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-3.png",
+      "b": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-3-change.png",
+      "changed": true,
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-3",
+      "split": "validation"
+    }
+  ],
+  "schema": "calibration-corpus-v1",
+  "scope": "synthetic execution smoke only; no production-domain accuracy claim"
+}

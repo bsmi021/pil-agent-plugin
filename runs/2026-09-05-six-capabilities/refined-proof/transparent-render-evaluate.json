@@ -1,0 +1,232 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "command": "evaluate",
+    "identity": {
+      "alpha_threshold": 1.0,
+      "delta_e_threshold": 2.0,
+      "domain": "transparent-render",
+      "input_mode": "stored",
+      "mask_source": "full_frame",
+      "metric": "changed_area_fraction",
+      "metric_version": "native-de00-alpha-v1",
+      "pipeline": "native-normalized-intersection-v1",
+      "registration": "none"
+    },
+    "interpretation_limits": [
+      "Acceptance is observed performance on held-out source groups, not a universal accuracy claim.",
+      "Detection points are measured magnitudes, not extrapolated detection limits.",
+      "No-change means below this metric threshold; geometry and semantic intent are not assessed."
+    ],
+    "legacy_structure": {
+      "ahash_distance": 0,
+      "cells_compared": 12,
+      "cells_skipped_low_support": 0,
+      "changed_area_fraction": 0.0047,
+      "changed_region_bbox_fractional": [
+        0.3086,
+        0.3086,
+        0.4531,
+        0.4414
+      ],
+      "dhash_distance": 1,
+      "entropy_delta": -0.0148,
+      "flags": [],
+      "luminance_mean_delta": -0.18,
+      "most_divergent_cells": [
+        {
+          "bounds_fractional": [
+            0.25,
+            0.3333,
+            0.5,
+            0.6667
+          ],
+          "col": 1,
+          "divergence": 0.0147,
+          "row": 1
+        },
+        {
+          "bounds_fractional": [
+            0.25,
+            0.0,
+            0.5,
+            0.3333
+          ],
+          "col": 1,
+          "divergence": 0.0025,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.0,
+            0.0,
+            0.25,
+            0.3333
+          ],
+          "col": 0,
+          "divergence": 0.0,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.5,
+            0.0,
+            0.75,
+            0.3333
+          ],
+          "col": 2,
+          "divergence": 0.0,
+          "row": 0
+        },
+        {
+          "bounds_fractional": [
+            0.75,
+            0.0,
+            1.0,
+            0.3333
+          ],
+          "col": 3,
+          "divergence": 0.0,
+          "row": 0
+        }
+      ],
+      "structural_similarity": 0.998564
+    },
+    "measurement": {
+      "alpha_mean_absolute_delta": 0.859375,
+      "changed_area_fraction": 0.015625,
+      "changed_pixels": 64,
+      "compared_pixels": 4096,
+      "delta_e_max": 65.86444916,
+      "delta_e_mean": 0.69259503,
+      "delta_e_p95": 0.0,
+      "flags": [
+        "uncalibrated_thresholds"
+      ],
+      "inputs": {
+        "a": {
+          "alpha": "preserved; not colour transformed",
+          "assumed_profile": null,
+          "colour_transform_applied": false,
+          "coordinate_convention": "pixel edges; pixel centers are x+0.5,y+0.5",
+          "mode": "stored",
+          "orientation_applied": 1,
+          "output_colour_space": "stored channels",
+          "pipeline": "stored-v1",
+          "rendering_intent": null,
+          "size": [
+            64,
+            64
+          ],
+          "source": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-3.png",
+          "source_icc_sha256": null,
+          "source_orientation": 1,
+          "source_sha256": "f020951fa68219b0ab559a22f110df30ddd8ab8610b64c0169eabadd33f446a9",
+          "source_size": [
+            64,
+            64
+          ],
+          "source_to_output": [
+            [
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              1
+            ]
+          ]
+        },
+        "b": {
+          "alpha": "preserved; not colour transformed",
+          "assumed_profile": null,
+          "colour_transform_applied": false,
+          "coordinate_convention": "pixel edges; pixel centers are x+0.5,y+0.5",
+          "mode": "stored",
+          "orientation_applied": 1,
+          "output_colour_space": "stored channels",
+          "pipeline": "stored-v1",
+          "rendering_intent": null,
+          "size": [
+            64,
+            64
+          ],
+          "source": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\transparent-render-validation-3-change.png",
+          "source_icc_sha256": null,
+          "source_orientation": 1,
+          "source_sha256": "661410426544cdc0ed22c91b14f83ae336233634667b73e5679866f599459bfa",
+          "source_size": [
+            64,
+            64
+          ],
+          "source_to_output": [
+            [
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      },
+      "interpretation_limits": [
+        "Delta E describes sRGB appearance composited on black; alpha differences are measured separately.",
+        "Stored mode assumes sRGB channels; use display mode for tagged inputs.",
+        "Selection support is the intersection; excluded pixels are not assessed."
+      ],
+      "metric_version": "native-de00-alpha-v1",
+      "parameters": {
+        "alpha_threshold": 1.0,
+        "delta_e_threshold": 2.0,
+        "min_pixels": 1
+      },
+      "regions": [
+        {
+          "bbox_pixels": [
+            20,
+            20,
+            28,
+            28
+          ],
+          "changed_pixels": 64,
+          "peak_delta_e": 65.864449
+        }
+      ],
+      "tool": "pil_diff_regions",
+      "version": "0.9.0"
+    },
+    "observed_detection_points": [
+      {
+        "detected": 4,
+        "detection_rate": 1.0,
+        "magnitude": 0.015625,
+        "pairs": 4,
+        "perturbation": "8px_patch"
+      }
+    ],
+    "profile_id": "e325a7edcd6d71c5b19620a6a55c6d4639db4e6c4a45685c8feea9372492e94d",
+    "threshold": 0.0,
+    "tool": "pil_calibrate",
+    "value": 0.015625,
+    "verdict": "CHANGE_DETECTED",
+    "version": "0.9.0"
+  }
+}

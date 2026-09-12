@@ -5,6 +5,11 @@ description: Install or diagnose PIL Agent Plugin dependencies on Windows, macOS
 
 # PIL Agent Plugin bootstrap
 
+Optional flags added in 0.9.0: `--comparison` installs/checks scikit-image for
+standard SSIM, and `--mcp` installs/checks the stdio adapter dependency. Use the
+same flags for `install` and `check`. See
+[workflow setup](../../docs/measurement-workflows.md) for host configuration.
+
 Use the bundled [bootstrap script](../../scripts/pil_bootstrap.py). Resolve the
 plugin root two levels above the directory containing this SKILL.md, rather
 than assuming the user's working directory is the plugin checkout. Operate on

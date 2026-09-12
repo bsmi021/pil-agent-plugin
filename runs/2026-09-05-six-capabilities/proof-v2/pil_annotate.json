@@ -1,0 +1,77 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "flags": [],
+    "grid": {
+      "cols": 4,
+      "lines_drawn": 5,
+      "rows": 3
+    },
+    "interpretation_limits": [
+      "The overlay is drawn on a copy. The source file is not modified; its sha256 is recorded here so you can verify that.",
+      "Never measure an annotated image. The boxes, grid and numerals are pixels: feeding this output to pil_palette_diff or pil_structure_diff measures the annotation as well as the content.",
+      "Box numbers are geometric glyphs from a table defined in this file, not rendered text, so the drawn pixels are pixel-identical across every machine and every Pillow version. The PNG bytes are only byte-identical across repeated runs in one environment: Pillow's PNG encoder output has changed between versions, so output.sha256 can differ across environments even when every pixel matches -- compare pixels, not the digest, when comparing across machines or Pillow versions. Only digits exist; your labels appear in legend, never in the image.",
+      "Numbering is by position (top, then left), not by the order you passed the boxes. requested_index maps each drawn number back to your input. It is unique only within a source: --box numbers its own arguments from 0, and each --from-json region list numbers its own entries from 0, so read (source, requested_index) as the pair that identifies an input.",
+      "The boxes are the caller's. This tool asserts nothing about what is inside them."
+    ],
+    "legend": [
+      {
+        "fractional": [
+          0.0,
+          0.0,
+          0.1,
+          0.1
+        ],
+        "glyph_colour": "#000000",
+        "glyph_hazards": [],
+        "glyph_placement": "outside_bottom_right",
+        "glyph_rect": [
+          45,
+          61,
+          60,
+          82
+        ],
+        "label": "local edit",
+        "number": 1,
+        "pixel_rect": [
+          0,
+          0,
+          60,
+          60
+        ],
+        "requested_index": 0,
+        "source": "--box"
+      }
+    ],
+    "output": {
+      "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\annotated.png",
+      "sha256": "2545d58e2fa25815a0068b42ba8c914c09b3514d21b7936967ad6ad2c43bdb6b",
+      "size": [
+        600,
+        600
+      ]
+    },
+    "parameters": {
+      "from_json": null,
+      "grid": {
+        "cols": 4,
+        "rows": 3
+      },
+      "label_scale": 3,
+      "overwrite": false,
+      "thickness": 2
+    },
+    "source": {
+      "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\changes.png",
+      "sha256": "2cac18f9026f742dc947e59800037a043be4fd0ea1396ead0be4ce52f847383a",
+      "size": [
+        600,
+        600
+      ]
+    },
+    "tool": "pil_annotate",
+    "version": "0.9.0"
+  }
+}

@@ -66,7 +66,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.8.0"
+TOOL_VERSION = "0.9.0"
 
 MODEL_ENV_VAR = "PIL_AGENT_EMBED_MODEL"
 PREPROCESSING_ENV_VAR = "PIL_AGENT_EMBED_PREPROCESSING"
@@ -207,11 +207,23 @@ _LIMITS_TAIL = [
 ]
 
 
-def interpretation_limits(model_sha256):
+def configuration_gate(model_sha256, preprocessing):
+    expected = {MOBILENET_V2_12_SHA256: 'imagenet', CLIP_VIT_B32_VISUAL_SHA256: 'clip'}.get(model_sha256)
+    valid = expected is not None and preprocessing == PREPROCESSING_PROFILES[expected]
+    return {'validated': valid, 'required_preprocessing': expected,
+            'capabilities': (['same_image_ranking', 'related_scene_ranking'] if expected == 'clip' else ['same_image_ranking']) if valid else [],
+            'evidence': ('runs/2026-09-02-clip-embedding-discrimination/' if expected == 'clip' else 'runs/2026-08-31-embedding-discrimination/') if valid else None}
+
+
+def interpretation_limits(model_sha256, preprocessing=None):
     """Limits for this payload, with the gate verdict for THIS model."""
+    verdict = GATE_VERDICTS.get(model_sha256, GATE_UNGATED)
+    if preprocessing is not None and not configuration_gate(model_sha256, preprocessing)['validated']:
+        verdict = ("This model/preprocessing configuration has not been discrimination-gated. "
+                   "No validated capability or decision threshold applies to these descriptors.")
     return [
         _LIMITS_HEAD,
-        GATE_VERDICTS.get(model_sha256, GATE_UNGATED),
+        verdict,
         *_LIMITS_TAIL,
     ]
 
@@ -371,7 +383,8 @@ def run_diagnose(args):
     return {"tool": "pil_embed", "command": "diagnose", "version": TOOL_VERSION,
             "python": sys.executable, "runtime": f"onnxruntime {runtime.__version__}",
             "model_path": str(model), "model_sha256": digest,
-            "model_gated": digest in GATE_VERDICTS,
+            "model_gated": configuration_gate(digest, _spec)['validated'],
+            "configuration_gate": configuration_gate(digest, _spec),
             "preprocessing_profile": profile,
             "input_shape": session.get_inputs()[0].shape,
             "note": "Model loaded on CPU; no inference or calibration performed. "
@@ -410,7 +423,8 @@ def run_embed(args):
             "providers": ["CPUExecutionProvider"],
             "model_file": model_path.name,
             "model_sha256": model_sha256,
-            "model_gated": model_sha256 in GATE_VERDICTS,
+            "model_gated": configuration_gate(model_sha256, spec)['validated'],
+            "configuration_gate": configuration_gate(model_sha256, spec),
             "output_dim": images["a"]["fingerprint"]["dim"],
         },
         "parameters": {
@@ -421,8 +435,8 @@ def run_embed(args):
         },
         "images": images,
         "diff": diff,
-        "flags": [] if model_sha256 in GATE_VERDICTS else ["model_not_gated"],
-        "interpretation_limits": interpretation_limits(model_sha256),
+        "flags": [] if configuration_gate(model_sha256, spec)['validated'] else (["model_configuration_not_gated"] if model_sha256 in GATE_VERDICTS else ["model_not_gated"]),
+        "interpretation_limits": interpretation_limits(model_sha256, spec),
     }
 
 
@@ -464,7 +478,8 @@ def run_compare(args):
         "tool": "pil_embed",
         "version": TOOL_VERSION,
         "command": "compare",
-        "engine": payload_a["engine"],
+        "engine": {**payload_a["engine"], "model_gated": configuration_gate(model_a, payload_a['parameters']['preprocessing'])['validated'],
+                   "configuration_gate": configuration_gate(model_a, payload_a['parameters']['preprocessing'])},
         "comparison": {
             "cosine_similarity": _cosine(
                 image_a["fingerprint"]["unit_values"],
@@ -474,8 +489,8 @@ def run_compare(args):
             "image_b_sha256": image_b["sha256"],
             "same_image_bytes": image_a["sha256"] == image_b["sha256"],
         },
-        "flags": [] if model_a in GATE_VERDICTS else ["model_not_gated"],
-        "interpretation_limits": interpretation_limits(model_a),
+        "flags": [] if configuration_gate(model_a, payload_a['parameters']['preprocessing'])['validated'] else (["model_configuration_not_gated"] if model_a in GATE_VERDICTS else ["model_not_gated"]),
+        "interpretation_limits": interpretation_limits(model_a, payload_a['parameters']['preprocessing']),
     }
 
 

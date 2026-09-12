@@ -1,0 +1,43 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "command": "compare",
+    "comparison": {
+      "cosine_similarity": 1.0,
+      "image_a_sha256": "b8ae8ca7cd727bb3c11003eebb69c6f0143a2b6e944ea80f4a1a0c850d4d9375",
+      "image_b_sha256": "b8ae8ca7cd727bb3c11003eebb69c6f0143a2b6e944ea80f4a1a0c850d4d9375",
+      "same_image_bytes": true
+    },
+    "engine": {
+      "configuration_gate": {
+        "capabilities": [
+          "same_image_ranking"
+        ],
+        "evidence": "runs/2026-08-31-embedding-discrimination/",
+        "required_preprocessing": "imagenet",
+        "validated": true
+      },
+      "model_file": "mobilenetv2-12.onnx",
+      "model_gated": true,
+      "model_sha256": "c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5",
+      "output_dim": 1000,
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "runtime": "onnxruntime 1.29.0"
+    },
+    "flags": [],
+    "interpretation_limits": [
+      "A fingerprint is a descriptor in the pinned ONNX model's OUTPUT space; what 'similar' means is inherited from that model's training, not from this repository. cosine_similarity is a relative retrieval signal for ranking candidates -- it is NOT calibrated here, carries no authoritative decision threshold, and a high value is never proof of identity, provenance, or shared origin.",
+      "The discrimination gate (runs/2026-08-31-embedding-discrimination/) ADVERTISES exactly one capability for this model (mobilenetv2-12, imagenet preprocessing): robust same-image identification. Measured on real photographs: perturbed copies (rescale, JPEG re-encode, 75% crop, 5 degree rotation) scored cosine >= 0.9051 while every unrelated pair scored <= 0.4701 -- and the crop and rotation cases defeat dhash (Hamming 18 and 9) while the embedding holds. Same-venue or same-object matching ACROSS different photographs is DEMOTED: the same-venue band [0.4558, 0.6263] overlaps the unrelated maximum, so a mid-band cosine must never be read as a 'same place' or 'same thing' verdict. The raw number is still reported for ranking.",
+      "Fingerprints are comparable ONLY under the same model file and preprocessing: compare refuses on model sha256 or preprocessing mismatch rather than producing a number that means nothing. The model hash in the engine block is the comparability key, and the named preprocessing profile must be the one the model was trained with. A mismatched profile is SILENT: measured on the gate corpus, running CLIP under imagenet preprocessing still separated the pair families, but the related-vs-unrelated margin fell from 0.1167 to 0.0741. Nothing in a payload reveals a wrong-profile run except the recorded profile name, so check it before trusting a comparison.",
+      "Determinism is scoped like the Blender and Tesseract tools: same model file, same onnxruntime build, same machine reproduces the payload byte-for-byte (the session is pinned to the CPU provider with single-threaded execution). Cross-machine bit-identity is NOT claimed; cosine on stored rounded vectors IS reproducible anywhere from the payloads alone.",
+      "The stored vector is L2-normalised and rounded to 6 decimals, and similarity is computed from those stored values, so two saved payloads compare identically to a fresh two-image run. The rounding bounds any cosine error at well below 1e-4 -- negligible against the uncalibrated nature of the signal itself.",
+      "This tool reads the composited full frame (or --region crop). It does not segment the subject: background, lighting and framing all influence the descriptor. For an object on a backdrop, scope with --region (or crop via the foreground bbox that pil_image_analyze reports) before fingerprinting."
+    ],
+    "tool": "pil_embed",
+    "version": "0.9.0"
+  }
+}

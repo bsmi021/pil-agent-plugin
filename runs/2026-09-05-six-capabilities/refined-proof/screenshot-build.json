@@ -1,0 +1,274 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "comparison": ">",
+    "error_budgets": {
+      "false_alarm_rate": 0.05,
+      "miss_rate": 0.2
+    },
+    "identity": {
+      "alpha_threshold": 1.0,
+      "delta_e_threshold": 2.0,
+      "domain": "screenshot",
+      "input_mode": "stored",
+      "mask_source": "full_frame",
+      "metric": "changed_area_fraction",
+      "metric_version": "native-de00-alpha-v1",
+      "pipeline": "native-normalized-intersection-v1",
+      "registration": "none"
+    },
+    "interpretation_limits": [
+      "Acceptance is observed performance on held-out source groups, not a universal accuracy claim.",
+      "Detection points are measured magnitudes, not extrapolated detection limits.",
+      "No-change means below this metric threshold; geometry and semantic intent are not assessed."
+    ],
+    "observed_detection_points": [
+      {
+        "detected": 4,
+        "detection_rate": 1.0,
+        "magnitude": 0.015625,
+        "pairs": 4,
+        "perturbation": "8px_patch"
+      }
+    ],
+    "profile_id": "b1b4235e6eb0c44c9bdfea611913dcb3e08e2b3f2a6e79267f111bd1dd154241",
+    "records": [
+      {
+        "changed": false,
+        "hashes": {
+          "a": "050689728d35713ae8ede1bc5e5a4e817f8de8c9eeafb5e44901553f8ba67e7f",
+          "b": "050689728d35713ae8ede1bc5e5a4e817f8de8c9eeafb5e44901553f8ba67e7f"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "train-0",
+        "split": "train",
+        "value": 0.0
+      },
+      {
+        "changed": true,
+        "hashes": {
+          "a": "050689728d35713ae8ede1bc5e5a4e817f8de8c9eeafb5e44901553f8ba67e7f",
+          "b": "37a5678ae8de72a7816c523db0e7ce3ea91a540d1569cc7a1ce149eb53ed8b63"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "train-0",
+        "split": "train",
+        "value": 0.015625
+      },
+      {
+        "changed": false,
+        "hashes": {
+          "a": "e5a70c45111c7e8f6622ebc41a0484a1d5ec45391caa71875271c5fff3c7852b",
+          "b": "e5a70c45111c7e8f6622ebc41a0484a1d5ec45391caa71875271c5fff3c7852b"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "train-1",
+        "split": "train",
+        "value": 0.0
+      },
+      {
+        "changed": true,
+        "hashes": {
+          "a": "e5a70c45111c7e8f6622ebc41a0484a1d5ec45391caa71875271c5fff3c7852b",
+          "b": "b39c72054e2a61392e77f5d927dfa4f95d4783932fb75d81c4acd5c93367a12a"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "train-1",
+        "split": "train",
+        "value": 0.015625
+      },
+      {
+        "changed": false,
+        "hashes": {
+          "a": "5cc2c1e6748374e3aee33963e42452b4ed95b087aaad8e918353429148ae245e",
+          "b": "5cc2c1e6748374e3aee33963e42452b4ed95b087aaad8e918353429148ae245e"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "train-2",
+        "split": "train",
+        "value": 0.0
+      },
+      {
+        "changed": true,
+        "hashes": {
+          "a": "5cc2c1e6748374e3aee33963e42452b4ed95b087aaad8e918353429148ae245e",
+          "b": "787621761e27ad3259536e8f2a89ddb1aab8538e3c84ec37d322e5bb6589a0ff"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "train-2",
+        "split": "train",
+        "value": 0.015625
+      },
+      {
+        "changed": false,
+        "hashes": {
+          "a": "5c5b4e1a25dd159f6478b4e2903641bf1dc81c32ef466a9ab68a1f45e587dc77",
+          "b": "5c5b4e1a25dd159f6478b4e2903641bf1dc81c32ef466a9ab68a1f45e587dc77"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "train-3",
+        "split": "train",
+        "value": 0.0
+      },
+      {
+        "changed": true,
+        "hashes": {
+          "a": "5c5b4e1a25dd159f6478b4e2903641bf1dc81c32ef466a9ab68a1f45e587dc77",
+          "b": "697bd9f0a9955c95f7fb504f29a23283810186a7b3b3636e8e9cfc854015ccf2"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "train-3",
+        "split": "train",
+        "value": 0.015625
+      },
+      {
+        "changed": false,
+        "hashes": {
+          "a": "45537704d05127101279a8cdb4ca0e7e8ca4995f41a1d6cf8c46c8fa95862b8c",
+          "b": "45537704d05127101279a8cdb4ca0e7e8ca4995f41a1d6cf8c46c8fa95862b8c"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "validation-0",
+        "split": "validation",
+        "value": 0.0
+      },
+      {
+        "changed": true,
+        "hashes": {
+          "a": "45537704d05127101279a8cdb4ca0e7e8ca4995f41a1d6cf8c46c8fa95862b8c",
+          "b": "2866100b56a9e713999ab0b55940dc728e0b846390cdf2f4190d09de743a4cc2"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "validation-0",
+        "split": "validation",
+        "value": 0.015625
+      },
+      {
+        "changed": false,
+        "hashes": {
+          "a": "45894f0ad7e77ebe2c654e450c541272a5b9ad67ab633f3aaf555b780e3357f1",
+          "b": "45894f0ad7e77ebe2c654e450c541272a5b9ad67ab633f3aaf555b780e3357f1"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "validation-1",
+        "split": "validation",
+        "value": 0.0
+      },
+      {
+        "changed": true,
+        "hashes": {
+          "a": "45894f0ad7e77ebe2c654e450c541272a5b9ad67ab633f3aaf555b780e3357f1",
+          "b": "4ed9049293acbc76b966a961b314a5d5a4a91c129924ef3e831106102bdfe90c"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "validation-1",
+        "split": "validation",
+        "value": 0.015625
+      },
+      {
+        "changed": false,
+        "hashes": {
+          "a": "93e8c5a49ba29e5fa11a85eaf1ec48529524a1d43eb8b09fe1d29ee702af3b6a",
+          "b": "93e8c5a49ba29e5fa11a85eaf1ec48529524a1d43eb8b09fe1d29ee702af3b6a"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "validation-2",
+        "split": "validation",
+        "value": 0.0
+      },
+      {
+        "changed": true,
+        "hashes": {
+          "a": "93e8c5a49ba29e5fa11a85eaf1ec48529524a1d43eb8b09fe1d29ee702af3b6a",
+          "b": "489ae9d3a5789900c7bda67098a9aafa4a9ef5f093ee6555b172104fa2c54995"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "validation-2",
+        "split": "validation",
+        "value": 0.015625
+      },
+      {
+        "changed": false,
+        "hashes": {
+          "a": "21e59edc8ae7444a15ad31e8cad17a8c6b81c320a1e171e091c68004212174bd",
+          "b": "21e59edc8ae7444a15ad31e8cad17a8c6b81c320a1e171e091c68004212174bd"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "validation-3",
+        "split": "validation",
+        "value": 0.0
+      },
+      {
+        "changed": true,
+        "hashes": {
+          "a": "21e59edc8ae7444a15ad31e8cad17a8c6b81c320a1e171e091c68004212174bd",
+          "b": "c2f779759d4317bab3b3795eb2b9956427b05f1feac4da661a4c7b067d735af9"
+        },
+        "magnitude": 0.015625,
+        "perturbation": "8px_patch",
+        "source": "validation-3",
+        "split": "validation",
+        "value": 0.015625
+      }
+    ],
+    "schema": "domain-profile-v1",
+    "scope": "synthetic execution smoke only; no production-domain accuracy claim",
+    "threshold": 0.0,
+    "tool": "pil_calibrate",
+    "training": {
+      "false_alarm_rate": 0.0,
+      "miss_rate": 0.0,
+      "negative_pairs": 4,
+      "positive_pairs": 4
+    },
+    "validation": {
+      "accepted": true,
+      "false_alarm_interval": {
+        "confidence_level": 0.95,
+        "estimand": "pair error rate with whole source groups resampled",
+        "interval": [
+          0.0,
+          0.0
+        ],
+        "limitation": "Empirical interval conditional on observed source groups; zero observed errors does not establish zero population risk.",
+        "method": "source_cluster_percentile_bootstrap",
+        "replicates": 1000,
+        "source_count": 4
+      },
+      "false_alarm_rate": 0.0,
+      "miss_interval": {
+        "confidence_level": 0.95,
+        "estimand": "pair error rate with whole source groups resampled",
+        "interval": [
+          0.0,
+          0.0
+        ],
+        "limitation": "Empirical interval conditional on observed source groups; zero observed errors does not establish zero population risk.",
+        "method": "source_cluster_percentile_bootstrap",
+        "replicates": 1000,
+        "source_count": 4
+      },
+      "miss_rate": 0.0,
+      "negative_pairs": 4,
+      "positive_pairs": 4
+    },
+    "version": "0.9.0"
+  }
+}

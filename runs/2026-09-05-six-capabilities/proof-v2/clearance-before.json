@@ -1,0 +1,43 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "fit": {
+      "after": {
+        "clearance_violation_count": 4,
+        "maximum_signed_clearance": 0.004999995231628418,
+        "mean_signed_clearance": 0.004999995231628418,
+        "minimum_signed_clearance": 0.004999995231628418,
+        "penetrating_vertex_count": 0,
+        "sample_count": 4
+      },
+      "before": {
+        "clearance_violation_count": 4,
+        "maximum_signed_clearance": 0.004999995231628418,
+        "mean_signed_clearance": 0.004999995231628418,
+        "minimum_signed_clearance": 0.004999995231628418,
+        "penetrating_vertex_count": 0,
+        "sample_count": 4
+      },
+      "output_path": null,
+      "status": "PROBED"
+    },
+    "interpretation_limits": [
+      "Signed clearance is the nearest-point displacement dotted with the body's evaluated surface normal; inverted or inconsistent body normals weaken penetration classification.",
+      "Clearance fitting is a bounded normal displacement, not cloth simulation, retopology, rigging, or deformation testing.",
+      "apply-copy writes a new .blend and refuses to overwrite the source or an existing destination."
+    ],
+    "parameters": {
+      "blend": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\scene.blend",
+      "body_object": "Body",
+      "clearance": 0.02,
+      "garment_object": "Garment",
+      "max_displacement": 0.05,
+      "mode": "probe",
+      "solution": null
+    },
+    "tool": "pil_blender_fit",
+    "version": "0.9.0"
+  }
+}

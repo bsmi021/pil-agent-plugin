@@ -5,6 +5,13 @@ description: Combines native visual inspection, quantitative Pillow image measur
 
 # Combined image analysis
 
+The [0.9.0 workflows](../../docs/measurement-workflows.md) add explicit
+orientation/colour normalization, image-bound selections, bounded registration,
+local change maps and domain profiles. Use them before a quantitative comparison
+when required, retaining their transforms, masks, raw measurements and profile
+identity. They do not expand the reconstruction/geometry evidence boundary.
+Discover exact arguments through `pil_capabilities.py --tool NAME`.
+
 Use this skill as the umbrella for work that crosses both image evidence and 3D
 scene evidence. Route each question to the narrowest valid layer, then synthesize
 the results without allowing one layer to impersonate another.

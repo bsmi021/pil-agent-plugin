@@ -1,0 +1,71 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "ok": true,
+  "result": {
+    "flags": [],
+    "interpretation_limits": [
+      "A crop is a view, not a measurement. Nothing in this payload asserts that the region contains what you believe it contains.",
+      "--scale is nearest-neighbour: it invents no colour, and it recovers no detail the source never had. A 4x upscale of a 3-pixel feature is still a 3-pixel feature, drawn larger.",
+      "Fractional->pixel resolution rounds half up on each edge independently. resolved_pixel_rect and resolved_fractional record exactly what was cut, and they will differ from what you asked for. resolved_fractional is always frame-relative, regardless of region_space; read it and resolved_pixel_rect, not parameters.region.",
+      "region_space=foreground resolves against a foreground bounding box derived by pil_common's rule -- exact on a file with real alpha, an estimate from the border-median colour otherwise. The crop inherits that estimate's error; reference_rect records the box used.",
+      "No metadata is carried across: the output has no EXIF, no ICC profile and no text chunks, whatever the source had."
+    ],
+    "output": {
+      "bytes": 739,
+      "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\crop.png",
+      "sha256": "f026274b5e752eb87c314694e469ba94f40b4020392503bc20fee41549561d3a",
+      "size": [
+        240,
+        240
+      ]
+    },
+    "parameters": {
+      "background_delta": 0.035,
+      "overwrite": false,
+      "region": [
+        0.0,
+        0.0,
+        0.1,
+        0.1
+      ],
+      "region_space": "frame",
+      "resample": "nearest",
+      "scale": 4
+    },
+    "region": {
+      "reference_rect": null,
+      "requested_fractional": [
+        0.0,
+        0.0,
+        0.1,
+        0.1
+      ],
+      "resolved_fractional": [
+        0.0,
+        0.0,
+        0.1,
+        0.1
+      ],
+      "resolved_pixel_rect": [
+        0,
+        0,
+        60,
+        60
+      ],
+      "space": "frame"
+    },
+    "source": {
+      "has_alpha": false,
+      "mode": "RGB",
+      "path": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof\\changes.png",
+      "sha256": "2cac18f9026f742dc947e59800037a043be4fd0ea1396ead0be4ce52f847383a",
+      "size": [
+        600,
+        600
+      ]
+    },
+    "tool": "pil_crop",
+    "version": "0.9.0"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "error": "tool reported a nonzero status",
+  "exit_code": 1,
+  "ok": false,
+  "result": {
+    "artifact": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\proof-v2\\batch-results.json",
+    "items": [
+      {
+        "error": null,
+        "exit_code": 0,
+        "id": "good",
+        "ok": true
+      },
+      {
+        "error": "usage: pil_mask.py [-h] --spec SPEC --output OUTPUT\n                   [--input-mode {stored,display}]\n                   image\npil_mask.py: error: the following arguments are required: image, --spec, --output",
+        "exit_code": 2,
+        "id": "bad",
+        "ok": false
+      }
+    ],
+    "ok": false,
+    "tool": "pil_capabilities",
+    "version": "0.9.0"
+  }
+}

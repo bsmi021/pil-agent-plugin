@@ -1,0 +1,12 @@
+{
+  "exit_code": 0,
+  "seconds": 352.3130000000019,
+  "command": [
+    "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\.venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "-q"
+  ],
+  "model": "C:\\Projects\\pil-agent-plugin\\pil-agent-plugin\\runs\\2026-09-05-six-capabilities\\mobilenetv2-12.onnx",
+  "historical_reference": "unavailable; default skip behavior retained"
+}

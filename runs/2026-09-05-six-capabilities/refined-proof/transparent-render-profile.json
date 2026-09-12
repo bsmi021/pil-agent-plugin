@@ -1,0 +1,269 @@
+{
+  "comparison": ">",
+  "error_budgets": {
+    "false_alarm_rate": 0.05,
+    "miss_rate": 0.2
+  },
+  "identity": {
+    "alpha_threshold": 1.0,
+    "delta_e_threshold": 2.0,
+    "domain": "transparent-render",
+    "input_mode": "stored",
+    "mask_source": "full_frame",
+    "metric": "changed_area_fraction",
+    "metric_version": "native-de00-alpha-v1",
+    "pipeline": "native-normalized-intersection-v1",
+    "registration": "none"
+  },
+  "interpretation_limits": [
+    "Acceptance is observed performance on held-out source groups, not a universal accuracy claim.",
+    "Detection points are measured magnitudes, not extrapolated detection limits.",
+    "No-change means below this metric threshold; geometry and semantic intent are not assessed."
+  ],
+  "observed_detection_points": [
+    {
+      "detected": 4,
+      "detection_rate": 1.0,
+      "magnitude": 0.015625,
+      "pairs": 4,
+      "perturbation": "8px_patch"
+    }
+  ],
+  "profile_id": "e325a7edcd6d71c5b19620a6a55c6d4639db4e6c4a45685c8feea9372492e94d",
+  "records": [
+    {
+      "changed": false,
+      "hashes": {
+        "a": "cf74c05357070342f4dcad3fa45eac56346e17ea386dda1957cc633e8e792fa2",
+        "b": "cf74c05357070342f4dcad3fa45eac56346e17ea386dda1957cc633e8e792fa2"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-0",
+      "split": "train",
+      "value": 0.0
+    },
+    {
+      "changed": true,
+      "hashes": {
+        "a": "cf74c05357070342f4dcad3fa45eac56346e17ea386dda1957cc633e8e792fa2",
+        "b": "defc7c73e1135e8e2bae4b2a783b10d095d728c4f668fdbf66fd4592fe3b91cf"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-0",
+      "split": "train",
+      "value": 0.015625
+    },
+    {
+      "changed": false,
+      "hashes": {
+        "a": "769b40fe8a6453e7bc3abee5e2f3712565d4015dba66bd3caa749a7ac76579a4",
+        "b": "769b40fe8a6453e7bc3abee5e2f3712565d4015dba66bd3caa749a7ac76579a4"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-1",
+      "split": "train",
+      "value": 0.0
+    },
+    {
+      "changed": true,
+      "hashes": {
+        "a": "769b40fe8a6453e7bc3abee5e2f3712565d4015dba66bd3caa749a7ac76579a4",
+        "b": "a2dd6df073b9fee53c1d6a8c08e34d40a6dd0cce5842f330f24647dba457b2d3"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-1",
+      "split": "train",
+      "value": 0.015625
+    },
+    {
+      "changed": false,
+      "hashes": {
+        "a": "295b4c4c644b317bc81a2eaba7993199bbc8bb85f885495c10c985c9638f46b6",
+        "b": "295b4c4c644b317bc81a2eaba7993199bbc8bb85f885495c10c985c9638f46b6"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-2",
+      "split": "train",
+      "value": 0.0
+    },
+    {
+      "changed": true,
+      "hashes": {
+        "a": "295b4c4c644b317bc81a2eaba7993199bbc8bb85f885495c10c985c9638f46b6",
+        "b": "ac14686f97d80382ba51bc2eb4d56ecc2103c4beecac9bf8fc101d4f9e379d0a"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-2",
+      "split": "train",
+      "value": 0.015625
+    },
+    {
+      "changed": false,
+      "hashes": {
+        "a": "73a3f0e488db3f75a457ea0b6226d6efce860c3881ca92a40644157e655bec07",
+        "b": "73a3f0e488db3f75a457ea0b6226d6efce860c3881ca92a40644157e655bec07"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-3",
+      "split": "train",
+      "value": 0.0
+    },
+    {
+      "changed": true,
+      "hashes": {
+        "a": "73a3f0e488db3f75a457ea0b6226d6efce860c3881ca92a40644157e655bec07",
+        "b": "8748d87fe5985645652e5384b851f131104c60d9b9e803e733a110840ab637cd"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "train-3",
+      "split": "train",
+      "value": 0.015625
+    },
+    {
+      "changed": false,
+      "hashes": {
+        "a": "1f6fcc4199d676fbd72e04994f339ba2b8a105147cfe367b721e894793998351",
+        "b": "1f6fcc4199d676fbd72e04994f339ba2b8a105147cfe367b721e894793998351"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-0",
+      "split": "validation",
+      "value": 0.0
+    },
+    {
+      "changed": true,
+      "hashes": {
+        "a": "1f6fcc4199d676fbd72e04994f339ba2b8a105147cfe367b721e894793998351",
+        "b": "491b088e9a787628bc491c54b5db4b810a7cfc6ca6ea0cb6d7c1836b99a3e06a"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-0",
+      "split": "validation",
+      "value": 0.015625
+    },
+    {
+      "changed": false,
+      "hashes": {
+        "a": "fdb618ecd814a69f0eb3dae20c9f7a7b1904a5fa04933158ea9307935535a6b7",
+        "b": "fdb618ecd814a69f0eb3dae20c9f7a7b1904a5fa04933158ea9307935535a6b7"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-1",
+      "split": "validation",
+      "value": 0.0
+    },
+    {
+      "changed": true,
+      "hashes": {
+        "a": "fdb618ecd814a69f0eb3dae20c9f7a7b1904a5fa04933158ea9307935535a6b7",
+        "b": "0e87b84b397cbcb28a3a5cafcd34c15d0a9fd73be5319516a031f610acff0b31"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-1",
+      "split": "validation",
+      "value": 0.015625
+    },
+    {
+      "changed": false,
+      "hashes": {
+        "a": "2122f71955db27b14bf636dc858416e778ff0360191b86648cdf0c999cb65963",
+        "b": "2122f71955db27b14bf636dc858416e778ff0360191b86648cdf0c999cb65963"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-2",
+      "split": "validation",
+      "value": 0.0
+    },
+    {
+      "changed": true,
+      "hashes": {
+        "a": "2122f71955db27b14bf636dc858416e778ff0360191b86648cdf0c999cb65963",
+        "b": "fc6785a1223cd03ba40cd22fd3f5dd9ebe285094bd3bd3441c4c58efb22f8981"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-2",
+      "split": "validation",
+      "value": 0.015625
+    },
+    {
+      "changed": false,
+      "hashes": {
+        "a": "f020951fa68219b0ab559a22f110df30ddd8ab8610b64c0169eabadd33f446a9",
+        "b": "f020951fa68219b0ab559a22f110df30ddd8ab8610b64c0169eabadd33f446a9"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-3",
+      "split": "validation",
+      "value": 0.0
+    },
+    {
+      "changed": true,
+      "hashes": {
+        "a": "f020951fa68219b0ab559a22f110df30ddd8ab8610b64c0169eabadd33f446a9",
+        "b": "661410426544cdc0ed22c91b14f83ae336233634667b73e5679866f599459bfa"
+      },
+      "magnitude": 0.015625,
+      "perturbation": "8px_patch",
+      "source": "validation-3",
+      "split": "validation",
+      "value": 0.015625
+    }
+  ],
+  "schema": "domain-profile-v1",
+  "scope": "synthetic execution smoke only; no production-domain accuracy claim",
+  "threshold": 0.0,
+  "tool": "pil_calibrate",
+  "training": {
+    "false_alarm_rate": 0.0,
+    "miss_rate": 0.0,
+    "negative_pairs": 4,
+    "positive_pairs": 4
+  },
+  "validation": {
+    "accepted": true,
+    "false_alarm_interval": {
+      "confidence_level": 0.95,
+      "estimand": "pair error rate with whole source groups resampled",
+      "interval": [
+        0.0,
+        0.0
+      ],
+      "limitation": "Empirical interval conditional on observed source groups; zero observed errors does not establish zero population risk.",
+      "method": "source_cluster_percentile_bootstrap",
+      "replicates": 1000,
+      "source_count": 4
+    },
+    "false_alarm_rate": 0.0,
+    "miss_interval": {
+      "confidence_level": 0.95,
+      "estimand": "pair error rate with whole source groups resampled",
+      "interval": [
+        0.0,
+        0.0
+      ],
+      "limitation": "Empirical interval conditional on observed source groups; zero observed errors does not establish zero population risk.",
+      "method": "source_cluster_percentile_bootstrap",
+      "replicates": 1000,
+      "source_count": 4
+    },
+    "miss_rate": 0.0,
+    "negative_pairs": 4,
+    "positive_pairs": 4
+  },
+  "version": "0.9.0"
+}
