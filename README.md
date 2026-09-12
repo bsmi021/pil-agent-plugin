@@ -7,7 +7,9 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
-**New in 0.9.0:** explicit EXIF/ICC normalization, image-bound masks,
+**New in 0.9.1:** shorter, more discriminating skill descriptions and
+progressive-disclosure entrypoints tuned for GPT-6 Astra. The 0.9.0 release
+added explicit EXIF/ICC normalization, image-bound masks,
 bounded registration, source-disjoint domain calibration, native local changes,
 and discoverable CLI/MCP tools. See the complete
 [measurement workflows and usage guide](docs/measurement-workflows.md).
@@ -589,6 +591,12 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.9.1 — Astra-ready skill guidance.** Rewrites the four shipped skill
+entrypoints around concise activation, progressive disclosure, task-specific
+routing, proportional decision boundaries, and explicit completion. The
+measurement, calibration, embedding, reconstruction, and Blender behavior is
+unchanged. See the [Astra skill audit](docs/astra-skill-audit-2026-09-12.html).
 
 **0.9.0 — explicit measurement workflows and agent tooling.** Adds EXIF/ICC
 normalization with preserved alpha and coordinate provenance; model/profile
