@@ -16,9 +16,6 @@ reference/
 .env
 .env.*
 !.env.example
-# Ignore-only safeguard: plugin code does not read npm configuration.
-.npmrc
-.pypirc
 *.key
 *.p12
 *.pfx
