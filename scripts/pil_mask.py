@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 from pil_io import digest, emit, read_json, save_png, write_json
 from pil_normalize import normalize_image
 
-TOOL_VERSION = "0.9.1"
+TOOL_VERSION = "0.9.2"
 
 
 def _polygon(size, points):

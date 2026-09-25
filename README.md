@@ -7,12 +7,32 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
-**New in 0.9.1:** shorter, more discriminating skill descriptions and
+**New in 0.9.2:** submission privacy disclosures, a bundled Codex icon, and
+explicit data-handling documentation. **0.9.1** added shorter, more
+discriminating skill descriptions and
 progressive-disclosure entrypoints tuned for GPT-6 Astra. The 0.9.0 release
 added explicit EXIF/ICC normalization, image-bound masks,
 bounded registration, source-disjoint domain calibration, native local changes,
 and discoverable CLI/MCP tools. See the complete
 [measurement workflows and usage guide](docs/measurement-workflows.md).
+
+## Privacy and data sent
+
+Image and mesh processing runs locally. The plugin has no telemetry, hosted
+processing service, or account/API-key requirement. Reports may contain local
+paths, image metadata, OCR text, and measurements. The optional MCP adapter sends
+tool results over local stdio to your agent; that agent may forward results or
+images to its model provider under its own privacy settings.
+
+Installation and bootstrap can contact package registries and download hosts
+through uv/pip and system package managers. These services receive normal
+download requests (including your IP address and requested packages), not input
+images. The optional schema-validation example downloads a public schema.
+Model weights must be supplied separately. See [Privacy policy](PRIVACY.md).
+
+The Codex manifest includes a bundled [icon](assets/icon.svg) and a privacy-policy
+URL. This package uses no `npx` or `uvx` launchers, so launcher version pinning is
+not applicable. Python dependency resolutions are recorded in `uv.lock`.
 
 ## Why this exists
 
@@ -591,6 +611,11 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.9.2 — plugin submission metadata and privacy.** Adds an icon to the Codex
+manifest and explains local processing, setup downloads, and host-agent data
+handling. Includes a linked privacy policy and ignores common local credential
+files. No image-processing behavior changed.
 
 **0.9.1 — Astra-ready skill guidance.** Rewrites the four shipped skill
 entrypoints around concise activation, progressive disclosure, task-specific
