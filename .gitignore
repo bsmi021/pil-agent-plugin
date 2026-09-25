@@ -6,11 +6,10 @@ __pycache__/
 venv/
 *.egg-info/
 
-# Reference images used for local validation.
-# These are derived from a private source image and are deliberately not
-# published. Tests that depend on one regenerate it in-process; the six tests
-# that need the original skip when it is absent. See tests/conftest.py.
-runs/**/*.png
+# Working evidence bundles stay local; published copies live at the
+# pil-agent-plugin--v0.9.3 tag. Reference images are derived from a private
+# source image; tests that need one regenerate it or skip. See tests/conftest.py.
+runs/
 reference/
 
 # Local credentials must never enter a plugin package.

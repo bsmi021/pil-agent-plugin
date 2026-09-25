@@ -9,23 +9,23 @@ an update to a separate installed plugin cache.
 ## Evidence location
 
 The persistent run is
-[`runs/2026-09-05-six-capabilities/`](../runs/2026-09-05-six-capabilities/).
+[`runs/2026-09-05-six-capabilities/`](https://github.com/bsmi021/pil-agent-plugin/tree/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/).
 Its scripts create their own test assets and retain JSON outputs. Model weights
 and generated images are local artifacts, not packaged model dependencies.
 
-- [Public-tool execution matrix](../runs/2026-09-05-six-capabilities/proof-v2/matrix.json)
+- [Public-tool execution matrix](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/proof-v2/matrix.json)
   — **50 successful invocations across all 30 public CLI tools**.
-- [Protocol receipt](../runs/2026-09-05-six-capabilities/proof-v2/mcp-protocol.json)
+- [Protocol receipt](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/proof-v2/mcp-protocol.json)
   — actual MCP stdio initialization, discovery and a successful structured call.
-- [Refinement matrix](../runs/2026-09-05-six-capabilities/refined-proof/matrix.json)
+- [Refinement matrix](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/refined-proof/matrix.json)
   — **10 additional successful invocations**, including refined alignment and
   rebuilt/applied calibration profiles.
-- [Reproduction harness](../runs/2026-09-05-six-capabilities/verify_tools.py)
-  and [refinement harness](../runs/2026-09-05-six-capabilities/refine_evidence.py).
-- [Model receipt](../runs/2026-09-05-six-capabilities/model-receipt.json)
+- [Reproduction harness](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/verify_tools.py)
+  and [refinement harness](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/refine_evidence.py).
+- [Model receipt](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/model-receipt.json)
   — supported MobileNet ONNX bytes checked against the existing documented hash.
-- [Plugin validation](../runs/2026-09-05-six-capabilities/plugin-validation.txt)
-  and [focused lint results](../runs/2026-09-05-six-capabilities/ruff.txt).
+- [Plugin validation](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/plugin-validation.txt)
+  and [focused lint results](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/ruff.txt).
 
 The first evidence attempt stopped because the harness reused a mask-manifest
 filename for its command receipt. That damaged only a newly generated fixture;
@@ -89,8 +89,8 @@ mask/corpus input handling passed **22 tests** (input pipeline, calibration,
 discovery and actual MCP transport). No tests or coverage settings were weakened.
 
 The final regression totals and environment are recorded in
-[`full-suite-validated.txt`](../runs/2026-09-05-six-capabilities/full-suite-validated.txt)
-and [`suite-validated-receipt.json`](../runs/2026-09-05-six-capabilities/suite-validated-receipt.json).
+[`full-suite-validated.txt`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/full-suite-validated.txt)
+and [`suite-validated-receipt.json`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-05-six-capabilities/suite-validated-receipt.json).
 The command is the unfiltered repository suite: `python -m pytest -q`.
 The test process receives the checked model path and Tesseract's directory on
 `PATH`. The unavailable private historical reference image is not substituted
