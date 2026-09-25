@@ -12,3 +12,15 @@ venv/
 # that need the original skip when it is absent. See tests/conftest.py.
 runs/**/*.png
 reference/
+
+# Local credentials must never enter a plugin package.
+.env
+.env.*
+!.env.example
+.npmrc
+.pypirc
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json

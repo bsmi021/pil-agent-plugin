@@ -14,6 +14,24 @@ bounded registration, source-disjoint domain calibration, native local changes,
 and discoverable CLI/MCP tools. See the complete
 [measurement workflows and usage guide](docs/measurement-workflows.md).
 
+## Privacy and data sent
+
+Image and mesh processing runs locally. The plugin has no telemetry, hosted
+processing service, or account/API-key requirement. Reports may contain local
+paths, image metadata, OCR text, and measurements. The optional MCP adapter sends
+tool results over local stdio to your agent; that agent may forward results or
+images to its model provider under its own privacy settings.
+
+Installation and bootstrap can contact package registries and download hosts
+through uv/pip and system package managers. These services receive normal
+download requests (including your IP address and requested packages), not input
+images. The optional schema-validation example downloads a public schema.
+Model weights must be supplied separately. See [Privacy policy](PRIVACY.md).
+
+The Codex manifest includes a bundled [icon](assets/icon.svg) and a privacy-policy
+URL. This package uses no `npx` or `uvx` launchers, so launcher version pinning is
+not applicable. Python dependency resolutions are recorded in `uv.lock`.
+
 ## Why this exists
 
 An agent with multimodal vision already reads images well: it transcribes text,

@@ -29,6 +29,9 @@
       "Blender validation"
     ],
     "websiteURL": "https://github.com/bsmi021/pil-agent-plugin",
+    "privacyPolicyURL": "https://github.com/bsmi021/pil-agent-plugin/blob/main/PRIVACY.md",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg",
     "defaultPrompt": [
       "Measure these images and explain the differences.",
       "Fit this template mesh from calibrated views.",
