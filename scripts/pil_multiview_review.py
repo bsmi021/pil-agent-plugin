@@ -10,7 +10,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-TOOL_VERSION = "0.9.2"
+TOOL_VERSION = "0.9.3"
 
 
 class ReviewManifestError(ValueError):

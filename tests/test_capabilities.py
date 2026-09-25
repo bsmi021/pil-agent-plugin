@@ -1,8 +1,10 @@
 import json
 import sys
 import subprocess
+from types import SimpleNamespace
 from pathlib import Path
 from PIL import Image
+import pil_capabilities
 from pil_capabilities import catalog, invoke, batch
 
 
@@ -53,3 +55,27 @@ def test_invocation_never_accepts_shell_or_unknown_program():
     result = invoke("../evil", [])
     assert not result["ok"]
     assert "unknown" in result["error"]
+
+
+def test_mcp_tool_subprocess_does_not_forward_host_credentials(monkeypatch):
+    monkeypatch.setattr(pil_capabilities, "names", lambda: {"pil_image_info"})
+    monkeypatch.setenv("GITHUB_TOKEN", "host-secret")
+    monkeypatch.setenv("OPENAI_API_KEY", "host-secret")
+    monkeypatch.setenv("npm_config__auth", "host-secret")
+    monkeypatch.setenv("PATH", "safe-path")
+    monkeypatch.setenv("PIL_AGENT_EMBED_MODEL", "local-model.onnx")
+    seen = {}
+
+    def fake_run(command, **kwargs):
+        seen.update(kwargs)
+        return SimpleNamespace(returncode=0, stdout="{}", stderr="")
+
+    monkeypatch.setattr(pil_capabilities.subprocess, "run", fake_run)
+    result = invoke("pil_image_info", [])
+
+    assert result["ok"]
+    assert seen["shell"] is False
+    assert seen["env"]["PATH"] == "safe-path"
+    assert seen["env"]["PIL_AGENT_EMBED_MODEL"] == "local-model.onnx"
+    assert not {"GITHUB_TOKEN", "OPENAI_API_KEY", "npm_config__auth"} & set(seen["env"])
+    assert not {"GH_TOKEN", "PIP_INDEX_URL", "UV_INDEX_URL"} & set(seen["env"])

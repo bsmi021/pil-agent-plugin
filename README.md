@@ -7,8 +7,9 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
-**New in 0.9.2:** submission privacy disclosures, a bundled Codex icon, and
-explicit data-handling documentation. **0.9.1** added shorter, more
+**New in 0.9.3:** credential isolation for MCP tools and public dependency
+installs. **0.9.2** added submission privacy disclosures, a bundled Codex icon,
+and explicit data-handling documentation. **0.9.1** added shorter, more
 discriminating skill descriptions and
 progressive-disclosure entrypoints tuned for GPT-6 Astra. The 0.9.0 release
 added explicit EXIF/ICC normalization, image-bound masks,
@@ -23,6 +24,12 @@ processing service, or account/API-key requirement. Reports may contain local
 paths, image metadata, OCR text, and measurements. The optional MCP adapter sends
 tool results over local stdio to your agent; that agent may forward results or
 images to its model provider under its own privacy settings.
+
+The adapter passes only an allowlisted environment to local tool processes, so
+credentials from the host are not forwarded. It does not read `.npmrc` or use
+npm. The `.npmrc` ignore rule only prevents accidentally committing a local
+registry file. See the [submission security notes](docs/submission-security-review.md)
+for the GitHub Actions release-token explanation and exact reviewer response.
 
 Installation and bootstrap can contact package registries and download hosts
 through uv/pip and system package managers. These services receive normal
@@ -611,6 +618,11 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.9.3 — credential isolation.** MCP tool processes inherit only the OS and
+local model/OCR settings they need. Bootstrap ignores local package-manager
+configuration and credential stores when installing public dependencies.
+The plugin itself needs no user credential.
 
 **0.9.2 — plugin submission metadata and privacy.** Adds an icon to the Codex
 manifest and explains local processing, setup downloads, and host-agent data

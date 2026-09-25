@@ -105,6 +105,9 @@ All are deterministic and emit JSON.
 
 ## Status
 
+**0.9.3 — credential isolation.** MCP tools run with a restricted environment;
+dependency installs use public indexes without local package-manager credentials.
+
 **0.9.2 — plugin submission metadata and privacy.** Adds the Codex icon,
 privacy-policy link, README data disclosures, and a standalone privacy policy.
 Image processing remains local; package installation can contact package
