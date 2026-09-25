@@ -12,10 +12,14 @@ import sys
 import threading
 from pathlib import Path
 from pil_io import emit, read_json, write_json
+from pil_environment import tool_environment
 
-TOOL_VERSION = "0.9.2"
+TOOL_VERSION = "0.9.3"
 ROOT = Path(__file__).resolve().parent
 _LOCK = threading.RLock()
+# MCP hosts can carry their own authentication environment. The local tool
+# subprocesses have no need for it, so inherit only OS paths/temp settings and
+# the plugin's documented model/OCR path settings.
 MUTATING = {
     "pil_normalize",
     "pil_mask",
@@ -255,6 +259,8 @@ def invoke(tool, argv, timeout=300):
             text=True,
             encoding="utf-8",
             timeout=timeout,
+            env=tool_environment(),
+            shell=False,
         )
         try:
             result = json.loads(proc.stdout) if proc.stdout.strip() else None

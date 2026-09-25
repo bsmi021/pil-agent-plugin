@@ -56,7 +56,7 @@ from pil_common import (  # noqa: E402
     to_working,
 )
 
-TOOL_VERSION = "0.9.2"
+TOOL_VERSION = "0.9.3"
 
 # 8 equal-width bins over [0, 180) degrees. Orientation is 180-periodic
 # (a rising and falling edge trace the same underlying line direction),

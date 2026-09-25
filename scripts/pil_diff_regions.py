@@ -12,7 +12,7 @@ from pil_io import emit, positive, save_png
 from pil_normalize import normalize_image
 from pil_mask import read_mask
 
-TOOL_VERSION = "0.9.2"
+TOOL_VERSION = "0.9.3"
 METRIC_VERSION = "native-de00-alpha-v1"
 
 
