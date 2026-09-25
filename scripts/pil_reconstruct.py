@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-TOOL_VERSION = "0.9.1"
+TOOL_VERSION = "0.9.2"
 SCRIPTS = Path(__file__).resolve().parent
 
 

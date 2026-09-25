@@ -12,7 +12,7 @@ from pil_diff_regions import compare_images, METRIC_VERSION
 from pil_io import digest, emit, read_json, write_json
 from pil_pipeline import measure
 
-TOOL_VERSION = "0.9.1"
+TOOL_VERSION = "0.9.2"
 DOMAINS = ("screenshot", "photograph", "transparent-render", "concept-versus-render")
 METRICS = (
     "changed_area_fraction",

@@ -105,6 +105,11 @@ All are deterministic and emit JSON.
 
 ## Status
 
+**0.9.2 — plugin submission metadata and privacy.** Adds the Codex icon,
+privacy-policy link, README data disclosures, and a standalone privacy policy.
+Image processing remains local; package installation can contact package
+registries and download hosts. No image-processing behavior changed.
+
 **0.9.1 — Astra-ready skill guidance.** The four shipped skills now use short,
 discriminating descriptions and compact decision routers. Detailed commands and
 mode-specific guidance are loaded only when relevant. Measurement algorithms,

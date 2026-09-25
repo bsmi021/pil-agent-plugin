@@ -13,7 +13,7 @@ import threading
 from pathlib import Path
 from pil_io import emit, read_json, write_json
 
-TOOL_VERSION = "0.9.1"
+TOOL_VERSION = "0.9.2"
 ROOT = Path(__file__).resolve().parent
 _LOCK = threading.RLock()
 MUTATING = {

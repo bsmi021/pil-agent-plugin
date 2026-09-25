@@ -7,7 +7,9 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
-**New in 0.9.1:** shorter, more discriminating skill descriptions and
+**New in 0.9.2:** submission privacy disclosures, a bundled Codex icon, and
+explicit data-handling documentation. **0.9.1** added shorter, more
+discriminating skill descriptions and
 progressive-disclosure entrypoints tuned for GPT-6 Astra. The 0.9.0 release
 added explicit EXIF/ICC normalization, image-bound masks,
 bounded registration, source-disjoint domain calibration, native local changes,
@@ -609,6 +611,11 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.9.2 — plugin submission metadata and privacy.** Adds an icon to the Codex
+manifest and explains local processing, setup downloads, and host-agent data
+handling. Includes a linked privacy policy and ignores common local credential
+files. No image-processing behavior changed.
 
 **0.9.1 — Astra-ready skill guidance.** Rewrites the four shipped skill
 entrypoints around concise activation, progressive disclosure, task-specific

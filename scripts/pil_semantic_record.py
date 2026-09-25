@@ -56,7 +56,7 @@ from PIL import Image  # noqa: E402
 
 from pil_region import RegionError, resolve_pixel_rect  # noqa: E402
 
-TOOL_VERSION = "0.9.1"
+TOOL_VERSION = "0.9.2"
 
 SCHEMA_NAME = "semantic-record-v1"
 
