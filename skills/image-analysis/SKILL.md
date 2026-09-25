@@ -56,6 +56,11 @@ Discover current arguments and dependency status with
 selection, registration, local-diff, calibration, batch, and MCP workflows are
 in [measurement workflows](../../docs/measurement-workflows.md).
 
+These are local CLI instructions. `NAME` is selected from the fixed public tool
+catalog; it is not shell-expanded or used to build a remote command. MCP calls
+use local stdio and do not forward the host's credential environment to tool
+subprocesses.
+
 ## Report and finish
 
 Group findings by evidence layer. For a requested match target, define the

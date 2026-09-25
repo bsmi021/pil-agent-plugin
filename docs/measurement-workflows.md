@@ -259,3 +259,10 @@ same dispatcher; no measurement logic is duplicated in the server.
 The adapter uses the maintained MCP Python SDK 1.x API with an explicit `<2`
 dependency bound. Install `--extra mcp` before activating it. Engines, model
 weights, paths and host authorization remain local to the active plugin copy.
+MCP calls use local stdio and the dispatcher invokes only tools from its fixed
+public catalog. It passes arguments as an argv array with shell execution off,
+and gives tool subprocesses an allowlisted environment that excludes host
+tokens, API keys, passwords, and registry credentials. The adapter does not
+read `.npmrc` or call a remote image-processing service.
+Bootstrap installs from the public package index without reading local package
+manager configuration or credential stores. No credential is needed for setup.

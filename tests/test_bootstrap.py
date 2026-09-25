@@ -22,7 +22,7 @@ def fake_install(monkeypatch, root):
     # Use a real interpreter for probes without installing any packages.
     monkeypatch.setattr(bootstrap, "venv_python", lambda _: Path(sys.executable))
     calls = []
-    monkeypatch.setattr(bootstrap, "install_python", lambda *args: calls.append(args))
+    monkeypatch.setattr(bootstrap, "install_python", lambda *args, **kwargs: calls.append((args, kwargs)))
     return calls
 
 
@@ -55,7 +55,7 @@ def test_success_receipt_repeat_and_stale(root, monkeypatch, capsys):
 
 def test_failed_install_never_records_success(root, monkeypatch, capsys):
     fake_install(monkeypatch, root)
-    def fail(*args):
+    def fail(*args, **kwargs):
         raise bootstrap.BootstrapError("installer failed")
     monkeypatch.setattr(bootstrap, "install_python", fail)
     assert bootstrap.main(["install"], root=root) == 2
@@ -91,11 +91,31 @@ def test_unsupported_platform_refuses(monkeypatch):
         bootstrap.ocr_install_command("unknown", elevated=True)
 
 
+def test_public_package_environment_excludes_user_auth(tmp_path, monkeypatch):
+    monkeypatch.setenv("GITHUB_TOKEN", "host-secret")
+    monkeypatch.setenv("PIP_INDEX_URL", "https://user:secret@example.test/simple")
+    monkeypatch.setenv("UV_CREDENTIALS_DIR", str(tmp_path / "real-credentials"))
+
+    environment = bootstrap._public_package_environment(tmp_path)
+    netrc = Path(environment["NETRC"])
+    uv_credentials = Path(environment["UV_CREDENTIALS_DIR"])
+
+    assert "GITHUB_TOKEN" not in environment
+    assert "PIP_INDEX_URL" not in environment
+    assert environment["NETRC"] == str(netrc)
+    assert netrc.read_text(encoding="ascii") == ""
+    assert environment["UV_CREDENTIALS_DIR"] == str(uv_credentials)
+    assert list(uv_credentials.iterdir()) == []
+
+
 def test_real_cli_check_without_venv(root):
     scripts = root / "scripts"
     scripts.mkdir()
     entry = scripts / "pil_bootstrap.py"
     entry.write_bytes(Path(bootstrap.__file__).read_bytes())
+    (scripts / "pil_environment.py").write_bytes(
+        Path(bootstrap.tool_environment.__code__.co_filename).read_bytes()
+    )
     result = subprocess.run([sys.executable, str(entry), "check"],
                             capture_output=True, text=True, timeout=30)
     assert result.returncode == 2
@@ -108,6 +128,9 @@ def test_real_install_repeat_and_corrupt_receipt(root):
     scripts.mkdir()
     entry = scripts / "pil_bootstrap.py"
     entry.write_bytes(Path(bootstrap.__file__).read_bytes())
+    (scripts / "pil_environment.py").write_bytes(
+        Path(bootstrap.tool_environment.__code__.co_filename).read_bytes()
+    )
     def invoke(command):
         return subprocess.run([sys.executable, str(entry), command],
                               capture_output=True, text=True, timeout=60)

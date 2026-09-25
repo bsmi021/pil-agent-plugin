@@ -12,6 +12,8 @@ import platform
 import shutil
 import subprocess
 import sys
+import tempfile
+from pil_environment import tool_environment
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -112,28 +114,47 @@ def status(root, args):
             "checks": checks}
 
 
-def execute(command):
+def execute(command, *, env=None):
     print("pil_bootstrap: " + subprocess.list2cmdline(list(map(str, command))), file=sys.stderr)
     # Keep installers' progress out of the machine-readable stdout channel.
-    result = subprocess.run(command, stdout=sys.stderr, stderr=sys.stderr)
+    result = subprocess.run(
+        command, stdout=sys.stderr, stderr=sys.stderr,
+        env=tool_environment() if env is None else env, shell=False,
+    )
     if result.returncode:
         raise BootstrapError(f"installer exited {result.returncode}; rerun after resolving its error")
 
 
-def install_python(root, requirements):
+def install_python(root, requirements, *, env):
     python = venv_python(root)
     uv = shutil.which("uv")
     if not python.is_file():
         if uv:
-            execute([uv, "venv", "--python", sys.executable, str(root / ".venv")])
+            execute([uv, "--no-config", "venv", "--python", sys.executable,
+                     str(root / ".venv")], env=env)
         else:
-            execute([sys.executable, "-m", "venv", str(root / ".venv")])
+            execute([sys.executable, "-m", "venv", str(root / ".venv")], env=env)
     if requirements:
         if uv:
-            execute([uv, "pip", "install", "--python", str(python), *requirements])
+            execute([uv, "--no-config", "pip", "install", "--python", str(python),
+                     *requirements], env=env)
         else:
-            execute([str(python), "-m", "ensurepip"])
-            execute([str(python), "-m", "pip", "install", *requirements])
+            execute([str(python), "-m", "ensurepip"], env=env)
+            execute([str(python), "-m", "pip", "install", "--isolated", "--no-input",
+                     *requirements], env=env)
+
+
+def _public_package_environment(root):
+    """Use public indexes without the installer's environment or stored auth."""
+    auth_dir = Path(root)
+    netrc = auth_dir / "empty-netrc"
+    netrc.write_text("", encoding="ascii")
+    uv_credentials = auth_dir / "uv-credentials"
+    uv_credentials.mkdir(exist_ok=True)
+    environment = tool_environment()
+    environment["NETRC"] = str(netrc)
+    environment["UV_CREDENTIALS_DIR"] = str(uv_credentials)
+    return environment
 
 
 def ocr_install_command(system, elevated=False):
@@ -164,15 +185,20 @@ def install(root, args):
     requirements, _signature = configuration(root, args)
     # Reapply the declared constraints when the receipt is absent/stale. Install
     # adds selected extras without uninstalling previously installed extras.
-    install_python(root, requirements)
-    current = status(root, args)
-    if args.ocr and not current["checks"]["ocr"]["ok"]:
-        # A stale custom path/data override needs correction, not another install.
-        if os.environ.get("PIL_AGENT_TESSERACT") or os.environ.get("TESSDATA_PREFIX"):
-            raise BootstrapError(current["checks"]["ocr"]["reason"])
-        elevated = hasattr(os, "geteuid") and os.geteuid() == 0
-        execute(ocr_install_command(platform.system(), elevated=elevated))
+    # Public dependencies need no user registry credentials. Direct package
+    # installs use an empty netrc and an empty uv credential store, alongside
+    # the process environment allowlist.
+    with tempfile.TemporaryDirectory(prefix="pil-agent-public-index-") as auth_root:
+        install_env = _public_package_environment(auth_root)
+        install_python(root, requirements, env=install_env)
         current = status(root, args)
+        if args.ocr and not current["checks"]["ocr"]["ok"]:
+            # A stale custom path/data override needs correction, not another install.
+            if os.environ.get("PIL_AGENT_TESSERACT") or os.environ.get("TESSDATA_PREFIX"):
+                raise BootstrapError(current["checks"]["ocr"]["reason"])
+            elevated = hasattr(os, "geteuid") and os.geteuid() == 0
+            execute(ocr_install_command(platform.system(), elevated=elevated), env=install_env)
+            current = status(root, args)
     if not current["ready"]:
         reasons = [f"{name}: {check.get('reason')}" for name, check in current["checks"].items()
                    if not check["ok"]]
