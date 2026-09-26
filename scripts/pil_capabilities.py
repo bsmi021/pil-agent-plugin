@@ -14,7 +14,7 @@ from pathlib import Path
 from pil_io import emit, read_json, write_json
 from pil_environment import tool_environment
 
-TOOL_VERSION = "0.9.4"
+TOOL_VERSION = "0.9.5"
 ROOT = Path(__file__).resolve().parent
 _LOCK = threading.RLock()
 # MCP hosts can carry their own authentication environment. The local tool

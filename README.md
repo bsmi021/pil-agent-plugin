@@ -7,7 +7,8 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
-**New in 0.9.4:** the plugin tree no longer bundles working evidence under
+**New in 0.9.5:** clearer embedding-model settings and skill discovery text.
+**0.9.4:** the plugin tree no longer bundles working evidence under
 `runs/`, so it is smaller and fully readable. **0.9.3** added credential isolation
 for MCP tools and public dependency installs. **0.9.2** added submission privacy disclosures, a bundled Codex icon,
 and explicit data-handling documentation. **0.9.1** added shorter, more
@@ -616,6 +617,10 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.9.5 — directory review clean-up.** `pil_embed.py` reads its two settings
+by literal name, and the image-analysis skill names a concrete discovery
+command. No image-processing behavior changed.
 
 **0.9.4 — lean plugin tree.** Working evidence bundles under `runs/` are no
 longer tracked; the published copies remain at the `pil-agent-plugin--v0.9.3`
