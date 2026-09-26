@@ -9,7 +9,7 @@ import sys
 from PIL import Image, ImageCms, ImageOps
 from pil_io import digest, emit, save_png
 
-TOOL_VERSION = "0.9.4"
+TOOL_VERSION = "0.9.5"
 PIPELINE_VERSION = "display-srgb-v1"
 
 

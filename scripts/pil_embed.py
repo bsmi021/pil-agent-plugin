@@ -66,7 +66,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.9.4"
+TOOL_VERSION = "0.9.5"
 
 MODEL_ENV_VAR = "PIL_AGENT_EMBED_MODEL"
 PREPROCESSING_ENV_VAR = "PIL_AGENT_EMBED_PREPROCESSING"
@@ -246,7 +246,7 @@ def _load_runtime():
 
 
 def _resolve_model(explicit):
-    path = explicit or os.environ.get(MODEL_ENV_VAR)
+    path = explicit or os.environ.get("PIL_AGENT_EMBED_MODEL")
     if not path:
         raise EmbedError(
             f"no embedding model given; pass --model or set {MODEL_ENV_VAR} "
@@ -259,7 +259,7 @@ def _resolve_model(explicit):
 
 
 def _resolve_preprocessing(explicit):
-    name = explicit or os.environ.get(PREPROCESSING_ENV_VAR) or (
+    name = explicit or os.environ.get("PIL_AGENT_EMBED_PREPROCESSING") or (
         DEFAULT_PREPROCESSING_PROFILE
     )
     if name not in PREPROCESSING_PROFILES:

@@ -51,15 +51,10 @@ Render only the decisive requested views with locked framing, then aggregate
 matched comparisons with `pil_multiview_review.py`. A missing, refused, or
 violated required view must remain visible in the overall result.
 
-Discover current arguments and dependency status with
-`pil_capabilities.py --tool NAME`. The executable 0.9.0 normalization,
-selection, registration, local-diff, calibration, batch, and MCP workflows are
-in [measurement workflows](../../docs/measurement-workflows.md).
-
-These are local CLI instructions. `NAME` is selected from the fixed public tool
-catalog; it is not shell-expanded or used to build a remote command. MCP calls
-use local stdio and do not forward the host's credential environment to tool
-subprocesses.
+Run `pil_capabilities.py` to list every tool's arguments and dependency
+status, or `pil_capabilities.py --tool pil_palette_diff` for a single tool.
+The executable 0.9.0 normalization, selection, registration, local-diff,
+calibration, batch, and MCP workflows are in [measurement workflows](../../docs/measurement-workflows.md).
 
 ## Report and finish
 
