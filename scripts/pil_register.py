@@ -11,7 +11,7 @@ from pil_io import emit, positive, save_png
 from pil_normalize import normalize_image
 from pil_diff_regions import appearance, rgba_array, difference_arrays
 
-TOOL_VERSION = "0.9.5"
+TOOL_VERSION = "0.9.6"
 
 
 def register_images(

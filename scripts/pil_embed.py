@@ -66,7 +66,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.9.5"
+TOOL_VERSION = "0.9.6"
 
 MODEL_ENV_VAR = "PIL_AGENT_EMBED_MODEL"
 PREPROCESSING_ENV_VAR = "PIL_AGENT_EMBED_PREPROCESSING"

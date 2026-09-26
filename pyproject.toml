@@ -1,6 +1,6 @@
 [project]
 name = "pil-agent-plugin"
-version = "0.9.5"
+version = "0.9.6"
 description = "Quantitative image measurement and diffing tools for coding agents, complementing native multimodal vision"
 requires-python = ">=3.11,<3.14"
 dependencies = [

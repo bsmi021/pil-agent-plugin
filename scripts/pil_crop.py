@@ -61,7 +61,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.9.5"
+TOOL_VERSION = "0.9.6"
 
 INTERPRETATION_LIMITS = [
     "A crop is a view, not a measurement. Nothing in this payload asserts "

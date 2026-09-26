@@ -10,12 +10,14 @@ import sys
 
 import pytest
 
+from pil_environment import tool_environment
+
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 
 
 @pytest.fixture
 def env(tmp_path):
-    values = os.environ.copy()
+    values = tool_environment()
     for key in ("PIL_AGENT_TESSERACT", "PIL_AGENT_EMBED_MODEL",
                 "PIL_AGENT_EMBED_PREPROCESSING", "TESSDATA_PREFIX"):
         values.pop(key, None)
