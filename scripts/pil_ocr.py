@@ -57,7 +57,7 @@ from pil_region import (  # noqa: E402
     resolve_pixel_rect,
 )
 
-TOOL_VERSION = "0.9.5"
+TOOL_VERSION = "0.9.6"
 
 DEFAULT_LANG = "eng"
 DEFAULT_PSM = 3  # Tesseract's default: fully automatic page segmentation.
@@ -113,13 +113,12 @@ def _find_tesseract(explicit):
     if found:
         return found
     if os.name == "nt":
-        for variable, suffix in (
-            ("ProgramFiles", "Tesseract-OCR"),
-            ("ProgramFiles(x86)", "Tesseract-OCR"),
-            ("LOCALAPPDATA", "Programs/Tesseract-OCR"),
-            ("LOCALAPPDATA", "Tesseract-OCR"),
+        for root, suffix in (
+            (os.environ.get("ProgramFiles"), "Tesseract-OCR"),
+            (os.environ.get("ProgramFiles(x86)"), "Tesseract-OCR"),
+            (os.environ.get("LOCALAPPDATA"), "Programs/Tesseract-OCR"),
+            (os.environ.get("LOCALAPPDATA"), "Tesseract-OCR"),
         ):
-            root = os.environ.get(variable)
             if root:
                 candidate = Path(root) / suffix / "tesseract.exe"
                 if candidate.is_file():

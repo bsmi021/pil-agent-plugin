@@ -24,7 +24,7 @@ if str(SCRIPTS) not in sys.path:
 import pil_embed  # noqa: E402
 
 HAS_RUNTIME = importlib.util.find_spec("onnxruntime") is not None
-MODEL = os.environ.get(pil_embed.MODEL_ENV_VAR)
+MODEL = os.environ.get("PIL_AGENT_EMBED_MODEL")
 HAS_MODEL = MODEL is not None and Path(MODEL).is_file()
 
 needs_engine = pytest.mark.skipif(

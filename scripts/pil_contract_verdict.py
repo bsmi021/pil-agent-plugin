@@ -71,7 +71,7 @@ from pil_common import (  # noqa: E402
     resize_mask,
 )
 
-TOOL_VERSION = "0.9.5"
+TOOL_VERSION = "0.9.6"
 
 SATISFIED = "SATISFIED"
 VIOLATED = "VIOLATED"
