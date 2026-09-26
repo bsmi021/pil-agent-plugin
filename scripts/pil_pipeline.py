@@ -14,7 +14,7 @@ from pil_io import emit
 from pil_mask import read_mask
 from pil_normalize import normalize_image
 
-TOOL_VERSION = "0.9.3"
+TOOL_VERSION = "0.9.4"
 TOOLS = (
     "pil_image_analyze",
     "pil_palette_diff",

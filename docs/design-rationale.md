@@ -4,7 +4,7 @@ Last updated: 2026-08-18
 
 Why these tools measure what they measure. Every constraint below came from a
 measurement on a real image, not from anticipation — the sequence is recorded in
-the [phase 1 evidence bundle](../runs/2026-08-18-pil-agent-plugin-phase1/README.md).
+the [phase 1 evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-pil-agent-plugin-phase1/README.md).
 
 ## The question
 
@@ -74,7 +74,7 @@ for a proportionally minor change.
 
 ## Why so few metrics actually discriminate
 
-The [discrimination matrix](../runs/2026-08-18-pil-agent-plugin-phase1/10-metric-discrimination-matrix.md)
+The [discrimination matrix](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-pil-agent-plugin-phase1/10-metric-discrimination-matrix.md)
 compares each metric's response to a pure rescale (content unchanged) against a
 cyan→red recolour (colour scheme changed). Only 4 of 11 separate the two cases.
 

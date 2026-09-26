@@ -1,4 +1,0 @@
-release version bumped	pass	6s	https://github.com/bsmi021/pil-agent-plugin/actions/runs/34663755055/job/103471396745	
-tests (py3.11)	pass	2m46s	https://github.com/bsmi021/pil-agent-plugin/actions/runs/34663755055/job/103471396747	
-tests (py3.12)	pass	2m1s	https://github.com/bsmi021/pil-agent-plugin/actions/runs/34663755055/job/103471396757	
-tests (py3.13)	pass	2m41s	https://github.com/bsmi021/pil-agent-plugin/actions/runs/34663755055/job/103471396625	

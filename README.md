@@ -7,8 +7,9 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
-**New in 0.9.3:** credential isolation for MCP tools and public dependency
-installs. **0.9.2** added submission privacy disclosures, a bundled Codex icon,
+**New in 0.9.4:** the plugin tree no longer bundles working evidence under
+`runs/`, so it is smaller and fully readable. **0.9.3** added credential isolation
+for MCP tools and public dependency installs. **0.9.2** added submission privacy disclosures, a bundled Codex icon,
 and explicit data-handling documentation. **0.9.1** added shorter, more
 discriminating skill descriptions and
 progressive-disclosure entrypoints tuned for GPT-6 Astra. The 0.9.0 release
@@ -26,10 +27,7 @@ tool results over local stdio to your agent; that agent may forward results or
 images to its model provider under its own privacy settings.
 
 The adapter passes only an allowlisted environment to local tool processes, so
-credentials from the host are not forwarded. It does not read `.npmrc` or use
-npm. The `.npmrc` ignore rule only prevents accidentally committing a local
-registry file. See the [submission security notes](docs/submission-security-review.md)
-for the GitHub Actions release-token explanation and exact reviewer response.
+credentials from the host are not forwarded. The plugin does not use npm.
 
 Installation and bootstrap can contact package registries and download hosts
 through uv/pip and system package managers. These services receive normal
@@ -562,9 +560,9 @@ and `tests/test_character_sheet_review.py` run only when an external corpus
 and a Blender install are both present — the corpus path defaults to a known
 location and can be overridden per test file, mirroring
 `PIL_AGENT_REFERENCE_IMAGE` (see
-[`runs/2026-08-20-blender-mesh-validation/`](runs/2026-08-20-blender-mesh-validation/README.md),
-[`runs/2026-08-20-blender-render-validation/`](runs/2026-08-20-blender-render-validation/README.md),
-[`runs/2026-08-20-character-sheet-loop/`](runs/2026-08-20-character-sheet-loop/README.md));
+[`runs/2026-08-20-blender-mesh-validation/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-mesh-validation/README.md),
+[`runs/2026-08-20-blender-render-validation/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-render-validation/README.md),
+[`runs/2026-08-20-character-sheet-loop/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-character-sheet-loop/README.md));
 they are already counted as passing above on a machine that has both, and skip
 cleanly otherwise.
 
@@ -580,15 +578,15 @@ The original validation image is not distributed.
 ## How this was validated
 
 Design decisions here came from measurement, not anticipation. The evidence bundle
-in [`runs/2026-08-18-pil-agent-plugin-phase1/`](runs/2026-08-18-pil-agent-plugin-phase1/README.md)
+in [`runs/2026-08-18-pil-agent-plugin-phase1/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-pil-agent-plugin-phase1/README.md)
 contains a 13-step RED→GREEN ledger, the raw JSON outputs, and a
-[metric discrimination matrix](runs/2026-08-18-pil-agent-plugin-phase1/10-metric-discrimination-matrix.md)
+[metric discrimination matrix](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-pil-agent-plugin-phase1/10-metric-discrimination-matrix.md)
 showing that **only 4 of 11 metrics** separate a genuine colour change from a
 no-op rescale — and that one metric answers the question backwards.
 
 The tools were then taken to a real production task — reviewing a Blender game
 character against its concept sheet — in
-[`runs/2026-08-18-skeleton-warrior-asset-review/`](runs/2026-08-18-skeleton-warrior-asset-review/README.md).
+[`runs/2026-08-18-skeleton-warrior-asset-review/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-skeleton-warrior-asset-review/README.md).
 That trial is the strongest evidence for the vision-first method in this repository:
 **four of the reviewing agent's own confident visual conclusions were wrong**, and
 measurement caught all four before they reached the defect list. Two would have sent
@@ -599,10 +597,10 @@ measured.
 
 The same rule governs the embedding layer: a capability is advertised only where a
 discrimination gate measured it. The first gate
-([`runs/2026-08-31-embedding-discrimination/`](runs/2026-08-31-embedding-discrimination/README.md))
+([`runs/2026-08-31-embedding-discrimination/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-31-embedding-discrimination/README.md))
 **demoted** same-venue matching under `mobilenetv2-12` because two exhibits of one
 museum (0.4558) scored *below* an unrelated pair (0.4701). The follow-up
-([`runs/2026-09-02-clip-embedding-discrimination/`](runs/2026-09-02-clip-embedding-discrimination/README.md))
+([`runs/2026-09-02-clip-embedding-discrimination/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-02-clip-embedding-discrimination/README.md))
 re-ran that identical corpus and pair list against a CLIP ViT-B/32 visual encoder,
 which separates all three bands — so the capability is advertised **for that model
 only**, keyed by its sha256, and every ungated model is flagged as such. That run
@@ -618,6 +616,11 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.9.4 — lean plugin tree.** Working evidence bundles under `runs/` are no
+longer tracked; the published copies remain at the `pil-agent-plugin--v0.9.3`
+tag. The lockfile covers Python 3.11–3.13, the versions CI tests. No
+image-processing behavior changed.
 
 **0.9.3 — credential isolation.** MCP tool processes inherit only the OS and
 local model/OCR settings they need. Bootstrap ignores local package-manager
@@ -676,7 +679,7 @@ fingerprints under the new optional `embedding` extra, with per-model
 preprocessing profiles and advertised capabilities keyed by model sha256:
 `mobilenetv2-12` is gated for same-image identification only, while CLIP
 ViT-B/32 also passes same-venue ranking on full band separation
-([`runs/2026-09-02-clip-embedding-discrimination/`](runs/2026-09-02-clip-embedding-discrimination/README.md)).
+([`runs/2026-09-02-clip-embedding-discrimination/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-09-02-clip-embedding-discrimination/README.md)).
 Ungated models advertise nothing. Existing tool payload shapes are unchanged.
 
 **0.6.0 — constrained multi-view reconstruction.** The optional
@@ -753,10 +756,10 @@ numbered boxes so a model can point precisely, and
 never carries into a vision encoder. `--region` scopes every metric on both
 diff tools, byte-equal to pre-cropping with `pil_crop`.
 
-Foreground thresholds are now [split by mask source](runs/2026-08-20-foreground-recalibration/README.md)
+Foreground thresholds are now [split by mask source](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-foreground-recalibration/README.md)
 and the alpha path is calibrated for the first time (luminance **0.997** against
 the estimate path's 34.166, n=380, α=0.01). The annotation tool's legibility is
-[verified by read-back](runs/2026-08-20-annotate-readback/README.md) — fresh
+[verified by read-back](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-annotate-readback/README.md) — fresh
 agents shown only the image transcribed 27 of 27 numerals correctly, and the
 bundle records an earlier round that *failed*.
 
@@ -777,7 +780,7 @@ distance hand-rolled in numpy and verified against all 34 published Sharma
 reference values (`base/accent_palette_distance_de2000` are now the primary
 colour signal); Neyman–Pearson threshold calibration over synthetic ground
 truth with published per-metric detection limits (the
-[calibration bundle](runs/2026-08-19-phase2-calibration/README.md) records
+[calibration bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-19-phase2-calibration/README.md) records
 every derived constant with its n, α and CI — including one derivation that was
 *rejected*, with the reason in `scripts/pil_common.py`); an opt-in LCh accent
 gate (`--accent-space lch`); and `pil_contract_verdict.py` — declared-intent
@@ -786,7 +789,7 @@ verdicts where every null result carries its detection limit, `geometry.*` and
 worst-case so one broken view cannot be averaged away.
 
 Those thresholds were then
-[validated against a real production corpus](runs/2026-08-20-phase2-real-validation/README.md)
+[validated against a real production corpus](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-phase2-real-validation/README.md)
 — a game asset's actual revision history — rather than only the synthetic data
 they were derived from: **zero false alarms** across 160 real no-change controls
 in full-frame mode, 21 of 24 real revision pairs detected in both modes, and the

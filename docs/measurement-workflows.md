@@ -263,6 +263,6 @@ MCP calls use local stdio and the dispatcher invokes only tools from its fixed
 public catalog. It passes arguments as an argv array with shell execution off,
 and gives tool subprocesses an allowlisted environment that excludes host
 tokens, API keys, passwords, and registry credentials. The adapter does not
-read `.npmrc` or call a remote image-processing service.
+call a remote image-processing service.
 Bootstrap installs from the public package index without reading local package
 manager configuration or credential stores. No credential is needed for setup.

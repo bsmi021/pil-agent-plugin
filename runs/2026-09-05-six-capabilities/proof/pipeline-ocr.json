@@ -1,6 +1,0 @@
-{
-  "error": "pil_pipeline: mask binding does not match image bytes and input mode",
-  "exit_code": 2,
-  "ok": false,
-  "result": null
-}

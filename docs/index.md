@@ -15,12 +15,12 @@ Last updated: 2026-09-12
 - [Design rationale and findings](design-rationale.md) — why the tools are shaped
   the way they are, and what the phase 1 experiment established.
 - [Tool reference](../README.md#tools) — CLI usage and output fields.
-- [Phase 1 evidence bundle](../runs/2026-08-18-pil-agent-plugin-phase1/README.md)
+- [Phase 1 evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-pil-agent-plugin-phase1/README.md)
   — the RED/GREEN ledger, metric discrimination matrix and raw JSON outputs.
-- [Agent Plugins 1.0.0 conformance audit](../runs/2026-08-18-agent-plugins-standard-audit/README.md)
+- [Agent Plugins 1.0.0 conformance audit](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-agent-plugins-standard-audit/README.md)
   — clause-by-clause findings against <https://agent-plugins.org/specification>,
   the additive migration applied, and its verification.
-- [Field trial: game-asset review](../runs/2026-08-18-skeleton-warrior-asset-review/README.md)
+- [Field trial: game-asset review](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-skeleton-warrior-asset-review/README.md)
   — the tools used on a real production task, including four visual conclusions
   the measurements overturned and three concrete asks for phase 2.
 - [Phase 2 scope](phase2-scope.md) — perceptual colour distance, threshold
@@ -29,11 +29,11 @@ Last updated: 2026-09-12
 - [Phase 2 research: colour and calibration](research-phase2-colour-and-calibration.md)
   — CIEDE2000 formulation and verification data, LCh versus HSV bucketing, and
   calibration methodology.
-- [Phase 2 calibration bundle](../runs/2026-08-19-phase2-calibration/README.md)
+- [Phase 2 calibration bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-19-phase2-calibration/README.md)
   — Neyman–Pearson thresholds with n/α/CI, detection limits per metric per
   perturbation, LCh hue-family boundaries, constant verdicts and their
   application (one rejected, reason recorded in `scripts/pil_common.py`).
-- [Phase 2 real-image validation](../runs/2026-08-20-phase2-real-validation/README.md)
+- [Phase 2 real-image validation](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-phase2-real-validation/README.md)
   — the synthetic-derived thresholds run against a real production revision
   corpus: zero full-frame false alarms, published detection limits shown to
   transfer, support gating quiet on real cross-render pairs.
@@ -59,21 +59,21 @@ Last updated: 2026-09-12
 - [`image-analysis` combined skill](../skills/image-analysis/SKILL.md) — routes
   pixel-only, calibrated reconstruction, and combined concept-to-model analysis
   while keeping image and Blender geometry evidence distinct.
-- [Track B2 evidence bundle](../runs/2026-08-20-blender-render-validation/README.md)
+- [Track B2 evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-render-validation/README.md)
   — matched-view rendering verified against the real brute character corpus:
   camera-axis convention verified two independent ways, a real determinism
   defect found and fixed (Blender's PNG metadata chunks), full discrimination
   matrix.
-- [Track B3 evidence bundle](../runs/2026-08-20-character-sheet-loop/README.md)
+- [Track B3 evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-character-sheet-loop/README.md)
   — the revision loop verified end to end on real renders: a deliberately
   swapped view is not averaged away, a hard-failed view is not silently
   dropped, and an honest finding that Phase 2's calibrated thresholds are too
   strict for render-vs-concept-art comparison.
-- Track A5 evidence bundles: [connected components](../runs/2026-08-20-components-discrimination/derived-thresholds.json)
-  (demoted), [silhouette descriptors](../runs/2026-08-20-silhouette-discrimination/bundle.json)
-  (demoted), [projection alignment](../runs/2026-08-20-alignment-discrimination/derived-thresholds.json)
+- Track A5 evidence bundles: [connected components](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-components-discrimination/derived-thresholds.json)
+  (demoted), [silhouette descriptors](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-silhouette-discrimination/bundle.json)
+  (demoted), [projection alignment](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-alignment-discrimination/derived-thresholds.json)
   (demoted; WCAG contrast half shipped, no gate needed).
-- [Track B1 evidence bundle](../runs/2026-08-20-blender-mesh-validation/README.md)
+- [Track B1 evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-mesh-validation/README.md)
   — Blender mesh statistics verified against the real swordsman corpus,
   including a resolved discrepancy in the corpus's own tracked-parts sidecar
   and a round-trip pair found scene-VIOLATED despite per-object topology
@@ -129,7 +129,7 @@ Phase 2 implemented (0.3.0): CIEDE2000 verified against all 34 published
 reference values; thresholds calibrated by Neyman–Pearson over synthetic ground
 truth with published detection limits; contract-driven verdicts with a refuse
 list that never approximates; worst-case multi-pair aggregation. Thresholds
-were then [validated against a real production corpus](../runs/2026-08-20-phase2-real-validation/README.md)
+were then [validated against a real production corpus](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-phase2-real-validation/README.md)
 — zero full-frame false alarms, detection limits shown to transfer.
 
 **0.4.0** — the alpha/coverage fix, phase 3 Track A, and foreground
@@ -142,7 +142,7 @@ recalibration, built to [`aaa-build-plan.md`](aaa-build-plan.md):
   frame is byte-identical.
 - **Phase 2's last open gate is closed.** The alpha path now has calibrated
   thresholds of its own (luminance **0.997**, n=380, α=0.01 over 19 RGBA
-  scenes), and foreground thresholds are [split by mask source](../runs/2026-08-20-foreground-recalibration/README.md).
+  scenes), and foreground thresholds are [split by mask source](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-foreground-recalibration/README.md).
   The estimate path also moved from n=100/α=0.05 on one scene to n=400/α=0.01
   over four.
 - Three new tools (`pil_crop`, `pil_annotate`, `pil_image_info`) and `--region`
@@ -184,7 +184,7 @@ Phase 3 Track A landed in 0.4.0.
   (6,643→14,033) differ from the live scene's totals (9,120→16,276) — the
   handoff's numbers are a correct sum of `parts.json`, which is a stale subset
   of the actual scene — is in the
-  [evidence bundle](../runs/2026-08-20-blender-mesh-validation/README.md).
+  [evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-mesh-validation/README.md).
 - **Track B2 and B3 have now landed** (separate build,
   [plan](phase3-b2-b3-build-plan.md)), closing out Phase 3 in full:
   - `pil_blender_render.py` (B2) renders front/side/back headless (Blender
@@ -204,7 +204,7 @@ Phase 3 Track A landed in 0.4.0.
     byte-identical. Cross-machine render determinism is explicitly **not**
     claimed — only same-machine/same-install. Comparison metrics on a fixed
     image pair remain fully deterministic everywhere, unaffected. See the
-    [evidence bundle](../runs/2026-08-20-blender-render-validation/README.md).
+    [evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-render-validation/README.md).
   - `pil_character_sheet_review.py` (B3) composes B2's renders into one
     `pil_contract_verdict --pairs` call, so a character-sheet review is a
     single contract evaluated over N registered view pairs. Proven end to end
@@ -219,7 +219,7 @@ Phase 3 Track A landed in 0.4.0.
     between a Workbench render's true alpha and a baked-shading reference
     crop, not a bug. The tool accepts `--thresholds` and ships no opinion
     about the right bar for a given workflow. See the
-    [evidence bundle](../runs/2026-08-20-character-sheet-loop/README.md).
+    [evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-character-sheet-loop/README.md).
 - **PR #7 critic fixes are included in 0.5.0.** Hard-failed views override
   every contract item to `UNMEASURABLE` rather than allowing identical
   sentinel pixels to satisfy layout/palette predicates; public review JSON
@@ -271,7 +271,7 @@ Phase 3 Track A landed in 0.4.0.
   skip is recorded, `rescale_roundtrip` resamples premultiplied, and the
   RGB-only recipes assert alpha is byte-identical so a geometry perturbation
   cannot masquerade as a colour one. See the
-  [recalibration bundle](../runs/2026-08-20-foreground-recalibration/README.md).
+  [recalibration bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-foreground-recalibration/README.md).
 - **Validation covers one asset from one pipeline.** The thresholds transferred
   to real production renders, but a second corpus from a different renderer
   would be needed to claim generalisation. **This still stands, and now also
@@ -293,7 +293,7 @@ Phase 3 Track A landed in 0.4.0.
   matched silhouette-bbox fractions, and backdrop-excluded foreground sampling.
   Both were written as throwaway harness code to review a game asset, both were
   load-bearing, and one of them changed a headline conclusion. Rationale in the
-  [trial bundle](../runs/2026-08-18-skeleton-warrior-asset-review/README.md#what-this-exercise-wants-from-phase-2).
+  [trial bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-skeleton-warrior-asset-review/README.md#what-this-exercise-wants-from-phase-2).
   **Landed in 0.2.0** as `--foreground` on both tools: alpha- or
   border-median-OKLab masking, bbox registration, support-gated cell scoring,
   and the `background_dominant` / `accent_support_low` flag family — prompted
@@ -308,7 +308,7 @@ Phase 3 Track A landed in 0.4.0.
   Blender scene data when the caller supplies `--scene-stats-a`/`-b`; the
   default refusal is unchanged and still load-bearing when they are not
   supplied. Geometry inferred from pixels remains permanently refused. See the
-  [evidence bundle](../runs/2026-08-20-blender-mesh-validation/README.md).
+  [evidence bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-mesh-validation/README.md).
 - **Track A5's three new-metric candidates are demoted; only WCAG contrast
   shipped.** Connected-component counting, silhouette shape descriptors, and
   projection-profile alignment each ran a real discrimination gate and none
@@ -322,7 +322,7 @@ Phase 3 Track A landed in 0.4.0.
 - ~~**Track B2 (matched-view render orchestration) and B3 (the revision
   loop) are not started.**~~ **Closed.** Both shipped in a follow-up build —
   see the Status section above and the
-  [B2](../runs/2026-08-20-blender-render-validation/README.md)/[B3](../runs/2026-08-20-character-sheet-loop/README.md)
+  [B2](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-render-validation/README.md)/[B3](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-character-sheet-loop/README.md)
   evidence bundles. Phase 3 (A1–A5, B1–B3) is now complete in full, with A5's
   three new-metric candidates honestly demoted and every other work package
   shipped.

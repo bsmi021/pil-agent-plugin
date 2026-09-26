@@ -32,7 +32,7 @@ and checkable rather than gestural.
 
 **The verification loop — epistemic division of labour.** The field trial had four
 confident visual conclusions overturned by measurement
-([trial bundle](../runs/2026-08-18-skeleton-warrior-asset-review/README.md#where-measurement-overruled-vision)),
+([trial bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-skeleton-warrior-asset-review/README.md#where-measurement-overruled-vision)),
 and phase 1 had measurement wrong where vision was right — a global quantisation
 reporting zero vivid colours
 ([`design-rationale.md`](design-rationale.md#what-the-experiment-established)).
@@ -105,7 +105,7 @@ field trial's first ask: *"Region cutting should be a tool"* — cutting matched
 regions at identical fractions of each figure's silhouette bounding box was **"the
 single highest-leverage thing in the harness"**, and is what made a 1254×1254
 multi-view sheet comparable to a 900×1395 single-view render, part by part
-([trial bundle](../runs/2026-08-18-skeleton-warrior-asset-review/README.md#what-this-exercise-wants-from-phase-2)).
+([trial bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-skeleton-warrior-asset-review/README.md#what-this-exercise-wants-from-phase-2)).
 That bundle's capability table lists region cutting under **harness**; this WP moves
 it into the plugin, and makes the trial's material probes — "ad-hoc numpy probes
 placed by eye", recorded as values rather than as reproducible steps — reproducible.
@@ -122,7 +122,7 @@ out-of-range or inverted region is rejected, not silently clamped.
 These add judgment, so **each must pass WP2's methodology before shipping** —
 response curves, a published detection limit, and demotion as an acceptable outcome.
 Phase 1's precedent is the standard: only 4 of 11 metrics survived
-[the discrimination matrix](../runs/2026-08-18-pil-agent-plugin-phase1/10-metric-discrimination-matrix.md),
+[the discrimination matrix](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-18-pil-agent-plugin-phase1/10-metric-discrimination-matrix.md),
 and one answered its question backwards.
 
 - **Connected-component instance counting**, with per-blob area, centroid and bbox.
@@ -216,9 +216,9 @@ Refused, not deferred:
 | A3 image info | nothing | Byte-determinism; alpha rule matches `load_rgb_alpha` | **Shipped 0.4.0** |
 | A4 `--region` | A1 | Region metrics equal pre-cropped-file metrics; existing determinism test unbroken; `--region` × `--foreground` semantics documented | **Shipped 0.4.0** |
 | A5 new metrics | phase 2 WP2 | Each candidate independently passes WP2's methodology: response curves, published detection limit, demotion accepted | **Gate run for real on all three candidates; all three demoted** (connected components, silhouette descriptors, projection alignment). WCAG contrast — no gate needed — shipped. See [`docs/index.md`](index.md) and the per-candidate `runs/2026-08-20-*-discrimination/` bundles. |
-| B1 mesh stats | phase 2 WP3 landing; Blender scene access | `geometry.*` resolves with scene data, stays `UNMEASURABLE` without it | **Shipped**, verified against the real swordsman corpus. See [`runs/2026-08-20-blender-mesh-validation/`](../runs/2026-08-20-blender-mesh-validation/README.md). |
-| B2 view matching | B1 | Matched views register without `aspect_ratio_mismatch` / `resolution_mismatch` | **Shipped.** `pil_blender_render.py` renders front/side/back (headless Workbench, CPU) auto-framed from the scene bbox and registers against a reference via `pil_structure_diff --foreground`; none of the three real brute-corpus views fire the framing-mismatch flags. Render-determinism scoped in writing (same-machine/same-install only) *before* implementation, per [`docs/phase3-b2-b3-build-plan.md`](phase3-b2-b3-build-plan.md) §2. See [`runs/2026-08-20-blender-render-validation/`](../runs/2026-08-20-blender-render-validation/README.md). |
-| B3 revision loop | B2, phase 2 WP4 | A single diverging view cannot be averaged away | **Shipped.** `pil_character_sheet_review.py` composes B2's renders into one `pil_contract_verdict --pairs` call; a deliberately swapped view forces the aggregate to `VIOLATED` and a hard-failed view is represented by a sentinel pair rather than dropped, both proven end to end on real renders. See [`runs/2026-08-20-character-sheet-loop/`](../runs/2026-08-20-character-sheet-loop/README.md). |
+| B1 mesh stats | phase 2 WP3 landing; Blender scene access | `geometry.*` resolves with scene data, stays `UNMEASURABLE` without it | **Shipped**, verified against the real swordsman corpus. See [`runs/2026-08-20-blender-mesh-validation/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-mesh-validation/README.md). |
+| B2 view matching | B1 | Matched views register without `aspect_ratio_mismatch` / `resolution_mismatch` | **Shipped.** `pil_blender_render.py` renders front/side/back (headless Workbench, CPU) auto-framed from the scene bbox and registers against a reference via `pil_structure_diff --foreground`; none of the three real brute-corpus views fire the framing-mismatch flags. Render-determinism scoped in writing (same-machine/same-install only) *before* implementation, per [`docs/phase3-b2-b3-build-plan.md`](phase3-b2-b3-build-plan.md) §2. See [`runs/2026-08-20-blender-render-validation/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-blender-render-validation/README.md). |
+| B3 revision loop | B2, phase 2 WP4 | A single diverging view cannot be averaged away | **Shipped.** `pil_character_sheet_review.py` composes B2's renders into one `pil_contract_verdict --pairs` call; a deliberately swapped view forces the aggregate to `VIOLATED` and a hard-failed view is represented by a sentinel pair rather than dropped, both proven end to end on real renders. See [`runs/2026-08-20-character-sheet-loop/`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-character-sheet-loop/README.md). |
 
 A1–A4 gate only on determinism and documentation, so they are shippable while phase
 2 is in flight. A5 cannot start before WP2's calibration harness exists, because its

@@ -3,12 +3,12 @@
 Last updated: 2026-08-19
 Status: **implemented** (0.3.0). WP1 → `scripts/pil_color.py` + the `*_de2000`
 fields and `--accent-space lch`; WP2 → `calibration/` and the
-[calibration bundle](../runs/2026-08-19-phase2-calibration/README.md), with
+[calibration bundle](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-19-phase2-calibration/README.md), with
 verdict-by-verdict application recorded in `scripts/pil_common.py`'s constant
 comments (one derivation rejected, with the reason recorded there); WP3+WP4 →
 `scripts/pil_contract_verdict.py`. WP2's real-image validation gate **closed
 2026-08-20** — see
-[`runs/2026-08-20-phase2-real-validation/README.md`](../runs/2026-08-20-phase2-real-validation/README.md).
+[`runs/2026-08-20-phase2-real-validation/README.md`](https://github.com/bsmi021/pil-agent-plugin/blob/pil-agent-plugin--v0.9.3/runs/2026-08-20-phase2-real-validation/README.md).
 One gate remains open and is stated in the bundle: the alpha foreground path is
 uncalibrated (every calibration and validation image is opaque).
 

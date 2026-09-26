@@ -1,6 +1,0 @@
-{
-  "invariant": [
-    "layout.composition_preserved",
-    "identity.silhouette_preserved"
-  ]
-}
