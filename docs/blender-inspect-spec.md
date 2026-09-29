@@ -56,6 +56,8 @@ scenes. `pil-agent-plugin` stays the image-measurement plugin and gains concept-
 - Workbench `shading.light` in {`STUDIO`, `MATCAP`, `FLAT`}; `cavity_type` in {`WORLD`, `SCREEN`,
   `BOTH`}; matcaps are `preferences.studio_lights` with `type == "MATCAP"` (e.g.
   `check_gradient.exr`, `basic_1.exr`...). Confirm they load under `--factory-startup`.
+- Flipped faces are **invisible** in ordinary shading; with Workbench `shading.show_backface_culling = True` a
+  flipped face disappears and exposes the interior (verified: `spike/probe3.py`, `spike/flip_matcap_culled.png`).
 - bmesh checks that detected planted defects: `edge.is_manifold`/`is_boundary`/`is_wire`,
   loose verts, `bmesh.ops.find_doubles`, face-flip count via `recalc_face_normals` on a **copy**
   (count `min(flips, faces - flips)`), `BVHTree.FromBMesh(bm).overlap(self)` with pairs sharing a
@@ -107,7 +109,7 @@ scenes. `pil-agent-plugin` stays the image-measurement plugin and gains concept-
 | ID | Requirement |
 |---|---|
 | FR-REN-01 | `blender_inspect_render.py <scene.blend> --views <manifest> --modes ...` renders each view with a **perspective** camera option (`--projection` (`perspective` or `orthographic`), `--lens`), including named 3/4 orbit presets (`front-left-high`, `front-right-high`, `back-left-high`, `back-right-high`) plus the existing arbitrary direction/up manifest. Locked framing across modes. |
-| FR-REN-02 | Modes: `matcap` (Workbench MATCAP, cavity BOTH with ridge/valley emphasis), `depth` (EEVEE Depth pass -> colourised heatmap PNG with a numeric legend of near/far distances in scene units, plus raw float32 `.npy` and multilayer `.exr`), `normal` (EEVEE Normal pass -> RGB-encoded PNG + `.npy`), `ao` (EEVEE AO pass PNG), `object-id` (Cryptomatte or object-index mask PNG + JSON colour->object map). |
+| FR-REN-02 | Modes: `matcap` (Workbench MATCAP, cavity BOTH with ridge/valley emphasis, `show_backface_culling` on so flipped faces render as holes), `depth` (EEVEE Depth pass -> colourised heatmap PNG with a numeric legend of near/far distances in scene units, plus raw float32 `.npy` and multilayer `.exr`), `normal` (EEVEE Normal pass -> RGB-encoded PNG + `.npy`), `ao` (EEVEE AO pass PNG), `object-id` (Cryptomatte or object-index mask PNG + JSON colour->object map). |
 | FR-REN-03 | Payload lists every file per view and mode, the camera matrix, projection, lens, near/far depth, and background mask coverage. Missing geometry in a view -> `RENDER_BLOCKED` for that view without dropping it. |
 | AC-REN-01 | On the defect fixture, the worker inspects the matcap and normal renders and records in `EVIDENCE.md` that the flipped face and the self-intersecting quad are visible (with the image paths). | EVIDENCE.md + PNGs |
 | AC-REN-02 | Depth `.npy` values at the fixture's known object centres match the camera distance within 1% (test, Blender-gated). | pytest |
