@@ -536,6 +536,47 @@ def test_real_model_diagnose(capsys):
     assert code == 0 and len(payload["model_sha256"]) == 64
 
 
+@needs_real_model
+def test_real_model_estimate_is_relative_inverse_depth_with_bright_near(tmp_path, capsys):
+    # A bright disc on a dark ground, with a lower-half "floor" gradient: the model
+    # must return a finite HxW map at the image size and rank the nearer floor above the top.
+    h, w = 224, 336
+    img = np.zeros((h, w, 3), np.uint8)
+    img[:] = (70, 70, 75)
+    yy = np.linspace(0.3, 1.0, h // 2, dtype=np.float32)
+    img[h // 2:] = (yy[:, None, None] * np.array([200, 170, 130])).astype(np.uint8)
+    image = tmp_path / "scene.png"
+    Image.fromarray(img).save(image)
+    code, payload, _ = run(capsys, "estimate", image, "--model", REAL_MODEL, "--output-dir", tmp_path / "out")
+    assert code == 0
+    depth = np.load(payload["files"]["npy"])
+    assert depth.shape == (h, w) and depth.dtype == np.float32 and np.isfinite(depth).all()
+    assert payload["metric"] is False and payload["depth_kind"] == "relative_inverse_depth"
+    assert payload["parameters"]["fed_size"][0] % 14 == 0 and payload["parameters"]["fed_size"][1] % 14 == 0
+    assert depth[-h // 8:].mean() > depth[:h // 8].mean()  # larger = nearer: the floor foreground beats the wall top
+    if payload["engine"]["model_sha256"] in pil_depth.KNOWN_MODELS:
+        assert payload["flags"] == [] and payload["engine"]["model_known"] is True
+
+
+def test_known_models_are_full_sha256_digests_with_a_note():
+    for digest, note in pil_depth.KNOWN_MODELS.items():
+        assert len(digest) == 64 and set(digest) <= set("0123456789abcdef")
+        assert "Depth Anything V2 Small" in note and "Apache-2.0" in note
+
+
+def test_verified_model_sha_clears_the_unverified_flag(monkeypatch, capsys, tmp_path, model):
+    install_fake_runtime(monkeypatch, shape=(1, 3, 518, 518))
+    import hashlib
+    digest = hashlib.sha256(model.read_bytes()).hexdigest()
+    monkeypatch.setitem(pil_depth.KNOWN_MODELS, digest, "Depth Anything V2 Small test entry (Apache-2.0)")
+    image = tmp_path / "i.png"
+    Image.fromarray(np.full((40, 60, 3), 90, np.uint8)).save(image)
+    code, payload, _ = run(capsys, "estimate", image, "--model", model, "--output-dir", tmp_path / "o")
+    assert code == 0
+    assert payload["flags"] == [] and payload["engine"]["model_known"] is True
+    assert payload["engine"]["model_note"].startswith("Depth Anything V2 Small")
+
+
 # ------------------------------------------------ bootstrap / catalog / docs
 
 

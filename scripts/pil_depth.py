@@ -73,7 +73,12 @@ DEFAULT_PREPROCESSING_PROFILE = "depth-anything-v2"
 
 # sha256 of model files this repository has actually run. Anything else is
 # reported as unverified. Filled in from real smoke runs (never guessed).
-KNOWN_MODELS = {}
+KNOWN_MODELS = {
+    "afb6a5c28f3b6bf1618c6e43f02073ef9dfdc70e937502d51603e57b0a1df10c": (
+        "Depth Anything V2 Small, fp32 ONNX (onnx-community/depth-anything-v2-small "
+        "onnx/model.onnx, Apache-2.0); ran the AC-MDE-02 smoke on a real concept image"
+    ),
+}
 
 DEPTH_KIND = "relative_inverse_depth"
 
