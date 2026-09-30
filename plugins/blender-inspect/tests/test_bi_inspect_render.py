@@ -21,6 +21,7 @@ except ImportError:  # only the Blender-gated render tests need it
 HERE = Path(__file__).resolve().parent
 SCRIPTS = HERE.parent / "scripts"
 BUILDER = HERE / "fixtures" / "build_render_scene.py"
+DEFECT_BUILDER = HERE / "fixtures" / "build_defect_scene.py"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
@@ -32,14 +33,15 @@ BLENDER, _ = blender_common.resolve_blender_executable()
 needs_blender = pytest.mark.skipif(BLENDER is None, reason="Blender is not installed")
 
 
-def _load_builder():
-    spec = importlib.util.spec_from_file_location("bi_build_render_scene", BUILDER)
+def _load_builder(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-builder = _load_builder()
+builder = _load_builder("bi_build_render_scene", BUILDER)
+defects = _load_builder("bi_build_defect_scene", DEFECT_BUILDER)
 
 
 def _png_with_text_chunk(path):
@@ -233,7 +235,9 @@ def test_probe_uses_the_settings_the_spec_names():
 
     assert 'shading.light = "MATCAP"' in body
     assert 'shading.cavity_type = "BOTH"' in body
-    assert "cavity_ridge_factor" in body and "cavity_valley_factor" in body
+    for factor in ("cavity_ridge_factor", "cavity_valley_factor", "curvature_ridge_factor", "curvature_valley_factor"):
+        assert f'shading.{factor} = PARAMS["{factor}"]' in body      # both halves of BOTH get emphasis
+        assert R.probe_params([], [], Path("."), "perspective", 50, 64, 64, 0.1)[factor] > 1.0
     assert "shading.show_backface_culling = True" in body
     assert 'BLENDER_WORKBENCH' in body and 'BLENDER_EEVEE' in body
     assert 'OPEN_EXR_MULTILAYER' in body
@@ -398,6 +402,46 @@ def test_depth_at_each_object_centre_matches_the_camera_distance_within_one_perc
     assert checked >= 2, "each sphere must be unobstructed at its centre in at least two views"
 
 
+# The tests below use objects of the planted-defect fixture whose known centre is the middle of
+# a closed, axis-aligned box or sphere. PairC's mesh is a cube shifted by (1, 1, 1) from its origin.
+@pytest.fixture(scope="module")
+def defect_renders(tmp_path_factory):
+    if BLENDER is None:
+        pytest.skip("Blender is not installed")
+    if np is None:
+        pytest.skip("numpy is not installed")
+    out = tmp_path_factory.mktemp("defect_scene")
+    blend = out / "defects.blend"
+    subprocess.run(
+        [BLENDER, "--factory-startup", "--background", "--python-exit-code", "1", "--python", str(DEFECT_BUILDER), "--", str(blend)],
+        check=True, capture_output=True, text=True, timeout=300,
+    )
+    return _render(blend, out / "renders", "--views", *SPHERE_VIEWS, "--modes", "depth", "object-id", "--width", "1024", "--height", "1024")
+
+
+@needs_blender
+@pytest.mark.parametrize("name", ["CleanCube", "WireEdges", "FlippedFaces", "PiercedCube", "PoleSphere", "PairC"])
+def test_depth_at_the_defect_fixtures_object_centres_matches_the_camera_distance_within_one_percent(defect_renders, name):
+    """AC-REN-02 on the planted-defect fixture, whole scene in frame. The pixel is where the
+    object's known centre (`LOCATIONS`) projects; the expected value is the planar distance from
+    the camera to that centre. The surface sits 1 to 1.7 units in front of the centre along the
+    ray and the scene is 150 to 260 units deep, so the two agree to within 1%."""
+    import blender_render_kernels as K
+
+    centre = np.array(defects.LOCATIONS[name], dtype=float) + (np.ones(3) if name == "PairC" else 0.0)
+    checked = 0
+    for view in defect_renders["views"]:
+        px, py, expected = _pixel_and_planar_depth(view, centre, 1024, 1024)
+        mapping = json.loads(Path(view["files"]["object-id"]["json"]).read_text(encoding="utf-8"))
+        colour = {o["name"]: o["rgb"] for o in mapping["objects"]}[name]
+        if K.read_png(view["files"]["object-id"]["png"])[py, px].tolist() != colour:
+            continue          # another object covers this one's centre in this view
+        depth = np.load(view["files"]["depth"]["npy"])[py, px]
+        assert depth == pytest.approx(expected, rel=0.01), (view["name"], depth, expected)
+        checked += 1
+    assert checked >= 2
+
+
 @needs_blender
 def test_object_id_masks_use_the_json_colour_map_and_cover_each_object(sphere_renders):
     import blender_render_kernels as K
@@ -461,7 +505,8 @@ def test_matcap_metadata_is_stripped_and_the_settings_are_reported(sphere_render
     matcap = payload["matcap"]
 
     assert matcap["cavity_type"] == "BOTH" and matcap["backface_culling"] is True
-    assert matcap["cavity_ridge_factor"] > 0 and matcap["cavity_valley_factor"] > 0
+    for factor in ("cavity_ridge_factor", "cavity_valley_factor", "curvature_ridge_factor", "curvature_valley_factor"):
+        assert matcap[factor] > 1.0
     assert matcap["studio_light"].endswith(".exr")
     for view in payload["views"]:
         data = Path(view["files"]["matcap"]["png"]).read_bytes()

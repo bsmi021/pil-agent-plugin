@@ -64,8 +64,13 @@ PRESETS = {
 }
 
 MATCAP_PREFERENCE = "clay_studio.exr"
+# Cavity type BOTH draws both halves, and each half has its own ridge and valley
+# factors: `cavity_*` for the screen-space half, `curvature_*` for the world-space
+# half. Blender's default for every one of them is 1.0; the tool emphasises both.
 CAVITY_RIDGE_FACTOR = 1.5
 CAVITY_VALLEY_FACTOR = 1.5
+CURVATURE_RIDGE_FACTOR = 1.5
+CURVATURE_VALLEY_FACTOR = 1.5
 
 INTERPRETATION_LIMITS = [
     "Depth is planar z-depth: the distance along the camera's forward axis to the visible surface, not the distance from the camera centre. It is in scene units.",
@@ -357,8 +362,8 @@ def render_matcap(scene, camera, path):
     shading.cavity_type = "BOTH"
     shading.cavity_ridge_factor = PARAMS["cavity_ridge_factor"]
     shading.cavity_valley_factor = PARAMS["cavity_valley_factor"]
-    shading.curvature_ridge_factor = 0.0
-    shading.curvature_valley_factor = 0.0
+    shading.curvature_ridge_factor = PARAMS["curvature_ridge_factor"]
+    shading.curvature_valley_factor = PARAMS["curvature_valley_factor"]
     shading.show_backface_culling = True
     shading.show_object_outline = False
     shading.show_shadows = False
@@ -449,6 +454,8 @@ def main():
             "cavity_type": "BOTH",
             "cavity_ridge_factor": PARAMS["cavity_ridge_factor"],
             "cavity_valley_factor": PARAMS["cavity_valley_factor"],
+            "curvature_ridge_factor": PARAMS["curvature_ridge_factor"],
+            "curvature_valley_factor": PARAMS["curvature_valley_factor"],
             "backface_culling": True,
         }
     id_by_bits = {K.cryptomatte_id_bits(name): name for name in visible}
@@ -587,6 +594,8 @@ def probe_params(views, modes, output_dir: Path, projection, lens, width, height
         "matcap": MATCAP_PREFERENCE,
         "cavity_ridge_factor": CAVITY_RIDGE_FACTOR,
         "cavity_valley_factor": CAVITY_VALLEY_FACTOR,
+        "curvature_ridge_factor": CURVATURE_RIDGE_FACTOR,
+        "curvature_valley_factor": CURVATURE_VALLEY_FACTOR,
         "ao_samples": 32,
     }
 
