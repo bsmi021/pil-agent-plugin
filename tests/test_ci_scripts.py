@@ -252,10 +252,11 @@ def _version(plugin_dir):
 
 
 def _notes(*args, cwd=REPO_ROOT):
-    import os
+    # The allowlisted tool environment (no GITHUB_REPOSITORY, so the link uses
+    # the default repository), with UTF-8 forced as release.yml's runner has it.
+    from pil_environment import tool_environment
 
-    env = dict(os.environ, PYTHONIOENCODING="utf-8")
-    env.pop("GITHUB_REPOSITORY", None)
+    env = {**tool_environment(), "PYTHONIOENCODING": "utf-8"}
     return subprocess.run(
         [sys.executable, str(RELEASE_NOTES), *args],
         cwd=cwd,
