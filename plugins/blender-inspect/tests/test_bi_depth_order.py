@@ -485,14 +485,20 @@ def _pair_by_names(view, one, other):
 
 
 def _to_camera_frame(view, points):
-    """``(planar depth, ndc-free camera x, camera y)`` of world points from the payload's camera."""
+    """``(planar depth, camera x, camera y)`` of world points from the payload's camera."""
     matrix = np.array(view["camera"]["matrix_world"])
     local = (np.linalg.inv(matrix) @ np.c_[np.asarray(points, dtype=float), np.ones(len(points))].T).T
     return -local[:, 2], local[:, 0], local[:, 1]
 
 
+def _forward(view):
+    """The camera's forward unit vector in world space (it looks down its local -Z)."""
+    return -np.array(view["camera"]["matrix_world"])[:3, 2]
+
+
 def _oracle_depth(view, name, width, height):
-    """Per-pixel planar depth of an axis-aligned box, by slab intersection from the payload's camera."""
+    """Per-pixel planar depth of a box, by slab intersection in the box's own frame,
+    from the payload's camera. Independent of the tool's renders."""
     cam = view["camera"]
     matrix = np.array(cam["matrix_world"])
     tan_x, tan_y = math.tan(math.radians(cam["fov_x_degrees"]) / 2), math.tan(math.radians(cam["fov_y_degrees"]) / 2)
@@ -501,10 +507,13 @@ def _oracle_depth(view, name, width, height):
     local = np.stack([ndc_x * tan_x, ndc_y * tan_y, -np.ones_like(ndc_x)], axis=-1)
     direction = local @ matrix[:3, :3].T
     origin = matrix[:3, 3]
+    frame = np.array([boxes.AXIS_T, boxes.AXIS_N, boxes.AXIS_Z])           # rows: the box's axes in world space
     centre = np.array(boxes.BOXES[name])
-    lo, hi = centre - boxes.HALF, centre + boxes.HALF
+    box_direction = direction @ frame.T
+    box_origin = frame @ (origin - centre)
+    half = np.array(boxes.HALF)
     with np.errstate(divide="ignore", invalid="ignore"):
-        t1, t2 = (lo - origin) / direction, (hi - origin) / direction
+        t1, t2 = (-half - box_origin) / box_direction, (half - box_origin) / box_direction
     t_near = np.minimum(t1, t2).max(axis=-1)
     t_far = np.maximum(t1, t2).min(axis=-1)
     hit = t_far >= np.maximum(t_near, 0.0)
@@ -525,8 +534,36 @@ def _oracle_pair(view, one, other, width, height):
     }
 
 
-NAMES = list(boxes.BOXES)
 PAIRS = [("BoxA", "BoxB"), ("BoxB", "BoxC"), ("BoxA", "BoxC")]
+VIEW_NAMES = ["front", "side", "front-left-high"]
+# Nearest first. The camera is on -Y for `front`, on +X for `side`, and above front-left for the 3/4 view.
+NEAREST_FIRST = {"front": ["BoxA", "BoxB", "BoxC"], "side": ["BoxC", "BoxB", "BoxA"], "front-left-high": ["BoxA", "BoxB", "BoxC"]}
+
+
+def _expected_front(view_name, one, other):
+    order = NEAREST_FIRST[view_name]
+    return one if order.index(one) < order.index(other) else other
+
+
+# --- the fixture itself (no Blender needed) ------------------------------------------------------------
+
+
+def test_the_stacked_boxes_are_pairwise_disjoint_along_their_common_normal():
+    """Guards the fixture: boxes that intersect make 'which is in front' ambiguous per pixel."""
+    assert boxes.SPACING > boxes.THICKNESS
+    intervals = {}
+    for name in boxes.BOXES:
+        along_n = [sum(c * a for c, a in zip(corner, boxes.AXIS_N)) for corner in boxes.box_corners(name)]
+        intervals[name] = (min(along_n), max(along_n))
+        assert max(along_n) - min(along_n) == pytest.approx(boxes.THICKNESS)
+    ordered = sorted(intervals.values())
+    assert all(low_next - high > 0.1 for (_, high), (low_next, _) in zip(ordered, ordered[1:]))
+
+
+def test_the_box_corners_are_the_boxes_local_corners_turned_into_world_space():
+    for name in boxes.BOXES:
+        local = sorted(tuple(round(abs(v), 9) for v in boxes.to_local(name, corner)) for corner in boxes.box_corners(name))
+        assert set(local) == {boxes.HALF}
 
 
 @needs_blender
@@ -535,11 +572,11 @@ def test_the_payload_validates_against_the_schema(stacked):
 
     jsonschema.validate(stacked, json.loads(SCHEMA_PATH.read_text(encoding="utf-8")))
     assert stacked["status"] == "OK" and stacked["schema"] == "depth-order-v1"
-    assert [v["name"] for v in stacked["views"]] == ["front", "side", "front-left-high"]
+    assert [v["name"] for v in stacked["views"]] == VIEW_NAMES
 
 
 @needs_blender
-@pytest.mark.parametrize("view_name", ["front", "side", "front-left-high"])
+@pytest.mark.parametrize("view_name", VIEW_NAMES)
 def test_every_object_reports_its_exact_depth_range_and_screen_box(stacked, view_name):
     view = _view(stacked, view_name)
     width, height = view["coverage"]["width"], view["coverage"]["height"]
@@ -560,7 +597,7 @@ def test_every_object_reports_its_exact_depth_range_and_screen_box(stacked, view
 
 
 @needs_blender
-@pytest.mark.parametrize("view_name", ["front", "side", "front-left-high"])
+@pytest.mark.parametrize("view_name", VIEW_NAMES)
 def test_visible_pixels_come_from_the_object_id_pass_and_partition_the_foreground(stacked, view_name):
     view = _view(stacked, view_name)
 
@@ -569,40 +606,33 @@ def test_visible_pixels_come_from_the_object_id_pass_and_partition_the_foregroun
 
 
 @needs_blender
-@pytest.mark.parametrize("view_name", ["front", "side", "front-left-high"])
-def test_every_pair_overlaps_and_none_is_a_tie(stacked, view_name):
+@pytest.mark.parametrize("view_name", VIEW_NAMES)
+def test_every_pair_overlaps_on_screen_in_every_view(stacked, view_name):
     view = _view(stacked, view_name)
 
-    assert len(view["pairs"]) == 3                       # the fixture overlaps every pair in every view
-    assert all(p["method"] == "passes" and p["overlap_pixels"] > 0 for p in view["pairs"])
-    assert all(p["depth_gap"] > 0 and not p["tie"] for p in view["pairs"])
+    assert len(view["pairs"]) == 3
+    assert all(p["method"] == "passes" and p["overlap_pixels"] > 0 and p["depth_gap"] > 0 and not p["tie"] for p in view["pairs"])
 
 
 @needs_blender
-@pytest.mark.parametrize("view_name, expected", [
-    # front view, camera on -Y: BoxA is nearest, the boxes' front faces are 1.2 apart along Y.
-    ("front", {("BoxA", "BoxB"): ("BoxA", 1.2), ("BoxB", "BoxC"): ("BoxB", 1.2), ("BoxA", "BoxC"): ("BoxA", 2.4)}),
-    # side view, camera on +X: the order flips, and the front faces are 1.0 apart along X.
-    ("side", {("BoxA", "BoxB"): ("BoxB", 1.0), ("BoxB", "BoxC"): ("BoxC", 1.0), ("BoxA", "BoxC"): ("BoxC", 2.0)}),
-])
-def test_axis_aligned_views_give_exact_front_objects_and_gaps(stacked, view_name, expected):
+@pytest.mark.parametrize("view_name", VIEW_NAMES)
+def test_ordering_is_exact_and_never_interleaves_for_disjoint_boxes(stacked, view_name):
     view = _view(stacked, view_name)
 
-    for pair_names, (front, gap) in expected.items():
-        pair = _pair_by_names(view, *pair_names)
-        assert pair["front"] == front
-        assert pair["depth_gap"] == pytest.approx(gap, abs=1e-4)
-        assert pair["depth_gap_min"] == pytest.approx(gap, abs=1e-4) and pair["depth_gap_max"] == pytest.approx(gap, abs=1e-4)
-        assert pair["front_fraction"] == 1.0
-        # The geometric gap is negative: the boxes are taller in depth than they are apart.
-        front_far = next(o for o in view["objects"] if o["name"] == front)["depth_range"]["far"]
-        back = pair["back"]
-        back_near = next(o for o in view["objects"] if o["name"] == back)["depth_range"]["near"]
-        assert pair["range_gap"] == pytest.approx(back_near - front_far, abs=1e-4)
+    for one, other in PAIRS:
+        pair = _pair_by_names(view, one, other)
+        front = _expected_front(view_name, one, other)
+        assert (pair["front"], pair["back"]) == (front, other if front == one else one)
+        # Disjoint convex solids: a separating plane means the front box is nearer at every shared pixel.
+        assert pair["front_fraction"] == 1.0 and pair["depth_gap_min"] > 0
+        # The geometric gap is the vertex-extent difference along the view axis, exactly.
+        near_back = next(o for o in view["objects"] if o["name"] == pair["back"])["depth_range"]["near"]
+        far_front = next(o for o in view["objects"] if o["name"] == pair["front"])["depth_range"]["far"]
+        assert pair["range_gap"] == pytest.approx(near_back - far_front, abs=1e-4)
 
 
 @needs_blender
-@pytest.mark.parametrize("view_name", ["front", "side", "front-left-high"])
+@pytest.mark.parametrize("view_name", VIEW_NAMES)
 def test_pairs_match_an_independent_ray_cast_of_the_fixture_in_every_view(stacked, view_name):
     view = _view(stacked, view_name)
     width, height = view["coverage"]["width"], view["coverage"]["height"]
@@ -613,26 +643,32 @@ def test_pairs_match_an_independent_ray_cast_of_the_fixture_in_every_view(stacke
         assert (pair["front"], pair["back"]) == (oracle["front"], oracle["back"])
         assert pair["depth_gap"] == pytest.approx(oracle["gap"], abs=2e-3)
         assert pair["overlap_fraction_of_front"] == pytest.approx(oracle["overlap_of_front"], abs=0.01)
-        assert pair["front_fraction"] == pytest.approx(oracle["front_fraction"], abs=0.02)
+        assert oracle["front_fraction"] == 1.0 == pair["front_fraction"]
 
 
 @needs_blender
-def test_the_three_quarter_view_orders_the_boxes_along_its_own_forward_axis(stacked):
-    view = _view(stacked, "front-left-high")
+def test_orthographic_gaps_equal_the_spacing_over_the_view_axis_component_along_the_stack(built, views_manifest):
+    payload = _report(built / "stacked.blend", "--views", str(views_manifest), "front-left-high", "--projection", "orthographic", "--width", "256", "--height", "256")
 
-    fronts = {frozenset((p["front"], p["back"])): p["front"] for p in view["pairs"]}
-    assert fronts == {frozenset(("BoxA", "BoxB")): "BoxA", frozenset(("BoxB", "BoxC")): "BoxB", frozenset(("BoxA", "BoxC")): "BoxA"}
-    ranges = {o["name"]: o["depth_range"] for o in view["objects"]}
-    assert ranges["BoxA"]["near"] < ranges["BoxB"]["near"] < ranges["BoxC"]["near"]
+    assert payload["parameters"]["projection"] == "orthographic" and payload["parameters"]["lens_mm"] is None
+    for view_name in VIEW_NAMES:
+        view = _view(payload, view_name)
+        cosine = abs(float(np.dot(_forward(view), boxes.AXIS_N)))
+        assert cosine > 0.5, "the stack must not be seen edge-on"
+        for one, other in PAIRS:
+            steps = abs(list(boxes.BOXES).index(one) - list(boxes.BOXES).index(other))
+            pair = _pair_by_names(view, one, other)
+            assert pair["front"] == _expected_front(view_name, one, other)
+            assert pair["depth_gap"] == pytest.approx(steps * boxes.SPACING / cosine, abs=1e-4)
+            assert pair["front_fraction"] == 1.0 and pair["depth_gap_max"] == pytest.approx(pair["depth_gap"], abs=1e-4)
 
 
 @needs_blender
 def test_every_pair_has_a_plain_language_summary_in_its_own_view(stacked):
-    view = _view(stacked, "front")
-    pair = _pair_by_names(view, "BoxB", "BoxC")
-
-    assert pair["summary"] == f"BoxB is 1.2 in front of BoxC in view front (overlap {round(pair['overlap_fraction_of_front'] * 100)}% of BoxB)"
-    assert all(p["summary"].startswith(f"{p['front']} is ") and " in view side " in p["summary"] for p in _view(stacked, "side")["pairs"])
+    for view_name in VIEW_NAMES:
+        for pair in _view(stacked, view_name)["pairs"]:
+            percent = round(pair["overlap_fraction_of_front"] * 100)
+            assert pair["summary"] == f"{pair['front']} is {pair['depth_gap']:.3g} in front of {pair['back']} in view {view_name} (overlap {percent}% of {pair['front']})"
 
 
 @needs_blender
@@ -644,29 +680,19 @@ def test_camera_and_framing_are_reported_and_locked(stacked):
 
 
 @needs_blender
-def test_orthographic_views_give_the_same_axis_aligned_gaps(built, views_manifest):
-    payload = _report(built / "stacked.blend", "--views", str(views_manifest), "--projection", "orthographic", "--width", "256", "--height", "256")
-
-    front = _pair_by_names(_view(payload, "front"), "BoxA", "BoxC")
-    side = _pair_by_names(_view(payload, "side"), "BoxA", "BoxC")
-    assert payload["parameters"]["projection"] == "orthographic" and payload["parameters"]["lens_mm"] is None
-    assert (front["front"], front["depth_gap"]) == ("BoxA", pytest.approx(2.4, abs=1e-4))
-    assert (side["front"], side["depth_gap"]) == ("BoxC", pytest.approx(2.0, abs=1e-4))
-
-
-@needs_blender
 def test_a_wire_only_object_falls_back_to_projected_vertices(built, views_manifest):
     payload = _report(built / "with_wire.blend", "--views", str(views_manifest), "--width", "256", "--height", "256")
     view = _view(payload, "front")
 
     wire = next(o for o in view["objects"] if o["name"] == boxes.WIRE_NAME)
+    wire_near = min(_to_camera_frame(view, boxes.WIRE_VERTS)[0])
     assert wire["method"] == "vertices" and wire["screen_pixels"] is None and wire["visible_pixels"] is None
-    # The wire object is 3 units in front of the front faces' plane's origin: y = -3 vs BoxA's face at y = -1.5.
-    assert wire["depth_range"]["near"] == pytest.approx(min(_to_camera_frame(view, boxes.WIRE_VERTS)[0]), abs=1e-4)
+    assert wire["depth_range"]["near"] == pytest.approx(wire_near, abs=1e-4)
     with_wire = [p for p in view["pairs"] if boxes.WIRE_NAME in (p["front"], p["back"])]
     assert with_wire and all(p["method"] == "vertices" and p["summary"].endswith("estimated from projected vertices") for p in with_wire)
     box_a = _pair_by_names(view, boxes.WIRE_NAME, "BoxA")
-    assert box_a["front"] == boxes.WIRE_NAME and box_a["depth_gap"] == pytest.approx(1.5, abs=1e-4)
+    box_a_near = min(_to_camera_frame(view, boxes.box_corners("BoxA"))[0])
+    assert box_a["front"] == boxes.WIRE_NAME and box_a["depth_gap"] == pytest.approx(box_a_near - wire_near, abs=1e-4)
     # The boxes among themselves are still measured from pixels.
     assert _pair_by_names(view, "BoxA", "BoxB")["method"] == "passes"
     jsonschema = pytest.importorskip("jsonschema")
@@ -686,7 +712,7 @@ def test_a_single_object_has_no_pairs_and_a_scene_without_faces_is_blocked(built
 
 
 @needs_blender
-def test_the_blend_file_is_left_untouched(built, views_manifest):
+def test_the_blend_file_is_left_untouched(built):
     blend = built / "stacked.blend"
     before = blend.read_bytes()
 
