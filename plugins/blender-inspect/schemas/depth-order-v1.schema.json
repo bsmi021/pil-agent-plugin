@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bsmi021/pil-agent-plugin/plugins/blender-inspect/schemas/depth-order-v1.schema.json",
+  "title": "blender_depth_order payload (depth-order-v1)",
+  "description": "Output of blender_depth_order.py: per view, each render-visible object's depth range along the view direction and screen bounding box, and every overlapping pair with its front object, depth gap, overlap fraction and a plain-language summary.",
+  "type": "object",
+  "required": [
+    "tool",
+    "version",
+    "schema",
+    "parameters",
+    "status",
+    "blender_version",
+    "visible_objects",
+    "objects_with_faces",
+    "views",
+    "interpretation_limits"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "tool": { "const": "blender_depth_order" },
+    "version": { "type": "string" },
+    "schema": { "const": "depth-order-v1" },
+    "parameters": {
+      "type": "object",
+      "required": ["blend", "views", "projection", "lens_mm", "width", "height", "margin"],
+      "additionalProperties": false,
+      "properties": {
+        "blend": { "type": "string" },
+        "views": { "type": "array", "items": { "type": "string" } },
+        "projection": { "enum": ["perspective", "orthographic"] },
+        "lens_mm": { "type": ["number", "null"] },
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "margin": { "type": "number" }
+      }
+    },
+    "status": { "enum": ["OK", "RENDER_BLOCKED"] },
+    "reason": { "type": "string" },
+    "blender_version": { "type": "string" },
+    "visible_objects": { "type": "array", "items": { "type": "string" } },
+    "objects_with_faces": { "type": "array", "items": { "type": "string" } },
+    "unit_system": { "type": "string" },
+    "unit_scale_length": { "type": "number" },
+    "scene": {
+      "type": "object",
+      "required": ["bounds_min", "bounds_max", "center", "radius"],
+      "additionalProperties": false,
+      "properties": {
+        "bounds_min": { "$ref": "#/$defs/vec3" },
+        "bounds_max": { "$ref": "#/$defs/vec3" },
+        "center": { "$ref": "#/$defs/vec3" },
+        "radius": { "type": "number" }
+      }
+    },
+    "framing": {
+      "type": "object",
+      "required": ["locked", "camera_distance", "ortho_scale", "lens_mm", "tie_tolerance"],
+      "additionalProperties": false,
+      "properties": {
+        "locked": { "const": true },
+        "camera_distance": { "type": "number" },
+        "ortho_scale": { "type": ["number", "null"] },
+        "lens_mm": { "type": ["number", "null"] },
+        "tie_tolerance": { "type": "number" }
+      }
+    },
+    "blocked_views": { "type": "array", "items": { "type": "string" } },
+    "views": { "type": "array", "items": { "$ref": "#/$defs/view" } },
+    "interpretation_limits": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "vec3": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "depth_range": {
+      "type": ["object", "null"],
+      "required": ["near", "far", "unit", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "near": { "type": "number" },
+        "far": { "type": "number" },
+        "unit": { "const": "scene units" },
+        "kind": { "type": "string" }
+      }
+    },
+    "screen_bbox": {
+      "type": ["object", "null"],
+      "required": ["x_min", "y_min", "x_max", "y_max"],
+      "additionalProperties": false,
+      "properties": {
+        "x_min": { "type": "number" },
+        "y_min": { "type": "number" },
+        "x_max": { "type": "number" },
+        "y_max": { "type": "number" }
+      }
+    },
+    "object": {
+      "type": "object",
+      "required": [
+        "name", "method", "depth_range", "screen_bbox", "screen_pixels",
+        "visible_pixels", "visible_fraction", "in_frame"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "method": { "enum": ["passes", "vertices", "none"] },
+        "depth_range": { "$ref": "#/$defs/depth_range" },
+        "screen_bbox": { "$ref": "#/$defs/screen_bbox" },
+        "screen_pixels": { "type": ["integer", "null"], "minimum": 0 },
+        "visible_pixels": { "type": ["integer", "null"], "minimum": 0 },
+        "visible_fraction": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "in_frame": { "type": "boolean" }
+      }
+    },
+    "pair": {
+      "type": "object",
+      "required": [
+        "front", "back", "method", "depth_gap", "depth_gap_min", "depth_gap_max",
+        "front_fraction", "tie", "range_gap", "overlap_pixels",
+        "overlap_fraction_of_front", "overlap_fraction_of_back", "summary"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "front": { "type": "string" },
+        "back": { "type": "string" },
+        "method": { "enum": ["passes", "vertices"] },
+        "depth_gap": { "type": "number", "minimum": 0 },
+        "depth_gap_min": { "type": ["number", "null"] },
+        "depth_gap_max": { "type": ["number", "null"] },
+        "front_fraction": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "tie": { "type": "boolean" },
+        "range_gap": { "type": "number" },
+        "overlap_pixels": { "type": ["integer", "null"], "minimum": 1 },
+        "overlap_fraction_of_front": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "overlap_fraction_of_back": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "summary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "required": [
+        "matrix_world", "projection", "distance_from_target", "sensor_width_mm", "sensor_fit",
+        "clip_start", "clip_end", "lens_mm", "ortho_scale", "fov_x_degrees", "fov_y_degrees"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "matrix_world": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4 },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "projection": { "enum": ["perspective", "orthographic"] },
+        "distance_from_target": { "type": "number" },
+        "sensor_width_mm": { "type": "number" },
+        "sensor_fit": { "type": "string" },
+        "clip_start": { "type": "number" },
+        "clip_end": { "type": "number" },
+        "lens_mm": { "type": ["number", "null"] },
+        "ortho_scale": { "type": ["number", "null"] },
+        "fov_x_degrees": { "type": ["number", "null"] },
+        "fov_y_degrees": { "type": ["number", "null"] }
+      }
+    },
+    "view": {
+      "type": "object",
+      "required": ["name", "status", "direction", "up", "objects", "pairs"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "enum": ["OK", "RENDER_BLOCKED"] },
+        "reason": { "type": "string" },
+        "direction": { "$ref": "#/$defs/vec3" },
+        "up": { "$ref": "#/$defs/vec3" },
+        "camera": { "$ref": "#/$defs/camera" },
+        "coverage": {
+          "type": "object",
+          "required": ["width", "height", "foreground_pixels", "foreground_fraction"],
+          "additionalProperties": false,
+          "properties": {
+            "width": { "type": "integer" },
+            "height": { "type": "integer" },
+            "foreground_pixels": { "type": "integer", "minimum": 0 },
+            "foreground_fraction": { "type": "number" },
+            "unmatched_foreground_pixels": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "objects": { "type": "array", "items": { "$ref": "#/$defs/object" } },
+        "pairs": { "type": "array", "items": { "$ref": "#/$defs/pair" } }
+      }
+    }
+  }
+}
