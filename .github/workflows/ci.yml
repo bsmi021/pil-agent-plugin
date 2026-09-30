@@ -41,9 +41,12 @@ jobs:
 
       # PIL_AGENT_EMBED_MODEL and PIL_AGENT_REFERENCE_IMAGE are deliberately
       # unset: those tests skip cleanly by design (model weights are pinned by
-      # sha256 and never bundled). Everything else must pass.
-      - name: Run the test suite
-        run: uv run --extra reconstruction --extra embedding pytest -q
+      # sha256 and never bundled). The runner has no Blender, so blender-inspect's
+      # Blender-dependent tests skip too. Everything else must pass, for both
+      # plugins: tests/ is pil-agent-plugin's, plugins/blender-inspect/tests
+      # is blender-inspect's.
+      - name: Run both plugins' test suites
+        run: uv run --extra reconstruction --extra embedding pytest -q tests plugins/blender-inspect/tests
 
   release-version:
     name: release version bumped
@@ -55,11 +58,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The manifests, every scripts/pil_*.py TOOL_VERSION and the marketplace
+      # Each plugin's manifests, its scripts' TOOL_VERSIONs and its marketplace
       # listing must agree -- tests/test_packaging_conformance.py enforces that
       # and runs in the job above. What it cannot see is a PR that ships new
-      # behaviour while leaving the version where it was, so the release
-      # workflow finds nothing to tag on merge. This job catches exactly that.
+      # behaviour in a plugin while leaving that plugin's version where it was,
+      # so the release workflow finds nothing to tag on merge. This job catches
+      # exactly that, for each plugin independently.
       - name: Require a version bump when shipped code changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}

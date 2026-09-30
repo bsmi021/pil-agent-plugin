@@ -1,8 +1,10 @@
 name: Release
 
-# Fires after a merge into main. If the version in the plugin manifest has a
-# tag already, this is a no-op; otherwise it tags the merge commit and cuts a
-# GitHub Release whose notes are the matching Status entry from README.md.
+# Fires after a merge into main. The marketplace lists more than one plugin
+# and each is released on its own tag, so this tags and releases every listed
+# plugin whose current version has no tag yet; when all are tagged it is a
+# no-op. Each release's notes and title are the matching Status entry from
+# that plugin's own README.md.
 on:
   push:
     branches: [main]
@@ -25,68 +27,64 @@ jobs:
           fetch-depth: 0
 
       # Tags in this repository are named "<plugin name>--v<version>"
-      # (pil-agent-plugin--v0.6.0 and back through v0.2.0), so the generated
-      # tag has to match or releases stop sorting together.
-      - name: Read the manifest version
-        id: version
+      # (pil-agent-plugin--v0.6.0 and back through v0.2.0; blender-inspect--v0.1.0
+      # onwards), so the generated tags have to match or releases stop sorting
+      # together. release_plan.py prints one tab-separated line per plugin whose
+      # tag is missing: name, version, tag, README path.
+      - name: Plan the releases
+        id: plan
         run: |
-          VERSION="$(python -c 'import json;print(json.load(open(".claude-plugin/plugin.json"))["version"])')"
-          NAME="$(python -c 'import json;print(json.load(open(".claude-plugin/plugin.json"))["name"])')"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=$NAME--v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Manifest version: $VERSION (tag $NAME--v$VERSION)"
-
-      - name: Skip if this version is already released
-        id: check
-        run: |
-          if git rev-parse -q --verify "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null; then
-            echo "already=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::${{ steps.version.outputs.tag }} already exists; nothing to release."
+          python .github/scripts/release_plan.py > RELEASE_PLAN.tsv
+          cat RELEASE_PLAN.tsv
+          if [ -s RELEASE_PLAN.tsv ]; then
+            echo "pending=true" >> "$GITHUB_OUTPUT"
           else
-            echo "already=false" >> "$GITHUB_OUTPUT"
+            echo "pending=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Every marketplace plugin's version is already tagged; nothing to release."
           fi
 
       # Never tag a version the repo does not agree on: the conformance suite
-      # checks the four manifests, the marketplace listing and every shipped
-      # tool's TOOL_VERSION against each other.
+      # checks every plugin's four manifests, its marketplace listing and each
+      # shipped tool's TOOL_VERSION against each other.
       - name: Install uv
-        if: steps.check.outputs.already == 'false'
+        if: steps.plan.outputs.pending == 'true'
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
 
       - name: Verify packaging conformance before tagging
-        if: steps.check.outputs.already == 'false'
+        if: steps.plan.outputs.pending == 'true'
         run: |
           uv sync --locked
           uv run pytest -q tests/test_packaging_conformance.py
 
-      # Both the notes and the title come from the one Status entry, so a
-      # generated release reads like the hand-written ones before it
-      # ("0.5.0 — Phase 3 complete"), not like a bare tag name.
-      - name: Extract release notes and title from README Status
-        id: notes
-        if: steps.check.outputs.already == 'false'
+      # Both the notes and the title come from the one Status entry in that
+      # plugin's README, so a generated release reads like the hand-written
+      # ones before it ("0.5.0 — Phase 3 complete"), not like a bare tag name.
+      # Every plugin's notes are extracted before any tag is pushed, so a
+      # missing Status entry stops the run with nothing half-released.
+      - name: Extract release notes and titles from each README Status
+        if: steps.plan.outputs.pending == 'true'
         run: |
-          python .github/scripts/release_notes.py \
-            "${{ steps.version.outputs.version }}" > RELEASE_NOTES.md
-          TITLE="$(python .github/scripts/release_notes.py --title \
-            "${{ steps.version.outputs.version }}")"
-          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
-          echo "Release title: $TITLE"
-          cat RELEASE_NOTES.md
+          while IFS=$'\t' read -r NAME VERSION TAG README; do
+            python .github/scripts/release_notes.py --readme "$README" "$VERSION" > "RELEASE_NOTES-$TAG.md"
+            python .github/scripts/release_notes.py --title --readme "$README" "$VERSION" > "RELEASE_TITLE-$TAG.txt"
+            echo "$TAG: $(cat "RELEASE_TITLE-$TAG.txt")"
+            cat "RELEASE_NOTES-$TAG.md"
+          done < RELEASE_PLAN.tsv
 
-      - name: Create the tag and the release
-        if: steps.check.outputs.already == 'false'
+      - name: Create the tags and the releases
+        if: steps.plan.outputs.pending == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Release $TAG"
-          git push origin "$TAG"
-          gh release create "$TAG" \
-            --title "${{ steps.notes.outputs.title }}" \
-            --notes-file RELEASE_NOTES.md \
-            --verify-tag
+          while IFS=$'\t' read -r NAME VERSION TAG README; do
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+            gh release create "$TAG" \
+              --title "$(cat "RELEASE_TITLE-$TAG.txt")" \
+              --notes-file "RELEASE_NOTES-$TAG.md" \
+              --verify-tag
+          done < RELEASE_PLAN.tsv

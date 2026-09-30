@@ -232,3 +232,169 @@ def test_path_ownership_uses_the_longest_source_prefix():
         ["plugins/blender-inspect/scripts/b.py", "plugins/other/scripts/c.py", "pyproject.toml"],
         plugins,
     ) == {"root": ["pyproject.toml"], "bi": ["plugins/blender-inspect/scripts/b.py"]}
+
+
+# --- release_notes.py: notes and title from a given plugin README -------------
+
+RELEASE_NOTES = CI_SCRIPTS / "release_notes.py"
+RELEASE_PLAN = CI_SCRIPTS / "release_plan.py"
+MARKET_PLUGINS = [
+    (entry["name"], REPO_ROOT / entry["source"])
+    for entry in json.loads(
+        (REPO_ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8")
+    )["plugins"]
+]
+
+
+def _version(plugin_dir):
+    manifest = plugin_dir / ".claude-plugin" / "plugin.json"
+    return json.loads(manifest.read_text(encoding="utf-8"))["version"]
+
+
+def _notes(*args, cwd=REPO_ROOT):
+    import os
+
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    env.pop("GITHUB_REPOSITORY", None)
+    return subprocess.run(
+        [sys.executable, str(RELEASE_NOTES), *args],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+    )
+
+
+@pytest.mark.parametrize("name,plugin_dir", MARKET_PLUGINS, ids=[n for n, _ in MARKET_PLUGINS])
+def test_release_notes_exist_for_each_plugins_current_version(name, plugin_dir):
+    version = _version(plugin_dir)
+    readme = (plugin_dir / "README.md").resolve()
+
+    notes = _notes("--readme", str(readme), version)
+    heading = _notes("--title", "--readme", str(readme), version)
+
+    assert notes.returncode == 0, notes.stderr
+    assert notes.stdout.startswith(f"**{version} \u2014 ")
+    assert notes.stdout.rstrip().endswith(f"/commits/{name}--v{version}")
+    assert heading.returncode == 0, heading.stderr
+    assert heading.stdout.startswith(f"{version} \u2014 ")
+
+
+def test_release_notes_default_to_the_root_readme():
+    version = _version(REPO_ROOT)
+
+    notes = _notes(version)
+
+    assert notes.returncode == 0, notes.stderr
+    assert notes.stdout.rstrip().endswith(f"/commits/pil-agent-plugin--v{version}")
+
+
+def test_release_notes_refuse_a_version_without_a_status_entry():
+    readme = REPO_ROOT / "plugins" / "blender-inspect" / "README.md"
+
+    notes = _notes("--readme", str(readme), "9.9.9")
+    heading = _notes("--title", "--readme", str(readme), "9.9.9")
+
+    assert notes.returncode == 1 and notes.stdout == ""
+    assert "No `## Status` entry for 9.9.9" in notes.stderr
+    assert heading.returncode == 1
+
+
+def test_release_notes_stop_at_the_next_entry(tmp_path):
+    (tmp_path / ".claude-plugin").mkdir()
+    (tmp_path / ".claude-plugin" / "plugin.json").write_text(_manifest("demo", "0.2.0"))
+    readme = tmp_path / "README.md"
+    readme.write_text(
+        "# demo\n\n## Status\n\n**0.2.0 \u2014 second.** Two.\n\n"
+        "**0.1.0 \u2014 first.** One.\n\n## License\n",
+        encoding="utf-8",
+    )
+
+    notes = _notes("--readme", str(readme), "0.1.0")
+    heading = _notes("--title", "--readme", str(readme), "0.2.0")
+
+    assert notes.stdout.startswith("**0.1.0 \u2014 first.** One.\n\nFull diff:")
+    assert notes.stdout.rstrip().endswith("/commits/demo--v0.1.0")
+    assert heading.stdout.strip() == "0.2.0 \u2014 Second"
+
+
+# --- release_plan.py: release.yml's tag loop ---------------------------------
+
+
+def _import(name):
+    sys.path.insert(0, str(CI_SCRIPTS))
+    try:
+        return __import__(name)
+    finally:
+        sys.path.remove(str(CI_SCRIPTS))
+
+
+def test_release_plan_yields_one_tag_per_marketplace_plugin():
+    plan = _import("release_plan").releases(REPO_ROOT)
+
+    assert [(name, tag) for name, _, tag, _ in plan] == [
+        (name, f"{name}--v{_version(d)}") for name, d in MARKET_PLUGINS
+    ]
+    assert [readme for *_, readme in plan] == ["README.md", "plugins/blender-inspect/README.md"]
+
+
+def test_release_plan_skips_plugins_whose_tag_exists():
+    release_plan = _import("release_plan")
+    plan = release_plan.releases(REPO_ROOT)
+    root_tag = plan[0][2]
+
+    assert release_plan.pending(plan, []) == plan
+    assert release_plan.pending(plan, [root_tag, "v0.7.0"]) == plan[1:]
+    assert release_plan.pending(plan, [tag for _, _, tag, _ in plan]) == []
+
+
+def test_dry_simulation_of_the_tag_loop_yields_both_tags():
+    """The CLI with --all is what release.yml's loop would do on a repository
+    with no tags: one line per plugin, each with its own README."""
+    proc = subprocess.run(
+        [sys.executable, str(RELEASE_PLAN), "--all"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert proc.returncode == 0, proc.stderr
+    rows = [line.split("\t") for line in proc.stdout.splitlines()]
+    assert [row[2] for row in rows] == [f"{n}--v{_version(d)}" for n, d in MARKET_PLUGINS]
+    for name, version, tag, readme in rows:
+        notes = _notes("--readme", readme, version)
+        assert notes.returncode == 0, notes.stderr
+
+
+# --- the workflows wire those scripts up --------------------------------------
+
+
+def _workflow(name):
+    import yaml
+
+    return yaml.safe_load((REPO_ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8"))
+
+
+def _run_lines(workflow):
+    return "\n".join(
+        step.get("run", "") for job in workflow["jobs"].values() for step in job["steps"]
+    )
+
+
+def test_release_workflow_loops_over_the_plan():
+    runs = _run_lines(_workflow("release.yml"))
+
+    assert "python .github/scripts/release_plan.py > RELEASE_PLAN.tsv" in runs
+    assert 'release_notes.py --readme "$README" "$VERSION"' in runs
+    assert 'release_notes.py --title --readme "$README" "$VERSION"' in runs
+    assert 'git tag -a "$TAG"' in runs
+    assert runs.count("done < RELEASE_PLAN.tsv") == 2
+    assert "pytest -q tests/test_packaging_conformance.py" in runs
+
+
+def test_ci_runs_both_plugins_tests_and_the_bump_check():
+    runs = _run_lines(_workflow("ci.yml"))
+
+    assert "pytest -q tests plugins/blender-inspect/tests" in runs
+    assert "check_version_bump.py" in runs
