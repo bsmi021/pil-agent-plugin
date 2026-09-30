@@ -632,11 +632,11 @@ uv sync
 uv run pytest -v
 ```
 
-**663 tests.** Fixtures are generated synthetically in-process, so no binary test
+**972 tests** in `tests/` (plus 312 in `plugins/blender-inspect/tests`, run with `uv run pytest -q plugins/blender-inspect/tests`). Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
 Six tests confirm results against a real reference image and **skip when it is
-absent** — so a fresh clone reports `657 passed, 6 skipped`, which is expected.
+absent** — so a fresh clone reports those six as skipped, which is expected.
 Their strongest assertions are duplicated unskipped against a synthetic
 stand-in, so a clean checkout still guards every known regression. A further
 nineteen tests across `tests/test_blender_mesh.py`, `tests/test_blender_render.py`
