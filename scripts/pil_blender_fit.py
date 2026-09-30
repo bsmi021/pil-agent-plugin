@@ -21,6 +21,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pil_blender_mesh import resolve_blender_executable
 
 TOOL_VERSION = "0.9.6"
+
+# Deprecated: blender-inspect now ships the canonical copy. This one keeps
+# its behaviour until it is removed in the next minor release; main() says
+# so on stderr and --help says so in its epilog.
+DEPRECATION_NOTICE = (
+    "deprecated: use blender-inspect/blender_fit.py instead; this copy is "
+    "removed in the next minor release"
+)
 _BEGIN = "<<<PIL_AGENT_BLENDER_FIT_BEGIN>>>"
 _END = "<<<PIL_AGENT_BLENDER_FIT_END>>>"
 
@@ -207,7 +215,9 @@ def _reject(reason):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Probe or clearance-fit one Blender garment object against a body BVH.")
+    parser = argparse.ArgumentParser(
+        epilog=DEPRECATION_NOTICE,
+        description="Probe or clearance-fit one Blender garment object against a body BVH.")
     parser.add_argument("blend")
     parser.add_argument("--body-object", required=True)
     parser.add_argument("--garment-object", required=True)
@@ -218,6 +228,7 @@ def main(argv=None):
     parser.add_argument("--solution")
     parser.add_argument("--blender-executable")
     args = parser.parse_args(argv)
+    sys.stderr.write(f"pil_blender_fit: {DEPRECATION_NOTICE}\n")
     blend = Path(args.blend).resolve()
     if not blend.is_file():
         return _reject(f"blend file not found: {blend}")

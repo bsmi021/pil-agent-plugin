@@ -39,6 +39,14 @@ MUTATING = {
     "pil_pipeline",
     "pil_capabilities",
 }
+# Tools whose canonical copy now lives in the blender-inspect plugin. They keep
+# working unchanged until they are removed in the next minor release.
+DEPRECATED = {
+    "pil_blender_mesh": "blender-inspect/blender_mesh.py",
+    "pil_blender_fit": "blender-inspect/blender_fit.py",
+    "pil_blender_render": "blender-inspect/blender_render.py",
+    "pil_multiview_render": "blender-inspect/blender_multiview_render.py",
+}
 REQUIREMENTS = {
     "pil_embed": ["onnxruntime", "caller_model"],
     "pil_ocr": ["tesseract"],
@@ -205,6 +213,8 @@ def catalog():
                     "required": ["ok", "exit_code", "result", "error"],
                 },
                 "mutates": name in MUTATING,
+                "deprecated": name in DEPRECATED,
+                "replacement": DEPRECATED.get(name),
                 "requirements": {r: _available(r) for r in requirements},
                 "readiness_scope": "dependency discovery only; execution validates engines, model and input files",
                 "cost_class": "external_engine" if requirements else "local_cpu",

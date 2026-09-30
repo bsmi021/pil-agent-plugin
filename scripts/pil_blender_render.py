@@ -48,6 +48,14 @@ from pil_blender_mesh import (  # noqa: E402
 
 TOOL_VERSION = "0.9.6"
 
+# Deprecated: blender-inspect now ships the canonical copy. This one keeps
+# its behaviour until it is removed in the next minor release; main() says
+# so on stderr and --help says so in its epilog.
+DEPRECATION_NOTICE = (
+    "deprecated: use blender-inspect/blender_render.py instead; this copy is "
+    "removed in the next minor release"
+)
+
 # Named view → which world axis the camera sits on relative to the character.
 # Verified against the brute corpus's own render-visible bbox (16 meshes with
 # hide_render=False after filtering out the "Static" donor/reference geometry):
@@ -754,6 +762,7 @@ def build_payload(
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
+        epilog=DEPRECATION_NOTICE,
         description=(
             "Render one named view (front/side/back) of a Blender scene with "
             "the Workbench engine and, with --reference, register it against a "
@@ -808,6 +817,7 @@ def main(argv=None):
         help="seconds to wait for the Blender subprocess (default 600)",
     )
     args = parser.parse_args(argv)
+    sys.stderr.write(f"pil_blender_render: {DEPRECATION_NOTICE}\n")
 
     blender = resolve_blender_executable(args.blender_executable)
     if blender is None:
