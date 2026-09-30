@@ -462,7 +462,9 @@ def test_strip_png_metadata_refuses_a_malformed_png(tmp_path, mangle):
 def test_every_blender_tool_imports_only_the_stdlib_and_blender_common():
     import ast
 
-    allowed_local = {"blender_common"}
+    # Sibling tool modules may import each other: each is checked by this same loop,
+    # so the whole import graph stays stdlib-only.
+    allowed_local = {path.stem for path in SCRIPTS.glob("blender_*.py")}
     offenders = {}
     for path in sorted(SCRIPTS.glob("blender_*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
