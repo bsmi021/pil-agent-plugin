@@ -70,6 +70,7 @@ CAVITY_VALLEY_FACTOR = 1.5
 INTERPRETATION_LIMITS = [
     "Depth is planar z-depth: the distance along the camera's forward axis to the visible surface, not the distance from the camera centre. It is in scene units.",
     "Normals are world-space, from EEVEE, which turns a back-facing normal toward the camera; a flipped face is therefore reliably revealed only by the matcap render, where backface culling turns it into a hole.",
+    "Backface culling in the matcap render also hides any single-sided face seen from behind (an open surface, or a quad viewed from its back side), so compare it with the normal, depth and object-id renders, which draw both sides.",
     "Only render-visible mesh objects are framed and rendered by these modes; wire edges and loose vertices have no surface and do not appear.",
     "Locked framing uses one camera distance (or orthographic scale) for every view and mode, sized to the scene's render-visible geometry; it does not calibrate concept-art cameras.",
     "Render byte determinism is claimed only for the same scene, machine, and Blender install.",
