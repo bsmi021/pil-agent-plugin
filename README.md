@@ -128,6 +128,11 @@ print('valid')"
     `06395063c0a5c28b1a8d4bd585261501a878c8f52d1216db6c4cbb651f7c13f1`
 
   Model weights are pinned by hash in every payload, never bundled in this repo.
+- Optional depth model for `pil_depth` (same `embedding` extra, so onnxruntime):
+  an ONNX export of **Depth Anything V2 Small**, supplied by you with
+  `PIL_AGENT_DEPTH_MODEL` (or `pil_depth --model`). See
+  [Concept-image depth](#concept-image-depth-pil_depth) for how to obtain it and
+  its licence.
   Any other model runs, but is flagged `model_not_gated` and advertises nothing.
 - Optional OCR tool: a system **tesseract** binary (e.g. `apt-get install tesseract-ocr`)
 - Optional Blender tools: a local Blender executable (tested with Blender 5.2)
@@ -149,6 +154,7 @@ py -3 .\scripts\pil_bootstrap.py check
 # Optional capabilities, selected explicitly:
 py -3 .\scripts\pil_bootstrap.py install --ocr --reconstruction
 py -3 .\scripts\pil_bootstrap.py install --embedding --model 'C:\Models\mobilenetv2-12.onnx' --preprocessing imagenet
+py -3 .\scripts\pil_bootstrap.py install --depth --depth-model 'C:\Models\depth_anything_v2_vits.onnx'
 ```
 
 ```sh
@@ -159,7 +165,9 @@ python3 ./scripts/pil_bootstrap.py install --ocr
 ```
 
 Core installs Pillow and NumPy. `--reconstruction` adds OpenCV and SciPy;
-`--embedding` adds ONNX Runtime and checks a caller-supplied model; `--ocr`
+`--embedding` adds ONNX Runtime and checks a caller-supplied model; `--depth`
+adds ONNX Runtime and checks the caller-supplied depth model (`--depth-model` or
+`$PIL_AGENT_DEPTH_MODEL`) by running `pil_depth diagnose`; `--ocr`
 checks Tesseract and installs it if needed using winget (Windows), Homebrew
 (macOS), or apt-get/dnf (Linux). Install the platform package manager separately
 if absent. Linux system installation may prompt through sudo, and Windows may
@@ -417,6 +425,58 @@ with real foreground support. When you *don't* pass it, the tools estimate
 foreground coverage anyway and flag `background_dominant` on mostly-background
 frames — treat that flag as "these scores describe the backdrop".
 
+### Concept-image depth (`pil_depth`)
+
+A concept image has no depth data. `pil_depth estimate` asks a monocular depth
+model for one, and `pil_depth compare` checks that answer against the exact depth
+of a Blender render. The output of `estimate` is **model-inferred relative inverse
+depth** (larger = nearer, arbitrary scale and shift per image): it is not metric,
+carries no scene units, and for stylised concept art it is a learned guess. The
+payload says so (`depth_kind: "relative_inverse_depth"`, `metric: false`,
+`interpretation_limits`).
+
+```bash
+uv run --extra embedding python scripts/pil_depth.py estimate concept.png \
+    --model depth_anything_v2_vits.onnx --output-dir out/ [--mask selection.json]
+uv run python scripts/pil_depth.py compare out/concept_inverse_depth.npy \
+    render_depth.npy --output-dir out/ [--mask mask.png]
+```
+
+- `estimate` writes `<stem>_inverse_depth.npy` (float32, the image's height x
+  width) and a heatmap PNG, and records the model file, its **sha256** and the
+  named preprocessing profile (`depth-anything-v2`: shorter side 518, each side a
+  multiple of 14, bicubic, ImageNet mean/std, or the model's own static input
+  size when it has one). `--mask` is a `selection-mask-v1` manifest from
+  `pil_mask.py` bound to that image; it scopes the statistics and heatmap
+  normalisation, while the `.npy` stays the full model output. Alpha is
+  composited onto black before inference.
+- `compare` takes that `.npy` and the `.npy` from
+  `blender_inspect_render --modes depth` (metric depth, NaN background). It
+  converts the render to inverse depth, fits **scale and shift by least squares
+  over the pixels valid in both** (and inside `--mask`, a binary PNG at the
+  render's size), and reports the Spearman rank correlation, AbsRel after
+  alignment, the fitted `scale`/`shift`, and a disagreement heatmap with the worst
+  grid cells as fractional `L,T,R,B` boxes. The render's grid is the target: a
+  concept map of a different size is bilinearly resampled to it only when the
+  aspect ratios agree within 1%, otherwise `compare` refuses. It cannot check
+  that the two maps show the same framing beyond that.
+- Nothing is calibrated: there is no pass/fail threshold for Spearman or AbsRel,
+  and because scale and shift are fitted away, agreement says the depth *order*
+  and shape match, not that distances are right.
+
+**Obtaining the model.** The tool needs an ONNX export of Depth Anything V2
+**Small** (the ViT-S variant, about 25M parameters). Only the **Small** model is
+released under **Apache-2.0**; the Base, Large and Giant models carry a
+CC-BY-NC-4.0 (non-commercial) licence, so do not substitute them where that
+matters. The upstream weights are published by the Depth Anything V2 authors
+(github.com/DepthAnything/Depth-Anything-V2); an ONNX export is either made from
+those weights or taken from a community export of the Small model. This
+repository does not bundle or download it, and does not pin a download URL. Read
+the licence of the file you actually obtain, then confirm it loads with
+`pil_depth diagnose --model <file>` (or `pil_bootstrap check --depth --depth-model
+<file>`): the payload gives its sha256, and `model_known` is `false` until that
+hash has been run in this repository.
+
 ## Worked example
 
 Two images, identical in layout and lightness. The only difference is that one
@@ -469,6 +529,8 @@ profiles, discovery and MCP, use the [0.9.0 workflow guide](docs/measurement-wor
 | What **text** does the image contain, machine-read? | `pil_ocr` | Tesseract lines/words with engine confidence and frame-mapped boxes; `--claims-out` feeds the semantic layer |
 | Is this a **copy** of that image, surviving crop/rotation? | `pil_embed` | pinned-model embedding `cosine_similarity`, gate-validated where dhash breaks (`--extra embedding`) |
 | **Rank** other photos by how related they are to this one | `pil_embed` | `cosine_similarity` under the CLIP model — gate-validated for ranking, never a "same place" verdict |
+| How **deep** is each part of a concept image? (model-inferred, relative) | `pil_depth estimate` | `.npy` relative inverse depth + heatmap; never metric (`--extra embedding` + a depth model) |
+| Does that concept depth **agree** with a Blender render's exact depth? | `pil_depth compare` | scale/shift-aligned `spearman`, `absrel`, and the worst-disagreement `regions` |
 | Record/verify/compare **vision claims** about an image | `pil_semantic_record` | sealed `vision_claim` records — sha256-bound, content-addressed, never a measurement |
 | Let me **see** a region at full resolution | `pil_crop` | native-resolution crop, integer upscale only |
 | Let me **point** at something a model will understand | `pil_annotate` | numbered boxes on a copy |

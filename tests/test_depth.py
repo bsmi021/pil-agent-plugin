@@ -534,3 +534,114 @@ def test_compare_estimate_roundtrip(monkeypatch, capsys, model, image, tmp_path)
 def test_real_model_diagnose(capsys):
     code, payload, _ = run(capsys, "diagnose", "--model", REAL_MODEL)
     assert code == 0 and len(payload["model_sha256"]) == 64
+
+
+# ------------------------------------------------ bootstrap / catalog / docs
+
+
+def test_capabilities_lists_pil_depth(monkeypatch, tmp_path):
+    import pil_capabilities
+
+    model = tmp_path / "m.onnx"
+    model.write_bytes(b"x")
+    monkeypatch.setenv(pil_depth.MODEL_ENV_VAR, str(model))
+    tools = {t["name"]: t for t in pil_capabilities.catalog()["tools"]}
+    tool = tools["pil_depth"]
+    assert tool["mutates"] is True and tool["deprecated"] is False
+    assert set(tool["requirements"]) == {"onnxruntime", "depth_model"}
+    assert tool["requirements"]["depth_model"] is True
+    assert set(tool["cli_schema"]["commands"]) == {"diagnose", "estimate", "compare"}
+    monkeypatch.setenv(pil_depth.MODEL_ENV_VAR, str(tmp_path / "missing.onnx"))
+    tools = {t["name"]: t for t in pil_capabilities.catalog()["tools"]}
+    assert tools["pil_depth"]["requirements"]["depth_model"] is False
+
+
+def test_depth_model_setting_reaches_tool_subprocesses(monkeypatch):
+    from pil_environment import tool_environment
+
+    monkeypatch.setenv(pil_depth.MODEL_ENV_VAR, "depth.onnx")
+    assert tool_environment()[pil_depth.MODEL_ENV_VAR] == "depth.onnx"
+
+
+def _bootstrap_root(tmp_path, monkeypatch):
+    import pil_bootstrap
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nrequires-python = ">=3.11"\ndependencies = []\n'
+        '[project.optional-dependencies]\nembedding = ["onnxruntime>=1.17,<2"]\n'
+        'reconstruction = []\n'
+    )
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    # a stand-in for pil_depth.py that reports its own argv
+    (scripts / "pil_depth.py").write_text(
+        "import json, sys\nprint(json.dumps({'argv': sys.argv[1:]}))\n"
+    )
+    monkeypatch.setattr(pil_bootstrap, "venv_python", lambda _: Path(sys.executable))
+    real_probe = pil_bootstrap.probe
+    # only the depth stand-in is really executed; the dependency probe is doubled
+    monkeypatch.setattr(pil_bootstrap, "probe",
+                        lambda c: real_probe(c) if "pil_depth.py" in " ".join(map(str, c))
+                        else {"ok": True, "details": {}})
+    return pil_bootstrap
+
+
+def test_bootstrap_depth_check_runs_diagnose_with_the_model(tmp_path, monkeypatch, capsys):
+    bootstrap = _bootstrap_root(tmp_path, monkeypatch)
+    code = bootstrap.main(["check", "--depth", "--depth-model", "D:/m/depth.onnx"], root=tmp_path)
+    status = json.loads(capsys.readouterr().out)
+    assert "depth" in status["checks"] and "embedding" not in status["checks"]
+    assert status["checks"]["depth"]["details"]["argv"] == ["diagnose", "--model", "D:/m/depth.onnx"]
+    assert "depth" in status["configuration"]["extras"]
+    del code
+
+
+def test_bootstrap_depth_model_implies_depth_and_needs_no_embedding_model(tmp_path, monkeypatch, capsys):
+    bootstrap = _bootstrap_root(tmp_path, monkeypatch)
+    bootstrap.main(["check", "--depth-model", "x.onnx"], root=tmp_path)
+    status = json.loads(capsys.readouterr().out)
+    assert "depth" in status["checks"]
+    # without --depth the check is absent and unchanged
+    bootstrap.main(["check"], root=tmp_path)
+    assert "depth" not in json.loads(capsys.readouterr().out)["checks"]
+
+
+def test_bootstrap_depth_pulls_in_onnxruntime_requirement(tmp_path, monkeypatch):
+    bootstrap = _bootstrap_root(tmp_path, monkeypatch)
+    args = SimpleNamespace(depth=True, ocr=False, model=None, preprocessing=None, depth_model=None)
+    requirements, signature = bootstrap.configuration(tmp_path, args)
+    assert requirements == ["onnxruntime>=1.17,<2"]
+    assert signature["extras"] == ["depth"]
+    both = SimpleNamespace(depth=True, embedding=True, ocr=False)
+    requirements, _ = bootstrap.configuration(tmp_path, both)
+    assert requirements == ["onnxruntime>=1.17,<2"]  # not duplicated
+
+
+def test_bootstrap_depth_refuses_when_diagnose_fails(tmp_path, monkeypatch, capsys):
+    import pil_bootstrap
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nrequires-python = ">=3.11"\ndependencies = []\n'
+        '[project.optional-dependencies]\nembedding = []\n'
+    )
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "pil_depth.py").write_text(
+        "import sys\nprint('pil_depth: no depth model given', file=sys.stderr)\nsys.exit(2)\n"
+    )
+    monkeypatch.setattr(pil_bootstrap, "venv_python", lambda _: Path(sys.executable))
+    real_probe = pil_bootstrap.probe
+    monkeypatch.setattr(pil_bootstrap, "probe",
+                        lambda c: real_probe(c) if "pil_depth.py" in " ".join(map(str, c)) else {"ok": True, "details": {}})
+    code = pil_bootstrap.main(["check", "--depth"], root=tmp_path)
+    status = json.loads(capsys.readouterr().out)
+    assert code == 2 and status["checks"]["depth"]["ok"] is False
+    assert "no depth model given" in status["checks"]["depth"]["reason"]
+
+
+def test_readme_documents_the_depth_model_and_its_licence():
+    text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    section = text[text.index("### Concept-image depth"):text.index("## Worked example")]
+    for needle in ("Depth Anything V2", "Small", "Apache-2.0", "CC-BY-NC", "PIL_AGENT_DEPTH_MODEL",
+                   "not metric", "sha256", "--depth"):
+        assert needle in section or needle in text, needle
+    assert "Apache-2.0" in section and "Base, Large and Giant" in section

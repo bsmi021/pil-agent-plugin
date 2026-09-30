@@ -74,10 +74,13 @@ def probe(command):
 def configuration(root, args):
     manifest = (root / "pyproject.toml").read_bytes()
     project = tomllib.loads(manifest.decode("utf-8"))["project"]
-    extras = [name for name in ("embedding", "reconstruction", "comparison", "mcp") if getattr(args, name, False)]
+    extras = [name for name in ("embedding", "reconstruction", "comparison", "mcp", "depth") if getattr(args, name, False)]
     requirements = list(project["dependencies"])
     for extra in extras:
-        requirements.extend(project["optional-dependencies"][extra])
+        # The depth check needs only onnxruntime, which the embedding extra carries.
+        for requirement in project["optional-dependencies"]["embedding" if extra == "depth" else extra]:
+            if requirement not in requirements:
+                requirements.append(requirement)
     signature = {"schema": 1, "root": str(root.resolve()),
                  "manifest_sha256": hashlib.sha256(manifest).hexdigest(),
                  "platform": platform.system(), "machine": platform.machine(),
@@ -100,6 +103,11 @@ def status(root, args):
         if args.preprocessing:
             command.extend(["--preprocessing", args.preprocessing])
         checks["embedding"] = probe(command)
+    if getattr(args, "depth", False):
+        command = [python, "-B", str(root / "scripts/pil_depth.py"), "diagnose"]
+        if getattr(args, "depth_model", None):
+            command.extend(["--model", args.depth_model])
+        checks["depth"] = probe(command)
     receipt = None
     try:
         receipt = json.loads(receipt_path(root).read_text(encoding="utf-8"))
@@ -219,6 +227,8 @@ def main(argv=None, *, root=ROOT):
     parser.add_argument("command", choices=["check", "install"])
     parser.add_argument("--ocr", action="store_true", help="include Tesseract (English data)")
     parser.add_argument("--embedding", action="store_true", help="include runtime and configured ONNX model check")
+    parser.add_argument("--depth", action="store_true", help="include runtime and configured depth ONNX model check (pil_depth)")
+    parser.add_argument("--depth-model", help="existing Depth Anything V2 Small ONNX path; implies --depth")
     parser.add_argument("--reconstruction", action="store_true", help="include OpenCV and SciPy")
     parser.add_argument("--comparison", action="store_true", help="include standard SSIM through scikit-image")
     parser.add_argument("--mcp", action="store_true", help="include the optional stdio MCP adapter")
@@ -227,6 +237,8 @@ def main(argv=None, *, root=ROOT):
     args = parser.parse_args(argv)
     if args.model or args.preprocessing:
         args.embedding = True
+    if args.depth_model:
+        args.depth = True
     try:
         if sys.version_info < (3, 11):
             raise BootstrapError("Python 3.11+ is required")

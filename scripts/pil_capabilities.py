@@ -34,6 +34,7 @@ MUTATING = {
     "pil_multiview_render",
     "pil_reconstruct",
     "pil_ocr",
+    "pil_depth",
     "pil_semantic_record",
     "pil_bootstrap",
     "pil_pipeline",
@@ -49,6 +50,7 @@ DEPRECATED = {
 }
 REQUIREMENTS = {
     "pil_embed": ["onnxruntime", "caller_model"],
+    "pil_depth": ["onnxruntime", "depth_model"],
     "pil_ocr": ["tesseract"],
     "pil_register": ["cv2"],
     "pil_multiview_prepare": ["cv2"],
@@ -151,6 +153,11 @@ def _available(dependency):
         import os
 
         path = os.environ.get("PIL_AGENT_EMBED_MODEL")
+        return bool(path and Path(path).is_file())
+    if dependency == "depth_model":
+        import os
+
+        path = os.environ.get("PIL_AGENT_DEPTH_MODEL")
         return bool(path and Path(path).is_file())
     if dependency == "blender":
         from pil_blender_mesh import resolve_blender_executable
