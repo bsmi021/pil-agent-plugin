@@ -1,5 +1,16 @@
 #!/usr/bin/env python
-"""Orchestrate preparation, solving, optional BVH fitting, rendering, and review."""
+"""Orchestrate preparation, solving, optional BVH fitting, rendering, and review.
+
+Hand-off input. The ``fit`` and ``render`` job stages may each be
+``{"payload": PATH}`` instead of instructions: PATH is the saved stdout of
+blender-inspect's ``blender_fit.py`` or ``blender_multiview_render.py`` (the
+deprecated ``pil_blender_fit``/``pil_multiview_render`` payloads are accepted
+too), and it is used as that stage's result without starting Blender. An
+external fit must have used this run's own solution when it names one. When
+the fit is external but the render is not, the render stage renders the fit's
+output .blend (apply-copy) or its input .blend (probe), as an in-process fit
+would.
+"""
 
 from __future__ import annotations
 
@@ -15,6 +26,40 @@ SCRIPTS = Path(__file__).resolve().parent
 
 class ReconstructionError(ValueError):
     pass
+
+
+FIT_TOOLS = frozenset({"blender_fit", "pil_blender_fit"})
+RENDER_TOOLS = frozenset({"blender_multiview_render", "pil_multiview_render"})
+
+
+def _external_payload(stage: dict, name: str, tools: frozenset, key: str, job_path: Path) -> tuple[dict, Path]:
+    """Load and check an externally produced stage payload."""
+    path = _resolve(stage["payload"], job_path)
+    if not path.is_file():
+        raise ReconstructionError(f"{name} payload not found: {path}")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        raise ReconstructionError(f"{name} payload is not JSON: {path}: {exc}") from exc
+    if not isinstance(payload, dict) or payload.get("tool") not in tools:
+        raise ReconstructionError(f"{name} payload must come from one of {sorted(tools)}: {path}")
+    if not isinstance(payload.get(key), dict) or not isinstance(payload[key].get("status"), str):
+        raise ReconstructionError(f"{name} payload has no {key}.status: {path}")
+    return payload, path
+
+
+def _check_fit_solution(fit_payload: dict, solution_path: Path) -> None:
+    """An external fit that names a solution must have used this run's one."""
+    used = (fit_payload.get("parameters") or {}).get("solution")
+    if not used:
+        return
+    try:
+        used_vertices = json.loads(Path(used).read_text(encoding="utf-8")).get("vertices")
+    except (OSError, ValueError) as exc:
+        raise ReconstructionError(f"cannot read the external fit's solution {used}: {exc}") from exc
+    ours = json.loads(solution_path.read_text(encoding="utf-8")).get("vertices")
+    if used_vertices != ours:
+        raise ReconstructionError(f"external fit used a different solution than this run: {used}")
 
 
 def _resolve(value: str, job_path: Path) -> Path:
@@ -87,8 +132,17 @@ def run_job(job: dict, job_path: Path, output_dir: Path) -> dict:
         return {"tool": "pil_reconstruct", "version": TOOL_VERSION, "status": terminal_status(stages), "stages": stages}
 
     active_blend = None
+    external = {}
     fit = job.get("fit")
-    if fit is not None:
+    if fit is not None and "payload" in fit:
+        stages["fit"], external["fit"] = _external_payload(fit, "fit", FIT_TOOLS, "fit", job_path)
+        _check_fit_solution(stages["fit"], solution_path)
+        if stages["fit"]["fit"]["status"] == "FIT_BLOCKED":
+            return {"tool": "pil_reconstruct", "version": TOOL_VERSION, "status": terminal_status(stages), "stages": stages}
+        fitted = stages["fit"]["fit"].get("output_path")
+        source = (stages["fit"].get("parameters") or {}).get("blend")
+        active_blend = Path(fitted) if fitted else (Path(source) if source else None)
+    elif fit is not None:
         blend = _resolve(fit["blend"], job_path)
         active_blend = output_dir / "fitted.blend" if fit.get("mode", "probe") == "apply-copy" else blend
         args = [
@@ -109,7 +163,9 @@ def run_job(job: dict, job_path: Path, output_dir: Path) -> dict:
             return {"tool": "pil_reconstruct", "version": TOOL_VERSION, "status": terminal_status(stages), "stages": stages}
 
     render = job.get("render")
-    if render is not None:
+    if render is not None and "payload" in render:
+        stages["render"], external["render"] = _external_payload(render, "render", RENDER_TOOLS, "render", job_path)
+    elif render is not None:
         render_blend = active_blend or _resolve(render["blend"], job_path)
         render_dir = output_dir / "renders"
         args = [
@@ -148,7 +204,12 @@ def run_job(job: dict, job_path: Path, output_dir: Path) -> dict:
         "version": TOOL_VERSION,
         "status": terminal_status(stages),
         "stages": stages,
-        "artifacts": {"prepared": str(prepared_path), "solution": str(solution_path), "output_dir": str(output_dir)},
+        "artifacts": {
+            "prepared": str(prepared_path),
+            "solution": str(solution_path),
+            "output_dir": str(output_dir),
+            "external_payloads": {stage: str(path) for stage, path in sorted(external.items())},
+        },
     }
 
 
