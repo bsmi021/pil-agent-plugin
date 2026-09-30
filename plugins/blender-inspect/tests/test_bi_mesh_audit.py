@@ -554,3 +554,27 @@ def test_proof_v2_garment_reports_its_four_boundary_edges():
     assert audited["Body"]["clean"] is True
     _validate(payload)
     assert not any(math.isnan(v) for entry in garment["locations"] for v in entry["location"])
+
+
+@needs_blender
+def test_meshes_without_faces_are_audited_not_refused(tmp_path):
+    blend = tmp_path / "faceless.blend"
+    script = tmp_path / "make_faceless.py"
+    script.write_text(
+        "import bpy\n"
+        "bpy.ops.wm.read_factory_settings(use_empty=True)\n"
+        "scene = bpy.context.scene\n"
+        "edge = bpy.data.meshes.new('Edge')\n"
+        "edge.from_pydata([(0, 0, 0), (1, 0, 0)], [(0, 1)], [])\n"
+        "scene.collection.objects.link(bpy.data.objects.new('EdgeOnly', edge))\n"
+        "scene.collection.objects.link(bpy.data.objects.new('Nothing', bpy.data.meshes.new('Nothing')))\n"
+        f"bpy.ops.wm.save_as_mainfile(filepath={str(blend)!r})\n",
+        encoding="utf-8",
+    )
+    assert _blender("--python", script).returncode == 0
+    payload = _audit_ok(blend, "--pairs", "EdgeOnly:Nothing")
+    audited = _by_name(payload)
+    assert _counts(audited["EdgeOnly"]) == dict(_zero_counts(), wire_edges=1)
+    assert audited["Nothing"]["clean"] is True
+    assert audited["Nothing"]["evaluated"] == {"verts": 0, "edges": 0, "faces": 0}
+    assert payload["pairs"][0]["overlapping_face_pairs"] == 0
