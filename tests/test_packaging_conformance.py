@@ -5,12 +5,17 @@ The plugin ships four manifests on purpose:
 - ``plugin.json``               — the portable Agent Plugins 1.0.0 manifest
                                   (https://agent-plugins.org/specification)
 - ``.claude-plugin/plugin.json``— Claude Code's native manifest
-- ``.claude-plugin/marketplace.json`` — a single-plugin marketplace, because the
+- ``.claude-plugin/marketplace.json`` — the repository's marketplace, because the
                                   Claude Code CLI installs from marketplaces and
-                                  cannot install from a bare directory path
+                                  cannot install from a bare directory path. It
+                                  lists this plugin and blender-inspect
+                                  (``plugins/blender-inspect/``), which carries
+                                  its own four-manifest set.
 - ``.codex-plugin/plugin.json`` — Codex-native manifest and interface metadata
 
-They describe the same package, so they will drift unless something checks them.
+Each plugin's manifests describe the same package, so they will drift unless
+something checks them. The tests near the end apply the cross-manifest checks to
+every plugin the marketplace lists.
 These tests encode the parts of Agent Plugins 1.0.0 that a plugin author can
 violate, so the conformance claim in the README travels with the code rather
 than being a one-time assertion.
@@ -411,3 +416,119 @@ def test_no_module_basename_collides_across_the_two_plugins():
 
     root = {p.stem for d in ("scripts", "tests") for p in (REPO_ROOT / d).glob("*.py")}
     assert not (new_scripts | new_tests) & root
+
+
+# --- every marketplace plugin: manifests, listing, tool versions, skills -----
+#
+# The checks above pin the root plugin in detail. These apply the rules that
+# matter for releases to every plugin the marketplace lists, so blender-inspect
+# (and any later plugin) is covered from the moment its entry lands: its four
+# manifests agree, its listing matches them, its own scripts announce its own
+# version, and its skills are discoverable under valid names.
+
+
+def _marketplace_plugins():
+    market = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
+    return [(entry, (REPO_ROOT / entry["source"]).resolve()) for entry in market["plugins"]]
+
+
+MARKET_PLUGINS = _marketplace_plugins()
+PLUGIN_IDS = [entry["name"] for entry, _ in MARKET_PLUGINS]
+
+
+def _manifests(plugin_dir):
+    read = lambda rel: json.loads((plugin_dir / rel).read_text(encoding="utf-8"))  # noqa: E731
+    return read("plugin.json"), read(".claude-plugin/plugin.json"), read(".codex-plugin/plugin.json")
+
+
+def _tool_versions(plugin_dir):
+    """{filename: TOOL_VERSION} for every script in the plugin that declares one."""
+    found = {}
+    for path in sorted((plugin_dir / "scripts").glob("*.py")):
+        match = TOOL_VERSION_RE.search(path.read_text(encoding="utf-8"))
+        if match:
+            found[path.name] = match.group(1)
+    return found
+
+
+def _plugin_skill_dirs():
+    found = []
+    for entry, plugin_dir in MARKET_PLUGINS:
+        skills = plugin_dir / "skills"
+        found += [(entry["name"], d) for d in sorted(skills.iterdir()) if d.is_dir()]
+    return found
+
+
+def test_marketplace_lists_both_plugins_once_each():
+    assert sorted(PLUGIN_IDS) == ["blender-inspect", "pil-agent-plugin"]
+    assert len(set(PLUGIN_IDS)) == len(PLUGIN_IDS)
+
+
+@pytest.mark.parametrize("entry,plugin_dir", MARKET_PLUGINS, ids=PLUGIN_IDS)
+def test_each_plugin_ships_four_agreeing_manifests(entry, plugin_dir):
+    portable, native, codex = _manifests(plugin_dir)
+
+    assert portable["$schema"] == SCHEMA_ID
+    assert set(portable) <= ALLOWED_MANIFEST_KEYS
+    assert set(portable.get("author", {})) <= ALLOWED_AUTHOR_KEYS
+    assert PLUGIN_NAME_RE.match(portable["name"]) and len(portable["name"]) <= 64
+    for field in ("name", "version", "homepage", "repository", "license"):
+        assert portable[field] == native[field] == codex[field], field
+    assert portable["description"] == native["description"]
+    assert portable["author"] == native["author"] == codex["author"]
+    assert portable["keywords"] == native["keywords"]
+    assert codex["skills"] == "./skills/"
+    for key in ("composerIcon", "logo"):
+        assert (plugin_dir / codex["interface"][key]).is_file()
+
+
+@pytest.mark.parametrize("entry,plugin_dir", MARKET_PLUGINS, ids=PLUGIN_IDS)
+def test_each_marketplace_entry_matches_its_plugin(entry, plugin_dir):
+    portable, native, _ = _manifests(plugin_dir)
+
+    assert (REPO_ROOT / entry["source"]).resolve() == plugin_dir
+    assert entry["name"] == plugin_dir.name or entry["source"] == "./"
+    for field in ("name", "version", "description", "license", "homepage", "author", "keywords"):
+        assert entry[field] == portable[field] == native[field], field
+    assert entry["displayName"] == native["displayName"]
+
+
+@pytest.mark.parametrize("entry,plugin_dir", MARKET_PLUGINS, ids=PLUGIN_IDS)
+def test_each_plugins_tools_declare_its_own_version(entry, plugin_dir):
+    """A blender_*.py tool carries blender-inspect's version, a pil_*.py tool
+    the root plugin's; shared modules (pil_common, blender_common) declare none."""
+    version = _manifests(plugin_dir)[0]["version"]
+    mismatched = {n: v for n, v in _tool_versions(plugin_dir).items() if v != version}
+    assert not mismatched, f"TOOL_VERSION disagrees with {entry['name']} {version!r}: {mismatched}"
+
+
+def test_per_plugin_version_check_goes_red_on_a_stale_tool(tmp_path):
+    """The per-plugin check must not be vacuous while blender-inspect has no
+    versioned tool yet: a synthetic plugin with one stale tool is caught, and
+    a versionless shared module is ignored."""
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "blender_fresh.py").write_text('TOOL_VERSION = "0.1.0"\n', encoding="utf-8")
+    (scripts / "blender_stale.py").write_text('TOOL_VERSION = "0.0.9"\n', encoding="utf-8")
+    (scripts / "blender_common.py").write_text("import sys\n", encoding="utf-8")
+
+    found = _tool_versions(tmp_path)
+
+    assert found == {"blender_fresh.py": "0.1.0", "blender_stale.py": "0.0.9"}
+    assert {n for n, v in found.items() if v != "0.1.0"} == {"blender_stale.py"}
+
+
+@pytest.mark.parametrize(
+    "plugin,skill_dir", _plugin_skill_dirs(), ids=lambda v: v if isinstance(v, str) else v.name
+)
+def test_every_plugins_skills_have_valid_names(plugin, skill_dir):
+    """Discovery reads skills/<name>/SKILL.md; the frontmatter name must match
+    the directory and satisfy the Agent Skills name rule."""
+    text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+    match = re.match(r"^---\r?\n(.*?)\r?\n---", text, re.S)
+    assert match, f"{plugin}/{skill_dir.name}: SKILL.md must open with YAML frontmatter"
+    front = yaml.safe_load(match.group(1))
+    name = front["name"]
+    assert name == skill_dir.name
+    assert 1 <= len(name) <= 64 and SKILL_NAME_RE.match(name)
+    assert 1 <= len(front["description"]) <= 1024
