@@ -41,10 +41,29 @@ still count in the aggregate:
     A stable ``hard-fail://NAME`` identifier is echoed into
     ``per_view_renders[NAME].hard_fail``; internal temporary paths never leak.
 
+Hand-off input. Instead of a ``.blend``, ``--renders MANIFEST.json`` supplies
+views already rendered by blender-inspect, so this tool starts no Blender.
+The manifest is either
+
+*   the saved stdout of ``blender_multiview_render.py`` (or the deprecated
+    ``pil_multiview_render.py``), whose ``render.views[].name`` must use the
+    view names front/side/back; or
+*   ``{"schema": "character-sheet-renders-v1", "views": {NAME: PAYLOAD}}``,
+    where each PAYLOAD is the path of a saved ``blender_render.py`` (or
+    ``pil_blender_render.py``) stdout; relative paths resolve against the
+    manifest's directory. Render with ``--reference`` so the image is pinned
+    to the reference's size.
+
+A requested view that the manifest lacks, that was refused or blocked, or
+whose image or payload file is missing takes the same hard-fail sentinel path
+as a failed render. Pre-rendered images are caller-owned, so their real paths
+stay in the payload rather than becoming ``render://NAME`` identifiers.
+
 Rejection paths (exit 2, byte-empty stdout, one-line stderr): unreadable or
 missing contract file, ``--view`` name not in ``{front, side, back}``,
 ``--view`` NAME used twice, malformed ``--view NAME:PATH`` syntax, missing
-scene ``.blend``.
+scene ``.blend``, both or neither of a ``.blend`` and ``--renders``, and a
+``--renders`` manifest that is missing, not JSON, or neither shape above.
 """
 
 from __future__ import annotations
@@ -116,6 +135,105 @@ INTERPRETATION_LIMITS = [
 
 class ViewSpecError(ValueError):
     """Raised for malformed --view arguments or duplicate view names."""
+
+
+class RendersManifestError(ValueError):
+    """Raised for a --renders manifest this tool cannot read at all."""
+
+
+RENDERS_SCHEMA = "character-sheet-renders-v1"
+SINGLE_VIEW_TOOLS = frozenset({"blender_render", "pil_blender_render"})
+MULTIVIEW_TOOLS = frozenset({"blender_multiview_render", "pil_multiview_render"})
+
+
+def _read_json(path: Path, label: str):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise RendersManifestError(f"cannot read {label} {path}: {exc}") from exc
+    except ValueError as exc:
+        raise RendersManifestError(f"invalid JSON in {label} {path}: {exc}") from exc
+
+
+def _single_view_render(payload_path: Path) -> dict:
+    """One view from a saved blender_render payload: payload, path or problem."""
+    try:
+        payload = _read_json(payload_path, "render payload")
+    except RendersManifestError as exc:
+        return {"payload": None, "path": None, "problem": str(exc)}
+    if not isinstance(payload, dict) or payload.get("tool") not in SINGLE_VIEW_TOOLS:
+        return {
+            "payload": None,
+            "path": None,
+            "problem": f"{payload_path} is not a blender_render payload",
+        }
+    render = payload.get("render") or {}
+    if not render.get("rendered"):
+        reason = render.get("refused_reason") or "unknown"
+        return {"payload": payload, "path": None, "problem": f"render refused: {reason}"}
+    return {"payload": payload, "path": render.get("output_path"), "problem": None}
+
+
+def load_renders(manifest_path: Path) -> dict[str, dict]:
+    """Map view name -> {"payload", "path", "problem"} from a --renders manifest.
+
+    Exactly one of ``path`` (a render the producer reported) and ``problem``
+    (why the view has no usable render) is set. Raises RendersManifestError
+    only when the manifest itself cannot be read or has neither shape.
+    """
+    manifest = _read_json(manifest_path, "renders manifest")
+    if not isinstance(manifest, dict):
+        raise RendersManifestError(f"renders manifest {manifest_path} must be a JSON object")
+
+    if manifest.get("tool") in MULTIVIEW_TOOLS:
+        render = manifest.get("render")
+        if not isinstance(render, dict):
+            raise RendersManifestError(f"renders manifest {manifest_path} has no render object")
+        if render.get("status") != "RENDERED":
+            reason = f"render blocked: {render.get('reason') or render.get('status') or 'unknown'}"
+            return {name: {"payload": manifest, "path": None, "problem": reason} for name in VIEW_ORDER}
+        renders = {}
+        for view in render.get("views") or []:
+            if not isinstance(view, dict) or not isinstance(view.get("name"), str):
+                raise RendersManifestError(f"renders manifest {manifest_path} has a malformed view")
+            single = dict(manifest, render=dict(render, views=[view]))
+            renders[view["name"]] = {"payload": single, "path": view.get("path"), "problem": None}
+        return renders
+
+    if manifest.get("schema") == RENDERS_SCHEMA:
+        views = manifest.get("views")
+        if not isinstance(views, dict) or not all(isinstance(v, str) for v in views.values()):
+            raise RendersManifestError(
+                f"renders manifest {manifest_path} 'views' must map view names to payload paths"
+            )
+        renders = {}
+        for name, raw in views.items():
+            payload_path = Path(raw)
+            if not payload_path.is_absolute():
+                payload_path = manifest_path.resolve().parent / payload_path
+            renders[name] = _single_view_render(payload_path)
+        return renders
+
+    raise RendersManifestError(
+        f"renders manifest {manifest_path} is neither a blender_multiview_render "
+        f"payload nor a {RENDERS_SCHEMA!r} manifest"
+    )
+
+
+def prerendered_view(renders: dict[str, dict], view: str, manifest_path: Path):
+    """(render_payload, rendered_path, error) for one requested view.
+
+    ``error`` is set exactly when the view must take the hard-fail path.
+    """
+    found = renders.get(view)
+    if found is None:
+        return None, None, f"no pre-rendered image for view {view!r} in {manifest_path}"
+    if found["problem"] is not None:
+        return found["payload"], None, found["problem"]
+    path = Path(found["path"]) if found["path"] else None
+    if path is None or not path.is_file():
+        return found["payload"], None, f"pre-rendered image not found: {found['path']}"
+    return found["payload"], path, None
 
 
 def parse_view_arg(raw: str) -> tuple[str, Path]:
@@ -285,16 +403,18 @@ def build_per_view_block(entries: list[dict]) -> dict:
 
 
 def build_payload(
-    blend: Path,
+    blend: Path | None,
     contract_path: Path,
     entries: list[dict],
     verdict_payload: dict,
     blender_executable: str | None,
     thresholds_path: Path | None = None,
+    renders_path: Path | None = None,
 ) -> dict:
     """Deterministic tool payload; sort_keys at dump time locks byte layout."""
     parameters = {
-        "blend": str(blend),
+        "blend": str(blend) if blend is not None else None,
+        "renders": str(renders_path) if renders_path is not None else None,
         "blender_executable": blender_executable,
         "contract": str(contract_path),
         "foreground": True,
@@ -427,7 +547,7 @@ def _find_workdir_leak(value, prefixes: tuple[str, ...], where: str = ""):
 
 
 def publicise_temporary_paths(
-    entries: list[dict], verdict_payload: dict, workdir: Path
+    entries: list[dict], verdict_payload: dict, workdir: Path, caller_owned_renders: bool = False
 ) -> tuple[list[dict], dict]:
     """Replace ephemeral workdir paths with stable logical identifiers.
 
@@ -440,6 +560,10 @@ def publicise_temporary_paths(
     sentinel. Caller-owned paths -- reference images, the contract, the
     thresholds bundle, the .blend -- are real, stable and left untouched.
 
+    With ``caller_owned_renders`` (the --renders hand-off) the renders are the
+    caller's own files, not workdir files, so they keep their real paths; only
+    hard-fail sentinels are replaced.
+
     Raises TemporaryPathLeak if any string still names the workdir after
     redaction. That is a tripwire for a payload shape this function does not
     know about, and it is deliberately fatal: a rejection is honest, whereas
@@ -451,6 +575,9 @@ def publicise_temporary_paths(
         if entry["hard_fail"] is not None:
             token = f"hard-fail://{entry['view']}"
             public_a = public_b = token
+        elif caller_owned_renders:
+            tokens[index] = (entry["pair_a"], entry["pair_b"])
+            continue
         else:
             token = f"render://{entry['view']}"
             public_a = entry["pair_a"]
@@ -564,7 +691,22 @@ def main(argv=None):
             "--pairs so nothing here re-implements either responsibility."
         )
     )
-    parser.add_argument("blend", help="path to a .blend file")
+    parser.add_argument(
+        "blend",
+        nargs="?",
+        help="path to a .blend file to render; omit it when --renders is given",
+    )
+    parser.add_argument(
+        "--renders",
+        default=None,
+        metavar="MANIFEST.json",
+        help=(
+            "pre-rendered views instead of a .blend: a saved "
+            "blender_multiview_render.py payload whose view names are "
+            "front/side/back, or a character-sheet-renders-v1 manifest "
+            "mapping view names to saved blender_render.py payloads"
+        ),
+    )
     parser.add_argument(
         "--contract",
         required=True,
@@ -625,9 +767,24 @@ def main(argv=None):
     except ViewSpecError as exc:
         return _reject(str(exc))
 
-    blend = Path(args.blend)
-    if not blend.is_file():
-        return _reject(f"blend file not found: {blend}")
+    if (args.blend is None) == (args.renders is None):
+        return _reject("supply either a .blend to render or --renders MANIFEST.json, not both")
+
+    blend = None
+    renders_path = None
+    renders = None
+    if args.renders is not None:
+        renders_path = Path(args.renders)
+        if not renders_path.is_file():
+            return _reject(f"renders manifest not found: {renders_path}")
+        try:
+            renders = load_renders(renders_path)
+        except RendersManifestError as exc:
+            return _reject(str(exc))
+    else:
+        blend = Path(args.blend)
+        if not blend.is_file():
+            return _reject(f"blend file not found: {blend}")
 
     with tempfile.TemporaryDirectory(prefix="pil_char_sheet_") as td:
         workdir = Path(td)
@@ -642,9 +799,20 @@ def main(argv=None):
             # here as a hard-fail. That is exactly the criterion-3 path:
             # unreadable reference -> UNMEASURABLE aggregate entry via
             # sentinel substitution below.
-            render_payload, error = render_view(
-                blend, view, reference, out_path, args.blender_executable
-            )
+            if renders is not None:
+                render_payload, rendered_path, error = prerendered_view(
+                    renders, view, renders_path
+                )
+                if error is None and not reference.is_file():
+                    # Same hard-fail a rendering run gets from the render
+                    # tool's own "reference file not found" rejection.
+                    render_payload, rendered_path = None, None
+                    error = f"reference file not found: {reference}"
+            else:
+                render_payload, error = render_view(
+                    blend, view, reference, out_path, args.blender_executable
+                )
+                rendered_path = out_path
             if error is not None:
                 if not sentinel_written:
                     write_sentinel(sentinel_path)
@@ -667,7 +835,7 @@ def main(argv=None):
                 )
                 continue
 
-            if not render_payload["render"]["rendered"]:
+            if renders is None and not render_payload["render"]["rendered"]:
                 if not sentinel_written:
                     write_sentinel(sentinel_path)
                     sentinel_written = True
@@ -701,7 +869,7 @@ def main(argv=None):
                     view=view,
                     reference=reference,
                     render_payload=render_payload,
-                    rendered_path=out_path,
+                    rendered_path=rendered_path,
                     hard_fail=None,
                     sentinel_path=None,
                 )
@@ -725,7 +893,7 @@ def main(argv=None):
         apply_hard_fail_overrides(verdict_payload, entries)
         try:
             public_entries, public_verdict = publicise_temporary_paths(
-                entries, verdict_payload, workdir
+                entries, verdict_payload, workdir, caller_owned_renders=renders is not None
             )
         except TemporaryPathLeak as exc:
             # Rejection hygiene: exit 2, byte-empty stdout, one-line stderr.
@@ -740,6 +908,7 @@ def main(argv=None):
             verdict_payload=public_verdict,
             blender_executable=args.blender_executable,
             thresholds_path=thresholds_path,
+            renders_path=renders_path,
         )
         json.dump(payload, sys.stdout, indent=2, sort_keys=True, allow_nan=False)
         sys.stdout.write("\n")
