@@ -22,8 +22,8 @@ ambiguous landmarks. If independent observation rank is insufficient or views
 conflict, preserve the tool's `UNDERDETERMINED` or `VIEW_CONFLICT` result.
 
 Contours and landmarks are projected-appearance evidence. Probe clipping and
-body clearance from the Blender scene with `pil_blender_fit.py`; silhouettes do
-not prove collision state. Keep every required view in preparation, rendering,
+body clearance from the Blender scene with `blender_fit.py` from the
+`blender-inspect` plugin; silhouettes do not prove collision state. Keep every required view in preparation, rendering,
 and review so a failure cannot disappear from the aggregate.
 
 ## Run the needed stages
@@ -39,17 +39,26 @@ Use these stages as the task requires:
   contour or refusal state.
 - `pil_multiview_solve.py`: fit the template under correspondence and geometry
   constraints. Geometry mutation is eligible only from `SOLVED`.
-- `pil_blender_fit.py`: run `probe` first; use `apply-copy` only for an
-  authorized bounded edit. It creates a new `.blend` and does not overwrite an
-  existing file.
-- `pil_multiview_render.py`: render the decisive views with locked framing and
-  an explicit `analysis`, `beauty`, or `silhouette` mode.
+- `blender_fit.py` (`blender-inspect`): run `probe` first; use `apply-copy`
+  only for an authorized bounded edit. It creates a new `.blend` and does not
+  overwrite an existing file.
+- `blender_multiview_render.py` (`blender-inspect`): render the decisive views
+  with locked framing and an explicit `analysis`, `beauty`, or `silhouette`
+  mode.
 - `pil_multiview_review.py`: compare every required render to its matching
   reference using worst-case aggregation.
 
 For a repeatable end-to-end job, `pil_reconstruct.py` composes the stages from a
 `reconstruction-job-v1` manifest and stops at `UNDERDETERMINED`,
-`VIEW_CONFLICT`, `FIT_BLOCKED`, or `RENDER_BLOCKED`.
+`VIEW_CONFLICT`, `FIT_BLOCKED`, or `RENDER_BLOCKED`. To keep Blender work in
+`blender-inspect`, run `blender_fit.py` and `blender_multiview_render.py`
+yourself and point the job's `fit` and `render` stages at their saved payloads
+with `{"payload": PATH}`; both stages must be external, or the render stage
+still calls the deprecated `pil_multiview_render.py`.
+
+The `pil_blender_fit.py`, `pil_blender_mesh.py`, `pil_blender_render.py` and
+`pil_multiview_render.py` copies in this plugin are deprecated (removed in the
+next minor release). Use them only when `blender-inspect` is not installed.
 
 Schemas live under [`schemas/`](../../schemas/); the numerical model, dependency
 boundary, and field-level scope are in

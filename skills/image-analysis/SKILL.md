@@ -16,7 +16,13 @@ into a single confidence score.
 - An existing template fit with calibrated projections, correspondences, and
   scale anchors: use
   [`multiview-reconstruction`](../multiview-reconstruction/SKILL.md).
-- Image-plus-mesh review, Blender topology/bounds, clipping or clearance, or a
+- Blender mesh defects, depth-revealing renders, which part is in front, or a
+  dent the flat renders hide: use the `blender-inspect` plugin's
+  `model-inspection` skill (and its `blender-model-inspector` agent), when that
+  plugin is installed. If it is not, say so; do not improvise mesh checks.
+- Relative depth of a concept image, or whether it agrees with a model's depth
+  render: `pil_depth.py` (`estimate`, then `compare`). See the depth row below.
+- Image-plus-mesh review, Blender bounds, clipping or clearance, or a
   concept-to-model loop: continue here and load only the relevant sibling skill.
 
 Several images do not by themselves justify a 3D solve. Without the required
@@ -30,7 +36,8 @@ reconstruction layer as underconstrained.
 | Visual inspection | Subject, style, apparent silhouette, likely problem areas | Exact pixel values, hidden geometry, collision |
 | Image measurement | File facts, colour, structure, masks, local changes, projected silhouette | Metric depth, topology, rig or cloth behavior |
 | Calibrated reconstruction | Constraints on an existing template and per-view residuals | Unseen topology or meaning from pixels |
-| Blender scene probes | Mesh counts, bounds, topology, signed clearance | Visual or semantic match by itself |
+| Blender scene probes (`blender-inspect`) | Mesh counts, bounds, topology defects with locations, depth order, signed clearance | Visual or semantic match by itself |
+| Concept-image depth (`pil_depth`) | Model-inferred *relative* inverse depth of one image, and its rank agreement with a render's depth | Metric depth, hidden geometry, or which source is right where they disagree |
 | Locked render review | Matched projected appearance across requested views | Physical clearance or deformation quality |
 
 ## Working method
@@ -43,9 +50,19 @@ measurements, and domain-profile identity with the result.
 Prepare every requested multi-view contour, including refused views. Run a
 template solve only when calibration and correspondences are sufficient, and
 continue to geometry mutation only from `SOLVED`. Use
-`pil_blender_fit.py --mode probe` for penetration or clearance and
-`pil_blender_mesh.py` for topology and bounds; silhouettes are not collision
-evidence.
+`blender_fit.py --mode probe` for penetration or clearance,
+`blender_mesh.py` for counts and bounds, and `blender_mesh_audit.py` for
+topology defects, all from `blender-inspect`; silhouettes are not collision
+evidence. The `pil_blender_*` copies of these tools are deprecated and go away
+in the next minor release: use them only when `blender-inspect` is not
+installed, and say that the deprecated copy ran.
+
+Concept depth is one extra layer, not a verdict: `pil_depth.py estimate`
+gives model-inferred relative inverse depth, and `compare` aligns it to a
+render's depth `.npy` from `blender_inspect_render.py`. Read the Spearman rank
+correlation together with AbsRel, `valid_pixels`, the region boxes and the
+disagreement image; AbsRel alone tracks camera distance, and the two views need
+matching framing and pose. There are no pass/fail thresholds.
 
 Render only the decisive requested views with locked framing, then aggregate
 matched comparisons with `pil_multiview_review.py`. A missing, refused, or

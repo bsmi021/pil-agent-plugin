@@ -11,8 +11,10 @@ declared comparison verdict.
 
 For calibrated template fitting, Blender clearance, or an image-plus-mesh
 review, route through [`image-analysis`](../image-analysis/SKILL.md) or
-[`multiview-reconstruction`](../multiview-reconstruction/SKILL.md). Pixel
-complexity is not polygon count, topology, collision, or metric depth.
+[`multiview-reconstruction`](../multiview-reconstruction/SKILL.md). For Blender
+mesh defects, depth renders, or depth order, use the `blender-inspect` plugin's
+`model-inspection` skill when it is installed. Pixel complexity is not polygon
+count, topology, collision, or metric depth.
 
 ## Start with the narrowest useful tool
 
@@ -42,6 +44,7 @@ layer or a specialized mode.
 | Dimensions, alpha, EXIF, ICC, frames | `pil_image_info.py` |
 | Machine-read text with boxes | `pil_ocr.py` |
 | Copy identification or related-image ranking | `pil_embed.py` |
+| Relative depth of one image, or its agreement with a render's depth map | `pil_depth.py` |
 | Bind visual claims to exact source bytes | `pil_semantic_record.py` |
 | WCAG contrast arithmetic | `pil_alignment.py contrast` |
 
@@ -66,6 +69,10 @@ the tool and interpretation are already clear.
   pipelines unless a matching calibration profile establishes that use.
 - `UNMEASURABLE` is an outcome, not an invitation to substitute a different
   metric. Multi-pair contracts use worst-case aggregation.
+- `pil_depth.py` output is model-inferred relative inverse depth, never metric.
+  Read Spearman with AbsRel and the disagreement regions; AbsRel alone is
+  dominated by camera distance. Single-image depth of flat-shaded concept art
+  resolves little internal relief.
 - Embedding claims are model- and preprocessing-specific. Ungated models may
   rank results but do not inherit another model's bands or verdicts.
 - OCR confidence belongs to the OCR engine. Verify important or stylized text
