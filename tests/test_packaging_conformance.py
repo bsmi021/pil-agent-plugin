@@ -373,3 +373,41 @@ def test_blender_inspect_codex_interface_points_at_bundled_files():
     for key in ("composerIcon", "logo"):
         assert (BLENDER_INSPECT / interface[key]).is_file()
     assert interface["privacyPolicyURL"].endswith("/plugins/blender-inspect/PRIVACY.md")
+
+
+# --- two plugins, one repository: marketplace and pytest wiring --------------
+
+
+def test_marketplace_description_names_both_plugins():
+    market = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
+    description = market["description"]
+    assert "single-plugin" not in description.lower()
+    for entry in market["plugins"]:
+        assert entry["name"] in description
+
+
+def test_pytest_collects_and_imports_both_plugins():
+    import tomllib
+
+    config = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    options = config["tool"]["pytest"]["ini_options"]
+    assert {"tests", "plugins/blender-inspect/tests"} <= set(options["testpaths"])
+    assert {
+        "tests",
+        "scripts",
+        "plugins/blender-inspect/tests",
+        "plugins/blender-inspect/scripts",
+    } <= set(options["pythonpath"])
+
+
+def test_no_module_basename_collides_across_the_two_plugins():
+    """Both scripts dirs and both tests dirs sit on one sys.path, so a shared
+    basename would import the wrong module. The naming rule keeps them apart:
+    blender_*.py scripts, test_bi_*.py tests and bi_* helpers."""
+    new_scripts = {p.stem for p in (BLENDER_INSPECT / "scripts").glob("*.py")}
+    new_tests = {p.stem for p in (BLENDER_INSPECT / "tests").glob("*.py")}
+    assert all(name.startswith("blender_") for name in new_scripts)
+    assert all(name.startswith(("test_bi_", "bi_")) for name in new_tests)
+
+    root = {p.stem for d in ("scripts", "tests") for p in (REPO_ROOT / d).glob("*.py")}
+    assert not (new_scripts | new_tests) & root

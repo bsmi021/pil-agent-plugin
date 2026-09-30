@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "pil-agent-plugin",
-  "description": "Single-plugin marketplace, so this repository can be registered and installed directly with the Claude Code CLI, which resolves installs from marketplaces rather than from directory paths.",
+  "description": "Marketplace for two plugins from this repository: pil-agent-plugin (image measurement) and blender-inspect (Blender scene depth and defect inspection), so either can be installed directly with the Claude Code CLI, which resolves installs from marketplaces rather than from directory paths.",
   "owner": {
     "name": "bsmi021",
     "url": "https://github.com/bsmi021"
