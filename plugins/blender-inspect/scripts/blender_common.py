@@ -23,6 +23,9 @@ module owns the parts every tool must do identically:
 - **Refusal contract.** When a tool cannot answer it exits 2 with byte-empty
   stdout and a one-line reason on stderr, the same contract as
   `pil_blender_mesh`.
+- **PNG metadata.** Blender stamps every PNG with text and time chunks that
+  change on each run. `strip_png_metadata` drops them without re-encoding,
+  so the pixels are untouched and repeat renders are byte-identical.
 
 This is a shared module, not a tool: it declares no `TOOL_VERSION`. Each
 `blender_*.py` tool declares its own, as in the root plugin.
@@ -34,9 +37,11 @@ import json
 import os
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
+import zlib
 from pathlib import Path
 
 WINDOWS_BLENDER_5_2 = "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe"
@@ -93,8 +98,11 @@ def resolve_blender_executable(explicit=None):
     return None, f"blender executable not found; searched {discovery_order()}"
 
 
-def add_blender_arguments(parser):
-    """The `--blender-executable` and `--timeout` options every tool takes."""
+def add_blender_arguments(parser, timeout=DEFAULT_TIMEOUT_SECONDS):
+    """The `--blender-executable` and `--timeout` options every tool takes.
+
+    ``timeout`` is the `--timeout` default, for a tool whose renders need longer.
+    """
     parser.add_argument(
         "--blender-executable",
         help=f"path to the Blender executable; when absent, searches {discovery_order()}",
@@ -102,8 +110,8 @@ def add_blender_arguments(parser):
     parser.add_argument(
         "--timeout",
         type=int,
-        default=DEFAULT_TIMEOUT_SECONDS,
-        help=f"seconds to wait for Blender (default {DEFAULT_TIMEOUT_SECONDS})",
+        default=timeout,
+        help=f"seconds to wait for Blender (default {timeout})",
     )
 
 
@@ -239,3 +247,48 @@ def write_payload(payload, stream=None):
     stream = stream or sys.stdout
     json.dump(payload, stream, indent=2, sort_keys=True, allow_nan=False)
     stream.write("\n")
+
+
+PNG_SIGNATURE = bytes((0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A))
+
+# Chunks that carry per-run metadata (Blender writes the render date, time and
+# file name as text). Every other chunk, including the pixel data and any
+# colour-space chunk, is kept byte for byte.
+PNG_METADATA_CHUNKS = frozenset({b"tEXt", b"zTXt", b"iTXt", b"tIME"})
+
+
+def strip_png_metadata(path):
+    """Rewrite the PNG at ``path`` without its text and time chunks.
+
+    Stdlib only: the chunk list is filtered and nothing is re-encoded, so the
+    decoded pixels are exactly Blender's. Raises ValueError for a file that is
+    not a well-formed PNG (bad signature, truncated chunk, CRC mismatch).
+    """
+    path = Path(path)
+    data = path.read_bytes()
+    if not data.startswith(PNG_SIGNATURE):
+        raise ValueError(f"not a PNG file: {path}")
+    kept = [PNG_SIGNATURE]
+    offset = len(PNG_SIGNATURE)
+    seen_end = False
+    while offset < len(data):
+        if offset + 8 > len(data):
+            raise ValueError(f"truncated PNG chunk header in {path}")
+        length, kind = struct.unpack(">I4s", data[offset:offset + 8])
+        end = offset + 12 + length
+        if end > len(data):
+            raise ValueError(f"truncated PNG chunk {kind!r} in {path}")
+        crc = struct.unpack(">I", data[end - 4:end])[0]
+        if zlib.crc32(data[offset + 4:end - 4]) & 0xFFFFFFFF != crc:
+            raise ValueError(f"PNG chunk {kind!r} fails its CRC in {path}")
+        if kind not in PNG_METADATA_CHUNKS:
+            kept.append(data[offset:end])
+        offset = end
+        if kind == b"IEND":
+            seen_end = True
+            break
+    if not seen_end:
+        raise ValueError(f"PNG has no IEND chunk: {path}")
+    stripped = path.with_name(path.name + ".stripped")
+    stripped.write_bytes(b"".join(kept))
+    os.replace(stripped, path)

@@ -386,3 +386,96 @@ def test_a_probe_that_raises_makes_blender_exit_non_zero():
 
     assert payload is None
     assert error.startswith("blender exited 1")
+
+
+# --- PNG metadata strip (hermetic; Pillow is only the test oracle) -----------
+
+
+def _png_with_metadata(path):
+    from PIL import Image, PngImagePlugin
+
+    image = Image.new("RGBA", (5, 3))
+    image.putdata([(x * 40, y * 80, 7, 255 - x) for y in range(3) for x in range(5)])
+    info = PngImagePlugin.PngInfo()
+    info.add_text("Date", "2026/09/29 12:00:00")
+    info.add_text("RenderTime", "00:01.23")
+    image.save(path, format="PNG", pnginfo=info)
+    return image.tobytes()
+
+
+def test_strip_png_metadata_drops_text_and_keeps_pixels(tmp_path):
+    from PIL import Image
+
+    path = tmp_path / "render.png"
+    pixels = _png_with_metadata(path)
+    assert b"tEXt" in path.read_bytes()
+
+    blender_common.strip_png_metadata(path)
+
+    data = path.read_bytes()
+    assert b"tEXt" not in data and b"RenderTime" not in data
+    with Image.open(path) as stripped:
+        assert stripped.mode == "RGBA"
+        assert stripped.tobytes() == pixels
+    assert not list(tmp_path.glob("*.stripped"))
+
+
+def test_strip_png_metadata_makes_differently_stamped_files_identical(tmp_path):
+    from PIL import Image, PngImagePlugin
+
+    image = Image.new("RGB", (4, 4), (1, 2, 3))
+    paths = []
+    for stamp in ("12:00:00", "12:00:01"):
+        info = PngImagePlugin.PngInfo()
+        info.add_text("Time", stamp)
+        path = tmp_path / f"{stamp.replace(':', '')}.png"
+        image.save(path, format="PNG", pnginfo=info)
+        blender_common.strip_png_metadata(path)
+        paths.append(path)
+
+    assert paths[0].read_bytes() == paths[1].read_bytes()
+
+
+@pytest.mark.parametrize(
+    "mangle",
+    [
+        lambda data: b"GIF89a" + data[6:],
+        lambda data: data[:-8],
+        lambda data: data[:20] + bytes([data[20] ^ 0xFF]) + data[21:],
+    ],
+    ids=["signature", "truncated", "crc"],
+)
+def test_strip_png_metadata_refuses_a_malformed_png(tmp_path, mangle):
+    path = tmp_path / "bad.png"
+    _png_with_metadata(path)
+    original = mangle(path.read_bytes())
+    path.write_bytes(original)
+
+    with pytest.raises(ValueError):
+        blender_common.strip_png_metadata(path)
+    assert path.read_bytes() == original
+
+
+# --- host side is stdlib only (binding decision) -----------------------------
+
+
+def test_every_blender_tool_imports_only_the_stdlib_and_blender_common():
+    import ast
+
+    allowed_local = {"blender_common"}
+    offenders = {}
+    for path in sorted(SCRIPTS.glob("blender_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in tree.body:
+            if isinstance(node, ast.Import):
+                names = [alias.name.split(".")[0] for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                names = [(node.module or "").split(".")[0]]
+            else:
+                continue
+            for name in names:
+                if name in allowed_local or name == "__future__":
+                    continue
+                if name not in sys.stdlib_module_names:
+                    offenders.setdefault(path.name, []).append(name)
+    assert not offenders, f"host-side imports outside the stdlib: {offenders}"
