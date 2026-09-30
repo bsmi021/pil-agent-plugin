@@ -325,3 +325,51 @@ def test_the_version_check_actually_fails_when_a_version_is_reverted(tmp_path):
     assert reverted in mismatched, (
         "the version guard failed to notice a reverted tool -- it is vacuous"
     )
+
+
+# --- blender-inspect: the second plugin's package layout --------------------
+#
+# blender-inspect lives at plugins/blender-inspect/ and carries the same
+# four-manifest set as the root plugin, plus the directories later units fill.
+# Git keeps no empty directory, so skills/, agents/ and evals/ hold a .gitkeep
+# until their content lands.
+
+BLENDER_INSPECT = REPO_ROOT / "plugins" / "blender-inspect"
+
+
+@pytest.mark.parametrize(
+    "relative",
+    [
+        "plugin.json",
+        ".claude-plugin/plugin.json",
+        ".codex-plugin/plugin.json",
+        "README.md",
+        "LICENSE",
+        "PRIVACY.md",
+        "assets/icon.svg",
+        "skills",
+        "agents",
+        "scripts",
+        "tests",
+        "evals",
+    ],
+)
+def test_blender_inspect_ships_the_required_layout(relative):
+    assert (BLENDER_INSPECT / relative).exists(), f"plugins/blender-inspect/{relative} is missing"
+
+
+def test_blender_inspect_readme_has_a_status_entry_for_its_version():
+    """release_notes.py reads the release notes from this section."""
+    version = json.loads((BLENDER_INSPECT / "plugin.json").read_text(encoding="utf-8"))["version"]
+    readme = (BLENDER_INSPECT / "README.md").read_text(encoding="utf-8")
+    assert re.search(r"^## Status$", readme, re.MULTILINE)
+    assert re.search(rf"^\*\*{re.escape(version)} \u2014 ", readme, re.MULTILINE)
+
+
+def test_blender_inspect_codex_interface_points_at_bundled_files():
+    codex = json.loads((BLENDER_INSPECT / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    interface = codex["interface"]
+    assert interface["displayName"] == "Blender Inspect"
+    for key in ("composerIcon", "logo"):
+        assert (BLENDER_INSPECT / interface[key]).is_file()
+    assert interface["privacyPolicyURL"].endswith("/plugins/blender-inspect/PRIVACY.md")
