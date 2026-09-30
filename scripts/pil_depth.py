@@ -43,7 +43,7 @@ from pil_common import load_rgba_straight  # noqa: E402
 from pil_io import digest, save_png  # noqa: E402
 from pil_region import RegionError, rect_to_fractional  # noqa: E402
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
 
 MODEL_ENV_VAR = "PIL_AGENT_DEPTH_MODEL"
 

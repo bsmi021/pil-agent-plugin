@@ -33,7 +33,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
 
 # Deprecated: blender-inspect now ships the canonical copy. This one keeps
 # its behaviour until it is removed in the next minor release; main() says

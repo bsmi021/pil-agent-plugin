@@ -7,7 +7,11 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
-**New in 0.9.6:** every environment setting is read by its literal name.
+**New in 0.10.0:** a second plugin, [`blender-inspect`](plugins/blender-inspect/README.md),
+now owns the Blender tools (depth, mesh-defect audit, inspection renders), and
+this plugin gains `pil_depth` for model-inferred depth of concept images. The
+`pil_blender_*` and `pil_multiview_render` copies here are deprecated.
+**0.9.6:** every environment setting is read by its literal name.
 **0.9.5:** clearer embedding-model settings and skill discovery text.
 **0.9.4:** the plugin tree no longer bundles working evidence under
 `runs/`, so it is smaller and fully readable. **0.9.3** added credential isolation
@@ -19,6 +23,22 @@ added explicit EXIF/ICC normalization, image-bound masks,
 bounded registration, source-disjoint domain calibration, native local changes,
 and discoverable CLI/MCP tools. See the complete
 [measurement workflows and usage guide](docs/measurement-workflows.md).
+
+## Two plugins
+
+This repository is a marketplace with two plugins:
+
+| Plugin | Path | Role |
+|---|---|---|
+| `pil-agent-plugin` (0.10.0) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
+| `blender-inspect` (0.1.0) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
+
+Blender work belongs to `blender-inspect`. The Blender tools that started here
+(`pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render`,
+`pil_multiview_render`) are **deprecated** in 0.10.0: unchanged in behaviour,
+flagged in docs and in the capability catalog, and removed in the next minor
+release. `pil_contract_verdict --scene-stats` accepts `blender_mesh` output as
+well as `pil_blender_mesh` output. Evals for `blender-inspect` are not shipped.
 
 ## Privacy and data sent
 
@@ -676,10 +696,27 @@ does not fail loudly, it quietly costs 36% of the margin.
 - [`docs/index.md`](docs/index.md) — documentation index and open items
 - [`docs/design-rationale.md`](docs/design-rationale.md) — why each metric exists,
   and what failed along the way
+- [`docs/blender-inspect-spec.md`](docs/blender-inspect-spec.md) — the
+  two-plugin design, the migration and deprecation plan, and the requirements
+  for `blender-inspect` and `pil_depth`
 - [`docs/phase2-scope.md`](docs/phase2-scope.md) — planned work: perceptual ΔE2000
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.10.0 — two-plugin layout and concept-image depth.** The repository now
+ships two plugins from one marketplace: `pil-agent-plugin` (image measurement)
+and `blender-inspect` (Blender scenes; see
+[`plugins/blender-inspect/`](plugins/blender-inspect/README.md)). The Blender
+tools `pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render` and
+`pil_multiview_render` are **deprecated**: they behave exactly as before, print
+a deprecation notice, are marked deprecated in the capability catalog, and are
+removed in the next minor release. Their replacements are `blender_mesh`,
+`blender_fit`, `blender_render` and `blender_multiview_render` in
+`blender-inspect`. New: `pil_depth` (Depth Anything V2 Small ONNX, caller-supplied
+and sha256-pinned) estimates relative depth of a concept image and compares it
+with a Blender render's exact depth. Skills and the comparison agent route
+Blender work to `blender-inspect`.
 
 **0.9.6 — literal environment reads.** OCR install discovery and the test
 suite read environment settings by literal name, and process tests start from

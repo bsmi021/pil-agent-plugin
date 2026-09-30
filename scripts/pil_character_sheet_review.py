@@ -75,7 +75,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
 
 _HERE = Path(__file__).resolve().parent
 RENDER_TOOL = _HERE / "pil_blender_render.py"

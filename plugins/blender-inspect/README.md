@@ -54,6 +54,17 @@ uv run pytest -q plugins/blender-inspect/tests
 
 ## Status
 
+**0.1.0 — First release of blender-inspect.** A second plugin in the
+`pil-agent-plugin` marketplace that reads depth and defects from the Blender
+scene itself: `blender_mesh_audit` (ten mesh-defect classes with locations),
+`blender_inspect_render` (depth, normal, matcap, cavity and related modes from
+one camera), `blender_depth_order` (which object is in front, per view), plus
+the canonical `blender_mesh`, `blender_fit`, `blender_render` and
+`blender_multiview_render`, the `model-inspection` and `bootstrap` skills and the
+`blender-model-inspector` agent. The matching `pil_blender_*` copies in
+`pil-agent-plugin` are deprecated. Evals are not shipped: `claude plugin eval`
+refuses any case that grants Bash on Windows.
+
 **0.1.0 — Plugin scaffold and shared Blender launcher.** First release of
 `blender-inspect` as a second plugin in the `pil-agent-plugin` marketplace,
 with the four-manifest set and `scripts/blender_common.py`.

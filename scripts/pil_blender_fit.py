@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pil_blender_mesh import resolve_blender_executable
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
 
 # Deprecated: blender-inspect now ships the canonical copy. This one keeps
 # its behaviour until it is removed in the next minor release; main() says
