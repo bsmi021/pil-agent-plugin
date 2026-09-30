@@ -43,7 +43,7 @@ LAUNCHER_FLAGS = {"--factory-startup", "--background", "--version"}
 
 
 def front_matter(path):
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
     match = re.match(r"^---\r?\n(.*?)\r?\n---\r?\n", text, re.S)
     assert match, f"{path.name}: must open with YAML frontmatter"
     return yaml.safe_load(match.group(1)), text[match.end():]

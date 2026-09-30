@@ -52,8 +52,9 @@ For a repeatable end-to-end job, `pil_reconstruct.py` composes the stages from a
 `reconstruction-job-v1` manifest and stops at `UNDERDETERMINED`,
 `VIEW_CONFLICT`, `FIT_BLOCKED`, or `RENDER_BLOCKED`. To keep Blender work in
 `blender-inspect`, run `blender_fit.py` and `blender_multiview_render.py`
-yourself and point the job's `fit` and `render` stages at their saved payloads
-with `{"payload": PATH}`; both stages must be external, or the render stage
+yourself (their paths come from that plugin's `model-inspection` skill) and
+point the job's `fit` and `render` stages at their saved payloads with
+`{"payload": PATH}`; both stages must be external, or the render stage
 still calls the deprecated `pil_multiview_render.py`.
 
 The `pil_blender_fit.py`, `pil_blender_mesh.py`, `pil_blender_render.py` and

@@ -52,8 +52,9 @@ template solve only when calibration and correspondences are sufficient, and
 continue to geometry mutation only from `SOLVED`. Use
 `blender_fit.py --mode probe` for penetration or clearance,
 `blender_mesh.py` for counts and bounds, and `blender_mesh_audit.py` for
-topology defects, all from `blender-inspect`; silhouettes are not collision
-evidence. The `pil_blender_*` copies of these tools are deprecated and go away
+topology defects, all from `blender-inspect` (load its `model-inspection`
+skill, which resolves that plugin's scripts directory); silhouettes are not
+collision evidence. The `pil_blender_*` copies of these tools are deprecated and go away
 in the next minor release: use them only when `blender-inspect` is not
 installed, and say that the deprecated copy ran.
 
