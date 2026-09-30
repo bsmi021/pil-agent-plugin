@@ -398,3 +398,102 @@ def test_ci_runs_both_plugins_tests_and_the_bump_check():
 
     assert "pytest -q tests plugins/blender-inspect/tests" in runs
     assert "check_version_bump.py" in runs
+
+
+# --- preflight.py: order, stop at first failure, UTF-8 release notes ----------
+
+
+class _FakeRunner:
+    def __init__(self, fail_at=None):
+        self.calls = []
+        self.fail_at = fail_at
+
+    def __call__(self, cmd, **kwargs):
+        self.calls.append((cmd, kwargs))
+        code = 3 if self.fail_at is not None and len(self.calls) - 1 == self.fail_at else 0
+        return subprocess.CompletedProcess(cmd, code, f"out {len(self.calls)}\n", "err\n" if code else "")
+
+
+def _step_kind(cmd):
+    joined = " ".join(cmd)
+    for kind in ("check_version_bump.py", "uv lock --check", "--title", "release_notes.py", "pytest"):
+        if kind in joined:
+            return kind
+    return joined
+
+
+def test_preflight_runs_the_steps_in_order():
+    preflight = _import("preflight")
+    runner = _FakeRunner()
+    out = __import__("io").StringIO()
+
+    code = preflight.run(preflight.steps("origin/main"), runner=runner, out=out)
+
+    assert code == 0
+    kinds = [_step_kind(cmd) for cmd, _ in runner.calls]
+    per_plugin = ["release_notes.py", "--title"] * len(MARKET_PLUGINS)
+    assert kinds == ["check_version_bump.py", "uv lock --check", *per_plugin, "pytest"]
+    assert runner.calls[0][0][-2:] == ["origin/main", "HEAD"]
+    assert runner.calls[-1][0][-1] == "tests/test_packaging_conformance.py"
+    assert all(kwargs["cwd"] == REPO_ROOT for _, kwargs in runner.calls)
+    assert out.getvalue().endswith("== preflight passed\n")
+
+
+def test_preflight_forces_utf8_for_every_plugins_release_notes():
+    preflight = _import("preflight")
+    runner = _FakeRunner()
+
+    preflight.run(preflight.steps("base"), runner=runner, out=__import__("io").StringIO())
+
+    notes = [(cmd, kw) for cmd, kw in runner.calls if "release_notes.py" in " ".join(cmd)]
+    readmes = {cmd[cmd.index("--readme") + 1] for cmd, _ in notes}
+    assert readmes == {"README.md", "plugins/blender-inspect/README.md"}
+    assert all(kw["env"]["PYTHONIOENCODING"] == "utf-8" for _, kw in notes)
+
+
+@pytest.mark.parametrize("fail_at", [0, 1, 2])
+def test_preflight_stops_at_the_first_failure_with_its_output(fail_at):
+    preflight = _import("preflight")
+    runner = _FakeRunner(fail_at=fail_at)
+    out = __import__("io").StringIO()
+    planned = preflight.steps("origin/main")
+
+    code = preflight.run(planned, runner=runner, out=out)
+
+    assert code == 3
+    assert len(runner.calls) == fail_at + 1
+    text = out.getvalue()
+    assert f"out {fail_at + 1}\nerr\n== FAILED: {planned[fail_at][0]} (exit 3)\n" in text
+    assert "preflight passed" not in text
+
+
+def test_preflight_reports_a_step_that_cannot_start():
+    preflight = _import("preflight")
+
+    def missing(cmd, **kwargs):
+        raise FileNotFoundError("uv")
+
+    out = __import__("io").StringIO()
+    code = preflight.run([("lockfile", ["uv", "lock", "--check"], {})], runner=missing, out=out)
+
+    assert code == 1
+    assert "== FAILED: lockfile (could not start)" in out.getvalue()
+
+
+def test_preflight_version_bump_failure_fails_the_script(two_plugin_repo):
+    """End to end on a synthetic repo: the first step's real failure stops the
+    run with a non-zero exit before any later step starts."""
+    preflight = _import("preflight")
+    repo, base = two_plugin_repo
+    _write(repo, "scripts/pil_tool.py", "CHANGED = 1\n")
+    _commit(repo, "root change")
+
+    def in_repo(cmd, **kwargs):
+        return subprocess.run(cmd, **{**kwargs, "cwd": repo})
+
+    out = __import__("io").StringIO()
+    code = preflight.run(preflight.steps(base), runner=in_repo, out=out)
+
+    assert code == 1
+    assert "Version bump missing for: pil-agent-plugin" in out.getvalue()
+    assert "uv lock" not in out.getvalue()
