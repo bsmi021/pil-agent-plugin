@@ -75,7 +75,7 @@ _PROBE_BODY = r'''
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 
 def bbox_points():
@@ -162,12 +162,13 @@ def main():
         forward = (center - location).normalized()
         corrected_right = forward.cross(up).normalized()
         corrected_up = corrected_right.cross(forward).normalized()
-        camera.matrix_world = (
+        # A nested tuple is read column by column; only a Matrix takes rows.
+        camera.matrix_world = Matrix((
             (corrected_right.x, corrected_up.x, -forward.x, location.x),
             (corrected_right.y, corrected_up.y, -forward.y, location.y),
             (corrected_right.z, corrected_up.z, -forward.z, location.z),
             (0.0, 0.0, 0.0, 1.0),
-        )
+        ))
         scene.camera = camera
         output = str(Path(PARAMS["output_dir"]) / (view["name"] + ".png"))
         scene.render.filepath = output

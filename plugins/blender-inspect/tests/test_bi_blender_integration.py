@@ -168,3 +168,69 @@ def test_two_multiview_runs_write_byte_identical_pngs(fitted_fixture):
             for view in payload["render"]["views"]
         })
     assert digests[0] == digests[1]
+
+
+@pytest.fixture(scope="module")
+def off_centre_box(tmp_path_factory):
+    """A 1 x 3 x 2 box centred at (5, 4, 1): asymmetric, and wholly at y > 0."""
+    root = tmp_path_factory.mktemp("bi_off_centre")
+    blend = root / "box.blend"
+    create_script = root / "create_box.py"
+    create_script.write_text(
+        """
+import bpy
+
+bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.delete(use_global=False)
+bpy.ops.mesh.primitive_cube_add(size=1.0, location=(5, 4, 1), scale=(1, 3, 2))
+bpy.context.object.name = 'Box'
+bpy.ops.wm.save_as_mainfile(filepath=FIXTURE_OUTPUT)
+""".replace("FIXTURE_OUTPUT", repr(str(blend))),
+        encoding="utf-8",
+    )
+    proc = subprocess.run(
+        [BLENDER, "--factory-startup", "--background", "--python-exit-code", "1", "--python", str(create_script)],
+        capture_output=True,
+        text=True,
+        timeout=300,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    return root, blend
+
+
+def test_multiview_cameras_face_the_scene_along_each_view_direction(off_centre_box):
+    from PIL import Image
+
+    root, blend = off_centre_box
+    manifest = root / "views.json"
+    manifest.write_text(json.dumps({
+        "schema": "render-views-v1",
+        "views": [
+            {"name": "front", "direction": [0, -1, 0]},
+            {"name": "right", "direction": [1, 0, 0]},
+        ],
+    }), encoding="utf-8")
+    size = 128
+    payload = _run(
+        "blender_multiview_render.py", blend,
+        "--manifest", manifest,
+        "--output-dir", root / "renders",
+        "--width", str(size),
+        "--height", str(size),
+        "--mode", "silhouette",
+    )
+
+    # Seen from the front the box is 1 wide (X); from the right it is 3 wide (Y).
+    # Both are 2 tall and centred in the frame, because each camera looks at the box.
+    expected_width = {"front": 1.0, "right": 3.0}
+    for view in payload["render"]["views"]:
+        scale = size / view["ortho_scale"]
+        alpha = Image.open(view["path"]).getchannel("A")
+        box = alpha.point(lambda value: 255 if value >= 128 else 0).getbbox()
+        assert box is not None, f"{view['name']} rendered nothing"
+        left, top, right, bottom = box
+        assert abs((right - left) - expected_width[view["name"]] * scale) <= 2, (view["name"], box)
+        assert abs((bottom - top) - 2.0 * scale) <= 2, (view["name"], box)
+        assert abs((left + right) / 2 - size / 2) <= 2, (view["name"], box)
+        assert abs((top + bottom) / 2 - size / 2) <= 2, (view["name"], box)
