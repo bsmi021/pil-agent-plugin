@@ -416,6 +416,18 @@ def test_release_workflow_loops_over_the_plan():
     assert "pytest -q tests/test_packaging_conformance.py" in runs
 
 
+def test_only_pil_agent_plugin_releases_become_latest():
+    """Without an explicit flag GitHub picks Latest by date and version, and
+    blender-inspect--v0.1.0, created after pil-agent-plugin--v0.10.0, took it."""
+    runs = _run_lines(_workflow("release.yml"))
+
+    assert 'if [ "$NAME" = "pil-agent-plugin" ]; then LATEST=true; else LATEST=false; fi' in runs
+    assert '--latest="$LATEST"' in runs
+    assert runs.index("LATEST=true") < runs.index('gh release create "$TAG"')
+    root_plugin = MARKET_PLUGINS[0][0]
+    assert root_plugin == "pil-agent-plugin"
+
+
 def test_release_plan_step_can_read_github_releases():
     steps = _workflow("release.yml")["jobs"]["tag-and-release"]["steps"]
     plan = next(step for step in steps if step.get("id") == "plan")
