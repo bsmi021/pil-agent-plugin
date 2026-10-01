@@ -268,6 +268,26 @@ def test_estimate_runtime_missing_is_a_refusal(monkeypatch, capsys, model, image
     assert (code, payload) == (2, None) and "onnxruntime is unavailable" in err
 
 
+def test_estimate_run_time_model_error_is_a_refusal(monkeypatch, capsys, model, image, tmp_path):
+    """A model that loads but rejects the input at run time (ORT raises its own
+    native exception types) exits 2 with one line, not a traceback."""
+
+    class OrtInvalidArgument(Exception):
+        pass
+
+    def reject(tensor):
+        raise OrtInvalidArgument(
+            "[ONNXRuntimeError] : 2 : INVALID_ARGUMENT : Got invalid dimensions for input: "
+            "pixel_values\n index: 1 Got: 3 Expected: 1"
+        )
+
+    install_fake_runtime(monkeypatch, output=reject)
+    code, payload, err = run(capsys, "estimate", image, "--model", model, "--output-dir", tmp_path / "o")
+    assert (code, payload) == (2, None)
+    assert err.startswith("pil_depth: depth model model.onnx failed on a ") and err.count("\n") == 1
+    assert "INVALID_ARGUMENT" in err and not list((tmp_path / "o").glob("*"))
+
+
 def test_estimate_refuses_bad_model_outputs(monkeypatch, capsys, model, image, tmp_path):
     install_fake_runtime(monkeypatch, output=lambda t: np.zeros((1, 3, 4, 4), dtype=np.float32))
     code, payload, err = run(capsys, "estimate", image, "--model", model, "--output-dir", tmp_path / "a")

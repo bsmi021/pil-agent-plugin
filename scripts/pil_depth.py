@@ -334,7 +334,16 @@ def run_estimate(args):
 
     tensor, fed_size, size_mode = _preprocess(rgb, spec, static_size)
     input_name = session.get_inputs()[0].name
-    raw = np.asarray(session.run(None, {input_name: tensor})[0], dtype=np.float32)
+    try:
+        raw = np.asarray(session.run(None, {input_name: tensor})[0], dtype=np.float32)
+    except Exception as exc:
+        # A model that loads can still reject the input at run time (wrong
+        # channel count, dtype, rank); ORT raises its own native types for that.
+        reason = (str(exc).strip().splitlines() or [type(exc).__name__])[0]
+        raise DepthError(
+            f"depth model {model_path.name} failed on a {fed_size[0]}x{fed_size[1]} "
+            f"input: {reason}"
+        ) from exc
     depth = np.squeeze(raw)
     if depth.ndim != 2:
         raise DepthError(
