@@ -2,9 +2,11 @@ name: Release
 
 # Fires after a merge into main. The marketplace lists more than one plugin
 # and each is released on its own tag, so this tags and releases every listed
-# plugin whose current version has no tag yet; when all are tagged it is a
-# no-op. Each release's notes and title are the matching Status entry from
-# that plugin's own README.md.
+# plugin whose current version has no GitHub Release yet; when all are
+# released it is a no-op. A tag left without a release by a failed run is
+# reused, and the next run creates the missing release on it. Each release's
+# notes and title are the matching Status entry from that plugin's own
+# README.md.
 on:
   push:
     branches: [main]
@@ -30,9 +32,12 @@ jobs:
       # (pil-agent-plugin--v0.6.0 and back through v0.2.0; blender-inspect--v0.1.0
       # onwards), so the generated tags have to match or releases stop sorting
       # together. release_plan.py prints one tab-separated line per plugin whose
-      # tag is missing: name, version, tag, README path.
+      # GitHub Release is missing (it reads them with gh, hence GH_TOKEN): name,
+      # version, tag, README path.
       - name: Plan the releases
         id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           python .github/scripts/release_plan.py > RELEASE_PLAN.tsv
           cat RELEASE_PLAN.tsv
@@ -40,7 +45,7 @@ jobs:
             echo "pending=true" >> "$GITHUB_OUTPUT"
           else
             echo "pending=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Every marketplace plugin's version is already tagged; nothing to release."
+            echo "::notice::Every marketplace plugin's version is already released; nothing to release."
           fi
 
       # Never tag a version the repo does not agree on: the conformance suite
@@ -81,8 +86,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           while IFS=$'\t' read -r NAME VERSION TAG README; do
-            git tag -a "$TAG" -m "Release $TAG"
-            git push origin "$TAG"
+            # A tag without a release is what a failed run leaves behind:
+            # keep the tag and only create the release.
+            if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+              echo "$TAG already tagged; creating its missing release."
+            else
+              git tag -a "$TAG" -m "Release $TAG"
+              git push origin "$TAG"
+            fi
             gh release create "$TAG" \
               --title "$(cat "RELEASE_TITLE-$TAG.txt")" \
               --notes-file "RELEASE_NOTES-$TAG.md" \

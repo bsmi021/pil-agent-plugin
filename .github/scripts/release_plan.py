@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""List the marketplace plugins whose current version has no release tag yet.
+"""List the marketplace plugins whose current version has no GitHub Release yet.
 
 release.yml's tag loop reads this script's output, so the loop and any dry
 simulation of it run the same code. One tab-separated line per pending
@@ -8,8 +8,12 @@ release, in marketplace order:
     <name>\t<version>\t<name>--v<version>\t<path to that plugin's README.md>
 
 The version is the plugin's own `.claude-plugin/plugin.json`; tags follow the
-repository's `<plugin name>--v<version>` form. `--all` ignores existing tags,
-which is the dry simulation: it shows every tag a fresh repository would get.
+repository's `<plugin name>--v<version>` form. A version is pending until its
+GitHub Release exists, not merely its tag: if `gh release create` failed after
+the tag was pushed, the next run still lists it and release.yml creates the
+missing release on the existing tag. Releases are read with `gh release list`,
+so GH_TOKEN must be set. `--all` ignores existing releases, which is the dry
+simulation: it shows every release a fresh repository would get.
 """
 
 from __future__ import annotations
@@ -45,13 +49,18 @@ def releases(root=Path(".")):
     return found
 
 
-def pending(plan, existing_tags):
-    return [release for release in plan if release[2] not in set(existing_tags)]
+def pending(plan, released_tags):
+    """The releases in `plan` whose tag has no GitHub Release in `released_tags`."""
+    return [release for release in plan if release[2] not in set(released_tags)]
 
 
-def existing_tags():
-    out = subprocess.run(
-        ["git", "tag", "--list"], check=True, capture_output=True, text=True
+def existing_releases(run=subprocess.run):
+    """Tag names of every GitHub Release in the repository, drafts included."""
+    out = run(
+        ["gh", "release", "list", "--limit", "1000", "--json", "tagName", "--jq", ".[].tagName"],
+        check=True,
+        capture_output=True,
+        text=True,
     ).stdout
     return [line.strip() for line in out.splitlines() if line.strip()]
 
@@ -59,22 +68,22 @@ def existing_tags():
 def main(argv):
     parser = argparse.ArgumentParser(
         prog="release_plan.py",
-        description="Print the marketplace plugins whose version is not tagged yet.",
+        description="Print the marketplace plugins whose version has no GitHub Release yet.",
     )
     parser.add_argument(
         "--all",
         action="store_true",
-        help="ignore existing tags (dry simulation of a first release)",
+        help="ignore existing releases (dry simulation of a first release)",
     )
     args = parser.parse_args(argv[1:])
 
     plan = releases()
-    todo = plan if args.all else pending(plan, existing_tags())
+    todo = plan if args.all else pending(plan, existing_releases())
     for release in todo:
         print("\t".join(release))
     released = [release[2] for release in plan if release not in todo]
     for tag in released:
-        print(f"{tag} already exists; nothing to release.", file=sys.stderr)
+        print(f"{tag} is already released; nothing to do.", file=sys.stderr)
     return 0
 
 

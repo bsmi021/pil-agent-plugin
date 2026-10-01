@@ -340,7 +340,7 @@ def test_release_plan_yields_one_tag_per_marketplace_plugin():
     assert [readme for *_, readme in plan] == ["README.md", "plugins/blender-inspect/README.md"]
 
 
-def test_release_plan_skips_plugins_whose_tag_exists():
+def test_release_plan_skips_plugins_whose_release_exists():
     release_plan = _import("release_plan")
     plan = release_plan.releases(REPO_ROOT)
     root_tag = plan[0][2]
@@ -348,6 +348,25 @@ def test_release_plan_skips_plugins_whose_tag_exists():
     assert release_plan.pending(plan, []) == plan
     assert release_plan.pending(plan, [root_tag, "v0.7.0"]) == plan[1:]
     assert release_plan.pending(plan, [tag for _, _, tag, _ in plan]) == []
+
+
+def test_release_plan_reads_github_releases_not_tags():
+    """A tag pushed by a run whose `gh release create` failed has no release, so
+    it must stay pending; that is why the plan asks gh, not `git tag`."""
+    release_plan = _import("release_plan")
+    seen = []
+
+    def fake_run(cmd, **kwargs):
+        seen.append(cmd)
+        return subprocess.CompletedProcess(
+            cmd, 0, stdout="pil-agent-plugin--v0.9.6\n\nblender-inspect--v0.1.0\n", stderr=""
+        )
+
+    assert release_plan.existing_releases(run=fake_run) == [
+        "pil-agent-plugin--v0.9.6",
+        "blender-inspect--v0.1.0",
+    ]
+    assert seen[0][:3] == ["gh", "release", "list"]
 
 
 def test_dry_simulation_of_the_tag_loop_yields_both_tags():
@@ -390,8 +409,18 @@ def test_release_workflow_loops_over_the_plan():
     assert 'release_notes.py --readme "$README" "$VERSION"' in runs
     assert 'release_notes.py --title --readme "$README" "$VERSION"' in runs
     assert 'git tag -a "$TAG"' in runs
+    # A tag a failed run left without a release is reused, not re-created.
+    assert 'if git rev-parse -q --verify "refs/tags/$TAG"' in runs
+    assert runs.index('rev-parse -q --verify "refs/tags/$TAG"') < runs.index('git tag -a "$TAG"')
     assert runs.count("done < RELEASE_PLAN.tsv") == 2
     assert "pytest -q tests/test_packaging_conformance.py" in runs
+
+
+def test_release_plan_step_can_read_github_releases():
+    steps = _workflow("release.yml")["jobs"]["tag-and-release"]["steps"]
+    plan = next(step for step in steps if step.get("id") == "plan")
+
+    assert plan["env"]["GH_TOKEN"] == "${{ github.token }}"
 
 
 def test_ci_runs_both_plugins_tests_and_the_bump_check():
