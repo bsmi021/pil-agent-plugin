@@ -94,8 +94,15 @@ jobs:
               git tag -a "$TAG" -m "Release $TAG"
               git push origin "$TAG"
             fi
+            # Left to itself, GitHub picks the repo's Latest by date and version,
+            # so blender-inspect--v0.1.0 (created second) took it from
+            # pil-agent-plugin. /releases/latest has always meant
+            # pil-agent-plugin, so every other plugin's release is created with
+            # --latest=false.
+            if [ "$NAME" = "pil-agent-plugin" ]; then LATEST=true; else LATEST=false; fi
             gh release create "$TAG" \
               --title "$(cat "RELEASE_TITLE-$TAG.txt")" \
               --notes-file "RELEASE_NOTES-$TAG.md" \
+              --latest="$LATEST" \
               --verify-tag
           done < RELEASE_PLAN.tsv
