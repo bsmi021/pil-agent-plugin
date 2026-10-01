@@ -30,8 +30,10 @@ scenes. `pil-agent-plugin` stays the image-measurement plugin and gains concept-
   `pil_blender_mesh` (exit 2, byte-empty stdout, one-line reason on stderr).
 - **Migration: move + deprecated copies.** The canonical Blender tools live in `blender-inspect`.
   `pil-agent-plugin` keeps its `pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render` and
-  `pil_multiview_render` **unchanged in behaviour** for this release, marked deprecated in docs
-  and in the capability catalog. They are removed in the next minor release (not in this work).
+  `pil_multiview_render` for this release, marked deprecated in docs and in the capability
+  catalog. The first three are **unchanged in behaviour**; `pil_multiview_render` gets the same
+  camera-placement fix as `blender_multiview_render` (decided in U2, 2026-09-29), so its renders
+  change. They are removed in the next minor release (not in this work).
 - **Payload compatibility.** `blender_mesh.py` keeps the `scene` object shape that
   `pil_contract_verdict --scene-stats` reads, so the verdict tool accepts output from either.
 - **Concept depth.** Depth Anything V2 **Small** (Apache-2.0) exported to ONNX, caller-supplied and
@@ -86,7 +88,7 @@ scenes. `pil-agent-plugin` stays the image-measurement plugin and gains concept-
 | ID | Requirement |
 |---|---|
 | FR-MIG-01 | Canonical copies in the new plugin: `blender_mesh.py`, `blender_fit.py`, `blender_render.py`, `blender_multiview_render.py` (from `pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render`, `pil_multiview_render`), on `blender_common.py`, same CLIs and payload shapes, `tool` fields renamed to the new names. Their tests move with them (adapted), keeping the Blender-missing skips. |
-| FR-MIG-02 | The four `pil_*` originals stay behaviourally unchanged, gain a one-line deprecation notice on stderr and in `--help`, and `pil_capabilities` marks them `deprecated: true` with `replacement: "blender-inspect/<script>"`. |
+| FR-MIG-02 | The four `pil_*` originals stay behaviourally unchanged, except that `pil_multiview_render` gets the same camera-placement fix as `blender_multiview_render` (the camera's `matrix_world` is built as a `mathutils.Matrix`, not a nested tuple that Blender 5.2 reads column by column; decided in U2). They gain a one-line deprecation notice on stderr and in `--help`, and `pil_capabilities` marks them `deprecated: true` with `replacement: "blender-inspect/<script>"`. |
 | FR-MIG-03 | `pil_character_sheet_review.py` accepts `--renders <manifest.json>` (pre-rendered view images from `blender_render.py`/`blender_multiview_render.py`) as an alternative to rendering itself. |
 | FR-MIG-04 | `pil_reconstruct.py` accepts a job manifest that points the fit/render stages at externally produced payloads (from `blender_fit.py` / `blender_multiview_render.py`) instead of invoking the deprecated copies; `pil_multiview_review.py` needs no change beyond accepting those render manifests. |
 | FR-MIG-05 | `pil_contract_verdict --scene-stats` accepts `blender_mesh.py` payloads (test proves it). |

@@ -35,10 +35,12 @@ This repository is a marketplace with two plugins:
 
 Blender work belongs to `blender-inspect`. The Blender tools that started here
 (`pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render`,
-`pil_multiview_render`) are **deprecated** in 0.10.0: unchanged in behaviour,
-flagged in docs and in the capability catalog, and removed in the next minor
-release. `pil_contract_verdict --scene-stats` accepts `blender_mesh` output as
-well as `pil_blender_mesh` output. Evals for `blender-inspect` are not shipped.
+`pil_multiview_render`) are **deprecated** in 0.10.0: flagged in docs and in
+the capability catalog, and removed in the next minor release. They behave as
+before, except that `pil_multiview_render` now places its cameras correctly
+(the same fix as `blender_multiview_render`), so its renders change.
+`pil_contract_verdict --scene-stats` accepts `blender_mesh` output as well as
+`pil_blender_mesh` output. Evals for `blender-inspect` are not shipped.
 
 ## Privacy and data sent
 
@@ -709,9 +711,11 @@ ships two plugins from one marketplace: `pil-agent-plugin` (image measurement)
 and `blender-inspect` (Blender scenes; see
 [`plugins/blender-inspect/`](plugins/blender-inspect/README.md)). The Blender
 tools `pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render` and
-`pil_multiview_render` are **deprecated**: they behave exactly as before, print
-a deprecation notice, are marked deprecated in the capability catalog, and are
-removed in the next minor release. Their replacements are `blender_mesh`,
+`pil_multiview_render` are **deprecated**: they print a deprecation notice, are
+marked deprecated in the capability catalog, and are removed in the next minor
+release. They behave as before except `pil_multiview_render`: in Blender 5.2 it
+put every horizontal view's camera at the world origin, and it now places them
+correctly, so its renders change. Their replacements are `blender_mesh`,
 `blender_fit`, `blender_render` and `blender_multiview_render` in
 `blender-inspect`. New: `pil_depth` (Depth Anything V2 Small ONNX, caller-supplied
 and sha256-pinned) estimates relative depth of a concept image and compares it
