@@ -71,7 +71,7 @@ from pil_common import (  # noqa: E402
     resize_mask,
 )
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
 
 SATISFIED = "SATISFIED"
 VIOLATED = "VIOLATED"
@@ -1120,7 +1120,10 @@ def load_contract(path, extra_expect, extra_invariant):
 
 
 def load_scene_stats(path):
-    """Read a pil_blender_mesh payload and return its scene dict.
+    """Read a blender_mesh (or pil_blender_mesh) payload; return its scene dict.
+
+    Both tools emit the same ``scene`` object, so the check is on that shape,
+    never on the ``tool`` name.
 
     A scene-stats file must be JSON with a ``scene`` object carrying
     ``mesh_objects`` and ``totals``. Anything else is a caller error and turned
@@ -1140,14 +1143,15 @@ def load_scene_stats(path):
     if not isinstance(scene, dict):
         raise SystemExit(
             f"scene stats {path} is missing a 'scene' object; expected the "
-            "payload emitted by scripts/pil_blender_mesh.py"
+            "payload emitted by blender-inspect's blender_mesh.py (or the "
+            "deprecated scripts/pil_blender_mesh.py)"
         )
     if not isinstance(scene.get("mesh_objects"), dict) or not isinstance(
         scene.get("totals"), dict
     ):
         raise SystemExit(
             f"scene stats {path} 'scene' object must carry 'mesh_objects' and "
-            "'totals'; upgrade pil_blender_mesh or regenerate the file"
+            "'totals'; regenerate the file with blender_mesh.py"
         )
     return scene
 
@@ -1270,14 +1274,15 @@ def main(argv=None):
     )
     parser.add_argument(
         "--scene-stats-a",
-        help="path to pil_blender_mesh JSON for image_a's source scene. When "
+        help="path to blender_mesh JSON (blender-inspect; the deprecated "
+        "pil_blender_mesh payload has the same shape) for image_a's source scene. When "
         "both --scene-stats-a and --scene-stats-b are supplied, geometry.* "
         "predicates resolve to SATISFIED/VIOLATED against the scene counts "
         "instead of the default UNMEASURABLE refusal. Single-pair mode only.",
     )
     parser.add_argument(
         "--scene-stats-b",
-        help="path to pil_blender_mesh JSON for image_b's source scene. See "
+        help="path to blender_mesh or pil_blender_mesh JSON for image_b's source scene. See "
         "--scene-stats-a.",
     )
     parser.add_argument(

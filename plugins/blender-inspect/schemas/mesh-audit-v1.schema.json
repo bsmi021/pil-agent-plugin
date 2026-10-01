@@ -1,0 +1,530 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bsmi021/pil-agent-plugin/plugins/blender-inspect/schemas/mesh-audit-v1.schema.json",
+  "title": "blender_mesh_audit payload (mesh-audit-v1)",
+  "description": "Output of blender_mesh_audit.py: per-object defect counts with world-space example locations, optional inter-object crossings, and a scene summary.",
+  "type": "object",
+  "required": [
+    "tool",
+    "version",
+    "schema",
+    "parameters",
+    "objects",
+    "pairs",
+    "summary",
+    "interpretation_limits"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "tool": {
+      "const": "blender_mesh_audit"
+    },
+    "version": {
+      "type": "string"
+    },
+    "schema": {
+      "const": "mesh-audit-v1"
+    },
+    "parameters": {
+      "type": "object",
+      "required": [
+        "blend",
+        "blender_executable",
+        "blender_version",
+        "timeout_seconds",
+        "merge_distance",
+        "max_locations",
+        "degenerate_area_tolerance",
+        "pole_valence",
+        "objects_requested",
+        "pairs_requested"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "blend": {
+          "type": "string"
+        },
+        "blender_executable": {
+          "type": "string"
+        },
+        "blender_version": {
+          "type": "string"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "merge_distance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_locations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "degenerate_area_tolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "pole_valence": {
+          "type": "integer",
+          "minimum": 3
+        },
+        "objects_requested": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "pairs_requested": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/object"
+      }
+    },
+    "pairs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pair"
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "objects_audited",
+        "objects_clean",
+        "objects_with_defects",
+        "clean",
+        "totals",
+        "pairs_checked",
+        "pairs_interpenetrating"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "objects_audited": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "objects_clean": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "objects_with_defects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "clean": {
+          "type": "boolean"
+        },
+        "totals": {
+          "$ref": "#/$defs/counts"
+        },
+        "pairs_checked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pairs_interpenetrating": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "interpretation_limits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "vec3": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "counts": {
+      "type": "object",
+      "required": [
+        "non_manifold_edges",
+        "boundary_edges",
+        "wire_edges",
+        "loose_verts",
+        "duplicate_verts",
+        "degenerate_faces",
+        "ngons",
+        "poles",
+        "inconsistent_normals",
+        "self_intersections"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/count"
+      },
+      "properties": {
+        "non_manifold_edges": {
+          "$ref": "#/$defs/count"
+        },
+        "boundary_edges": {
+          "$ref": "#/$defs/count"
+        },
+        "wire_edges": {
+          "$ref": "#/$defs/count"
+        },
+        "loose_verts": {
+          "$ref": "#/$defs/count"
+        },
+        "duplicate_verts": {
+          "$ref": "#/$defs/count"
+        },
+        "degenerate_faces": {
+          "$ref": "#/$defs/count"
+        },
+        "ngons": {
+          "$ref": "#/$defs/count"
+        },
+        "poles": {
+          "$ref": "#/$defs/count"
+        },
+        "inconsistent_normals": {
+          "$ref": "#/$defs/count"
+        },
+        "self_intersections": {
+          "$ref": "#/$defs/count"
+        }
+      }
+    },
+    "vertLocation": {
+      "type": "object",
+      "required": [
+        "index",
+        "location"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "location": {
+          "$ref": "#/$defs/vec3"
+        },
+        "merges_into": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "valence": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "edgeLocation": {
+      "type": "object",
+      "required": [
+        "index",
+        "verts",
+        "location"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "verts": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "location": {
+          "$ref": "#/$defs/vec3"
+        }
+      },
+      "additionalProperties": false
+    },
+    "faceLocation": {
+      "type": "object",
+      "required": [
+        "index",
+        "location"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "location": {
+          "$ref": "#/$defs/vec3"
+        },
+        "sides": {
+          "type": "integer",
+          "minimum": 5
+        }
+      },
+      "additionalProperties": false
+    },
+    "crossingLocation": {
+      "type": "object",
+      "required": [
+        "faces",
+        "location"
+      ],
+      "properties": {
+        "faces": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "location": {
+          "$ref": "#/$defs/vec3"
+        }
+      },
+      "additionalProperties": false
+    },
+    "object": {
+      "type": "object",
+      "required": [
+        "name",
+        "evaluated",
+        "defects",
+        "clean"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "evaluated": {
+          "type": "object",
+          "required": [
+            "verts",
+            "edges",
+            "faces"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "verts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "edges": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "faces": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "clean": {
+          "type": "boolean"
+        },
+        "defects": {
+          "type": "object",
+          "required": [
+            "non_manifold_edges",
+            "boundary_edges",
+            "wire_edges",
+            "loose_verts",
+            "duplicate_verts",
+            "degenerate_faces",
+            "ngons",
+            "poles",
+            "inconsistent_normals",
+            "self_intersections"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "non_manifold_edges": {
+              "$ref": "#/$defs/edgeDefect"
+            },
+            "boundary_edges": {
+              "$ref": "#/$defs/edgeDefect"
+            },
+            "wire_edges": {
+              "$ref": "#/$defs/edgeDefect"
+            },
+            "loose_verts": {
+              "$ref": "#/$defs/vertDefect"
+            },
+            "duplicate_verts": {
+              "$ref": "#/$defs/vertDefect"
+            },
+            "degenerate_faces": {
+              "$ref": "#/$defs/faceDefect"
+            },
+            "ngons": {
+              "$ref": "#/$defs/faceDefect"
+            },
+            "poles": {
+              "$ref": "#/$defs/vertDefect"
+            },
+            "inconsistent_normals": {
+              "$ref": "#/$defs/faceDefect"
+            },
+            "self_intersections": {
+              "$ref": "#/$defs/crossingDefect"
+            }
+          }
+        }
+      }
+    },
+    "edgeDefect": {
+      "type": "object",
+      "required": [
+        "count",
+        "locations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "$ref": "#/$defs/count"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edgeLocation"
+          }
+        }
+      }
+    },
+    "vertDefect": {
+      "type": "object",
+      "required": [
+        "count",
+        "locations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "$ref": "#/$defs/count"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/vertLocation"
+          }
+        }
+      }
+    },
+    "faceDefect": {
+      "type": "object",
+      "required": [
+        "count",
+        "locations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "$ref": "#/$defs/count"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/faceLocation"
+          }
+        }
+      }
+    },
+    "crossingDefect": {
+      "type": "object",
+      "required": [
+        "count",
+        "locations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "$ref": "#/$defs/count"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/crossingLocation"
+          }
+        }
+      }
+    },
+    "pair": {
+      "type": "object",
+      "required": [
+        "a",
+        "b",
+        "overlapping_face_pairs",
+        "interpenetrating",
+        "locations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "type": "string"
+        },
+        "b": {
+          "type": "string"
+        },
+        "overlapping_face_pairs": {
+          "$ref": "#/$defs/count"
+        },
+        "interpenetrating": {
+          "type": "boolean"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "face_a",
+              "face_b",
+              "location"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "face_a": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "face_b": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "location": {
+                "$ref": "#/$defs/vec3"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

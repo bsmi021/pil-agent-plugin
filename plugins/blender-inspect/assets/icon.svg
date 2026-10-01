@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Blender Inspect</title>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#16283F"/>
+  <path d="M32 12 50 22v20L32 52 14 42V22Z" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M14 22 32 32l18-10M32 32v20" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="44" cy="44" r="8" fill="#16283F" stroke="#67E8C8" stroke-width="3"/>
+  <path d="m50 50 6 6" stroke="#67E8C8" stroke-width="3" stroke-linecap="round"/>
+</svg>

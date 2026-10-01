@@ -33,7 +33,15 @@ import sys
 import tempfile
 from pathlib import Path
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
+
+# Deprecated: blender-inspect now ships the canonical copy. This one keeps
+# its behaviour until it is removed in the next minor release; main() says
+# so on stderr and --help says so in its epilog.
+DEPRECATION_NOTICE = (
+    "deprecated: use blender-inspect/blender_mesh.py instead; this copy is "
+    "removed in the next minor release"
+)
 
 # Default search order for the Blender executable. `--blender-executable` wins;
 # the Windows install path used to build this tool is second; then a bare
@@ -265,6 +273,7 @@ def _reject(reason):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
+        epilog=DEPRECATION_NOTICE,
         description=(
             "Read mesh statistics (poly/vert counts, material slots, bounding "
             "dimensions) from a Blender .blend file via a headless subprocess."
@@ -285,6 +294,7 @@ def main(argv=None):
         help="seconds to wait for the Blender subprocess (default 300)",
     )
     args = parser.parse_args(argv)
+    sys.stderr.write(f"pil_blender_mesh: {DEPRECATION_NOTICE}\n")
 
     blender = resolve_blender_executable(args.blender_executable)
     if blender is None:

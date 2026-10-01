@@ -1,9 +1,12 @@
 # pil-agent-plugin documentation
 
-Last updated: 2026-09-12
+Last updated: 2026-09-30
 
 ## Contents
 
+- [blender-inspect spec](blender-inspect-spec.md) — the two-plugin layout,
+  the `blender-inspect` tools, `pil_depth` concept depth, and the deprecation
+  plan for the `pil_blender_*` copies (removed in the next minor release).
 - [0.9.1 Astra skill audit](astra-skill-audit-2026-09-12.html) — concise
   activation, progressive disclosure, preserved evidence boundaries, and
   focused validation.

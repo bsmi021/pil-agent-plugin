@@ -6,7 +6,7 @@ import json
 import sys
 from pil_capabilities import catalog, invoke
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
 
 
 async def serve():

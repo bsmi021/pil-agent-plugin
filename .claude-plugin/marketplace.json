@@ -1,20 +1,20 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "pil-agent-plugin",
-  "description": "Single-plugin marketplace, so this repository can be registered and installed directly with the Claude Code CLI, which resolves installs from marketplaces rather than from directory paths.",
+  "description": "Marketplace for two plugins from this repository: pil-agent-plugin (image measurement) and blender-inspect (Blender scene depth and defect inspection), so either can be installed directly with the Claude Code CLI, which resolves installs from marketplaces rather than from directory paths.",
   "owner": {
     "name": "bsmi021",
     "url": "https://github.com/bsmi021"
   },
   "metadata": {
-    "version": "0.9.6"
+    "version": "0.10.0"
   },
   "plugins": [
     {
       "name": "pil-agent-plugin",
       "displayName": "PIL Image Measurement",
       "description": "Quantitative image measurement plus optional constrained multi-view reconstruction and Blender geometry checks.",
-      "version": "0.9.6",
+      "version": "0.10.0",
       "category": "design",
       "keywords": [
         "image-analysis",
@@ -33,6 +33,28 @@
       "license": "MIT",
       "homepage": "https://github.com/bsmi021/pil-agent-plugin",
       "source": "./"
+    },
+    {
+      "name": "blender-inspect",
+      "displayName": "Blender Inspect",
+      "description": "Depth, surface and topology inspection of Blender scenes: mesh defect audits, depth-revealing renders and depth-ordering reports read from the scene itself.",
+      "version": "0.1.0",
+      "category": "development",
+      "keywords": [
+        "blender",
+        "3d-modeling",
+        "mesh-audit",
+        "depth",
+        "rendering",
+        "topology"
+      ],
+      "author": {
+        "name": "bsmi021",
+        "url": "https://github.com/bsmi021"
+      },
+      "license": "MIT",
+      "homepage": "https://github.com/bsmi021/pil-agent-plugin/tree/main/plugins/blender-inspect",
+      "source": "./plugins/blender-inspect"
     }
   ]
 }

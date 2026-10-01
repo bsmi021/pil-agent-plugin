@@ -18,7 +18,15 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pil_blender_mesh import resolve_blender_executable
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
+
+# Deprecated: blender-inspect now ships the canonical copy. This one keeps
+# its behaviour until it is removed in the next minor release; main() says
+# so on stderr and --help says so in its epilog.
+DEPRECATION_NOTICE = (
+    "deprecated: use blender-inspect/blender_multiview_render.py instead; this copy is "
+    "removed in the next minor release"
+)
 _BEGIN = "<<<PIL_AGENT_MULTIVIEW_RENDER_BEGIN>>>"
 _END = "<<<PIL_AGENT_MULTIVIEW_RENDER_END>>>"
 
@@ -74,7 +82,7 @@ import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 BEGIN = "<<<PIL_AGENT_MULTIVIEW_RENDER_BEGIN>>>"
 END = "<<<PIL_AGENT_MULTIVIEW_RENDER_END>>>"
@@ -170,12 +178,13 @@ def main():
         forward = (center - location).normalized()
         corrected_right = forward.cross(up).normalized()
         corrected_up = corrected_right.cross(forward).normalized()
-        camera.matrix_world = (
+        # A nested tuple is read column by column; only a Matrix takes rows.
+        camera.matrix_world = Matrix((
             (corrected_right.x, corrected_up.x, -forward.x, location.x),
             (corrected_right.y, corrected_up.y, -forward.y, location.y),
             (corrected_right.z, corrected_up.z, -forward.z, location.z),
             (0.0, 0.0, 0.0, 1.0),
-        )
+        ))
         scene.camera = camera
         output = str(Path(PIL_PARAMS["output_dir"]) / (view["name"] + ".png"))
         scene.render.filepath = output
@@ -278,7 +287,9 @@ def _reject(reason):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Render arbitrary orthographic Blender views with optional locked framing.")
+    parser = argparse.ArgumentParser(
+        epilog=DEPRECATION_NOTICE,
+        description="Render arbitrary orthographic Blender views with optional locked framing.")
     parser.add_argument("blend")
     parser.add_argument("--manifest", required=True)
     parser.add_argument("--output-dir", required=True)
@@ -289,6 +300,7 @@ def main(argv=None):
     parser.add_argument("--mode", choices=("analysis", "beauty", "silhouette"), default="analysis")
     parser.add_argument("--independent-framing", action="store_true")
     args = parser.parse_args(argv)
+    sys.stderr.write(f"pil_multiview_render: {DEPRECATION_NOTICE}\n")
     blend = Path(args.blend).resolve()
     manifest_path = Path(args.manifest).resolve()
     blender = resolve_blender_executable(args.blender_executable)

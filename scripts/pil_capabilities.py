@@ -14,7 +14,7 @@ from pathlib import Path
 from pil_io import emit, read_json, write_json
 from pil_environment import tool_environment
 
-TOOL_VERSION = "0.9.6"
+TOOL_VERSION = "0.10.0"
 ROOT = Path(__file__).resolve().parent
 _LOCK = threading.RLock()
 # MCP hosts can carry their own authentication environment. The local tool
@@ -34,13 +34,23 @@ MUTATING = {
     "pil_multiview_render",
     "pil_reconstruct",
     "pil_ocr",
+    "pil_depth",
     "pil_semantic_record",
     "pil_bootstrap",
     "pil_pipeline",
     "pil_capabilities",
 }
+# Tools whose canonical copy now lives in the blender-inspect plugin. They keep
+# working unchanged until they are removed in the next minor release.
+DEPRECATED = {
+    "pil_blender_mesh": "blender-inspect/blender_mesh.py",
+    "pil_blender_fit": "blender-inspect/blender_fit.py",
+    "pil_blender_render": "blender-inspect/blender_render.py",
+    "pil_multiview_render": "blender-inspect/blender_multiview_render.py",
+}
 REQUIREMENTS = {
     "pil_embed": ["onnxruntime", "caller_model"],
+    "pil_depth": ["onnxruntime", "depth_model"],
     "pil_ocr": ["tesseract"],
     "pil_register": ["cv2"],
     "pil_multiview_prepare": ["cv2"],
@@ -144,6 +154,11 @@ def _available(dependency):
 
         path = os.environ.get("PIL_AGENT_EMBED_MODEL")
         return bool(path and Path(path).is_file())
+    if dependency == "depth_model":
+        import os
+
+        path = os.environ.get("PIL_AGENT_DEPTH_MODEL")
+        return bool(path and Path(path).is_file())
     if dependency == "blender":
         from pil_blender_mesh import resolve_blender_executable
 
@@ -205,6 +220,8 @@ def catalog():
                     "required": ["ok", "exit_code", "result", "error"],
                 },
                 "mutates": name in MUTATING,
+                "deprecated": name in DEPRECATED,
+                "replacement": DEPRECATED.get(name),
                 "requirements": {r: _available(r) for r in requirements},
                 "readiness_scope": "dependency discovery only; execution validates engines, model and input files",
                 "cost_class": "external_engine" if requirements else "local_cpu",

@@ -1,6 +1,6 @@
 [project]
 name = "pil-agent-plugin"
-version = "0.9.6"
+version = "0.10.0"
 description = "Quantitative image measurement and diffing tools for coding agents, complementing native multimodal vision"
 requires-python = ">=3.11,<3.14"
 dependencies = [
@@ -30,6 +30,13 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-# Tests import fixtures from conftest by module name.
-pythonpath = ["tests", "scripts"]
+testpaths = ["tests", "plugins/blender-inspect/tests"]
+# Tests import fixtures from conftest by module name. blender-inspect's test
+# files are test_bi_*.py and its scripts blender_*.py, so no module basename
+# collides between the two plugins.
+pythonpath = [
+    "tests",
+    "scripts",
+    "plugins/blender-inspect/tests",
+    "plugins/blender-inspect/scripts",
+]

@@ -7,7 +7,11 @@ template-mesh fitting, Blender BVH clearance, and arbitrary matched renders.
 
 It is designed to *complement* an agent's native multimodal vision, not replace it.
 
-**New in 0.9.6:** every environment setting is read by its literal name.
+**New in 0.10.0:** a second plugin, [`blender-inspect`](plugins/blender-inspect/README.md),
+now owns the Blender tools (depth, mesh-defect audit, inspection renders), and
+this plugin gains `pil_depth` for model-inferred depth of concept images. The
+`pil_blender_*` and `pil_multiview_render` copies here are deprecated.
+**0.9.6:** every environment setting is read by its literal name.
 **0.9.5:** clearer embedding-model settings and skill discovery text.
 **0.9.4:** the plugin tree no longer bundles working evidence under
 `runs/`, so it is smaller and fully readable. **0.9.3** added credential isolation
@@ -19,6 +23,24 @@ added explicit EXIF/ICC normalization, image-bound masks,
 bounded registration, source-disjoint domain calibration, native local changes,
 and discoverable CLI/MCP tools. See the complete
 [measurement workflows and usage guide](docs/measurement-workflows.md).
+
+## Two plugins
+
+This repository is a marketplace with two plugins:
+
+| Plugin | Path | Role |
+|---|---|---|
+| `pil-agent-plugin` (0.10.0) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
+| `blender-inspect` (0.1.0) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
+
+Blender work belongs to `blender-inspect`. The Blender tools that started here
+(`pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render`,
+`pil_multiview_render`) are **deprecated** in 0.10.0: flagged in docs and in
+the capability catalog, and removed in the next minor release. They behave as
+before, except that `pil_multiview_render` now places its cameras correctly
+(the same fix as `blender_multiview_render`), so its renders change.
+`pil_contract_verdict --scene-stats` accepts `blender_mesh` output as well as
+`pil_blender_mesh` output. Evals for `blender-inspect` are not shipped.
 
 ## Privacy and data sent
 
@@ -128,6 +150,11 @@ print('valid')"
     `06395063c0a5c28b1a8d4bd585261501a878c8f52d1216db6c4cbb651f7c13f1`
 
   Model weights are pinned by hash in every payload, never bundled in this repo.
+- Optional depth model for `pil_depth` (same `embedding` extra, so onnxruntime):
+  an ONNX export of **Depth Anything V2 Small**, supplied by you with
+  `PIL_AGENT_DEPTH_MODEL` (or `pil_depth --model`). See
+  [Concept-image depth](#concept-image-depth-pil_depth) for how to obtain it and
+  its licence.
   Any other model runs, but is flagged `model_not_gated` and advertises nothing.
 - Optional OCR tool: a system **tesseract** binary (e.g. `apt-get install tesseract-ocr`)
 - Optional Blender tools: a local Blender executable (tested with Blender 5.2)
@@ -149,6 +176,7 @@ py -3 .\scripts\pil_bootstrap.py check
 # Optional capabilities, selected explicitly:
 py -3 .\scripts\pil_bootstrap.py install --ocr --reconstruction
 py -3 .\scripts\pil_bootstrap.py install --embedding --model 'C:\Models\mobilenetv2-12.onnx' --preprocessing imagenet
+py -3 .\scripts\pil_bootstrap.py install --depth --depth-model 'C:\Models\depth_anything_v2_vits.onnx'
 ```
 
 ```sh
@@ -159,7 +187,9 @@ python3 ./scripts/pil_bootstrap.py install --ocr
 ```
 
 Core installs Pillow and NumPy. `--reconstruction` adds OpenCV and SciPy;
-`--embedding` adds ONNX Runtime and checks a caller-supplied model; `--ocr`
+`--embedding` adds ONNX Runtime and checks a caller-supplied model; `--depth`
+adds ONNX Runtime and checks the caller-supplied depth model (`--depth-model` or
+`$PIL_AGENT_DEPTH_MODEL`) by running `pil_depth diagnose`; `--ocr`
 checks Tesseract and installs it if needed using winget (Windows), Homebrew
 (macOS), or apt-get/dnf (Linux). Install the platform package manager separately
 if absent. Linux system installation may prompt through sudo, and Windows may
@@ -417,6 +447,58 @@ with real foreground support. When you *don't* pass it, the tools estimate
 foreground coverage anyway and flag `background_dominant` on mostly-background
 frames — treat that flag as "these scores describe the backdrop".
 
+### Concept-image depth (`pil_depth`)
+
+A concept image has no depth data. `pil_depth estimate` asks a monocular depth
+model for one, and `pil_depth compare` checks that answer against the exact depth
+of a Blender render. The output of `estimate` is **model-inferred relative inverse
+depth** (larger = nearer, arbitrary scale and shift per image): it is not metric,
+carries no scene units, and for stylised concept art it is a learned guess. The
+payload says so (`depth_kind: "relative_inverse_depth"`, `metric: false`,
+`interpretation_limits`).
+
+```bash
+uv run --extra embedding python scripts/pil_depth.py estimate concept.png \
+    --model depth_anything_v2_vits.onnx --output-dir out/ [--mask selection.json]
+uv run python scripts/pil_depth.py compare out/concept_inverse_depth.npy \
+    render_depth.npy --output-dir out/ [--mask mask.png]
+```
+
+- `estimate` writes `<stem>_inverse_depth.npy` (float32, the image's height x
+  width) and a heatmap PNG, and records the model file, its **sha256** and the
+  named preprocessing profile (`depth-anything-v2`: shorter side 518, each side a
+  multiple of 14, bicubic, ImageNet mean/std, or the model's own static input
+  size when it has one). `--mask` is a `selection-mask-v1` manifest from
+  `pil_mask.py` bound to that image; it scopes the statistics and heatmap
+  normalisation, while the `.npy` stays the full model output. Alpha is
+  composited onto black before inference.
+- `compare` takes that `.npy` and the `.npy` from
+  `blender_inspect_render --modes depth` (metric depth, NaN background). It
+  converts the render to inverse depth, fits **scale and shift by least squares
+  over the pixels valid in both** (and inside `--mask`, a binary PNG at the
+  render's size), and reports the Spearman rank correlation, AbsRel after
+  alignment, the fitted `scale`/`shift`, and a disagreement heatmap with the worst
+  grid cells as fractional `L,T,R,B` boxes. The render's grid is the target: a
+  concept map of a different size is bilinearly resampled to it only when the
+  aspect ratios agree within 1%, otherwise `compare` refuses. It cannot check
+  that the two maps show the same framing beyond that.
+- Nothing is calibrated: there is no pass/fail threshold for Spearman or AbsRel,
+  and because scale and shift are fitted away, agreement says the depth *order*
+  and shape match, not that distances are right.
+
+**Obtaining the model.** The tool needs an ONNX export of Depth Anything V2
+**Small** (the ViT-S variant, about 25M parameters). Only the **Small** model is
+released under **Apache-2.0**; the Base, Large and Giant models carry a
+CC-BY-NC-4.0 (non-commercial) licence, so do not substitute them where that
+matters. The upstream weights are published by the Depth Anything V2 authors
+(github.com/DepthAnything/Depth-Anything-V2); an ONNX export is either made from
+those weights or taken from a community export of the Small model. This
+repository does not bundle or download it, and does not pin a download URL. Read
+the licence of the file you actually obtain, then confirm it loads with
+`pil_depth diagnose --model <file>` (or `pil_bootstrap check --depth --depth-model
+<file>`): the payload gives its sha256, and `model_known` is `false` until that
+hash has been run in this repository.
+
 ## Worked example
 
 Two images, identical in layout and lightness. The only difference is that one
@@ -469,6 +551,8 @@ profiles, discovery and MCP, use the [0.9.0 workflow guide](docs/measurement-wor
 | What **text** does the image contain, machine-read? | `pil_ocr` | Tesseract lines/words with engine confidence and frame-mapped boxes; `--claims-out` feeds the semantic layer |
 | Is this a **copy** of that image, surviving crop/rotation? | `pil_embed` | pinned-model embedding `cosine_similarity`, gate-validated where dhash breaks (`--extra embedding`) |
 | **Rank** other photos by how related they are to this one | `pil_embed` | `cosine_similarity` under the CLIP model — gate-validated for ranking, never a "same place" verdict |
+| How **deep** is each part of a concept image? (model-inferred, relative) | `pil_depth estimate` | `.npy` relative inverse depth + heatmap; never metric (`--extra embedding` + a depth model) |
+| Does that concept depth **agree** with a Blender render's exact depth? | `pil_depth compare` | scale/shift-aligned `spearman`, `absrel`, and the worst-disagreement `regions` |
 | Record/verify/compare **vision claims** about an image | `pil_semantic_record` | sealed `vision_claim` records — sha256-bound, content-addressed, never a measurement |
 | Let me **see** a region at full resolution | `pil_crop` | native-resolution crop, integer upscale only |
 | Let me **point** at something a model will understand | `pil_annotate` | numbered boxes on a copy |
@@ -550,11 +634,11 @@ uv sync
 uv run pytest -v
 ```
 
-**663 tests.** Fixtures are generated synthetically in-process, so no binary test
+**972 tests** in `tests/` (plus 312 in `plugins/blender-inspect/tests`, run with `uv run pytest -q plugins/blender-inspect/tests`). Fixtures are generated synthetically in-process, so no binary test
 assets are committed.
 
 Six tests confirm results against a real reference image and **skip when it is
-absent** — so a fresh clone reports `657 passed, 6 skipped`, which is expected.
+absent** — so a fresh clone reports those six as skipped, which is expected.
 Their strongest assertions are duplicated unskipped against a synthetic
 stand-in, so a clean checkout still guards every known regression. A further
 nineteen tests across `tests/test_blender_mesh.py`, `tests/test_blender_render.py`
@@ -614,10 +698,29 @@ does not fail loudly, it quietly costs 36% of the margin.
 - [`docs/index.md`](docs/index.md) — documentation index and open items
 - [`docs/design-rationale.md`](docs/design-rationale.md) — why each metric exists,
   and what failed along the way
+- [`docs/blender-inspect-spec.md`](docs/blender-inspect-spec.md) — the
+  two-plugin design, the migration and deprecation plan, and the requirements
+  for `blender-inspect` and `pil_depth`
 - [`docs/phase2-scope.md`](docs/phase2-scope.md) — planned work: perceptual ΔE2000
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.10.0 — two-plugin layout and concept-image depth.** The repository now
+ships two plugins from one marketplace: `pil-agent-plugin` (image measurement)
+and `blender-inspect` (Blender scenes; see
+[`plugins/blender-inspect/`](plugins/blender-inspect/README.md)). The Blender
+tools `pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render` and
+`pil_multiview_render` are **deprecated**: they print a deprecation notice, are
+marked deprecated in the capability catalog, and are removed in the next minor
+release. They behave as before except `pil_multiview_render`: in Blender 5.2 it
+put every horizontal view's camera at the world origin, and it now places them
+correctly, so its renders change. Their replacements are `blender_mesh`,
+`blender_fit`, `blender_render` and `blender_multiview_render` in
+`blender-inspect`. New: `pil_depth` (Depth Anything V2 Small ONNX, caller-supplied
+and sha256-pinned) estimates relative depth of a concept image and compares it
+with a Blender render's exact depth. Skills and the comparison agent route
+Blender work to `blender-inspect`.
 
 **0.9.6 — literal environment reads.** OCR install discovery and the test
 suite read environment settings by literal name, and process tests start from

@@ -128,9 +128,16 @@ angle move them independently of mesh topology.
 
 If asked whether a model is lower-poly, has fewer vertices, or differs in
 topology, **say that a render cannot answer this** and direct the request to the
-3D scene's own mesh statistics (e.g. the Blender MCP server's object and mesh
-summary tools). Do not offer edge density as an approximation; it produces
-confident, wrong answers.
+3D scene's own data: the `blender-inspect` plugin's `blender_mesh.py` counts and
+`blender_mesh_audit.py` defects, or its `blender-model-inspector` agent for a
+full defect and depth review (when that plugin is installed). Do not offer edge
+density as an approximation; it produces confident, wrong answers.
+
+Depth is the same kind of limit. A concept image carries no depth of its own.
+`pil_depth.py estimate` gives model-inferred *relative* inverse depth, which can
+support "does the render's depth ordering agree with the concept's" through
+`pil_depth.py compare` against a depth map from `blender-inspect`, but it is
+never metric depth and never a statement about geometry.
 
 ## Constraints
 
