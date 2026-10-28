@@ -1,6 +1,6 @@
 ---
 name: blender-model-inspector
-description: Inspects a Blender .blend for mesh defects, surface problems, interpenetration and front-back order, then reports each defect with its location and evidence images. Use when asked to check, audit or review a Blender model, find imperfections, see a dent or hole that flat renders hide, or say which part is in front. Reports findings only — does not edit the scene or the model.
+description: "Use proactively to inspect a Blender .blend or 3D character/prop model for mesh defects, then report each with its location and evidence images. Use when asked to check, audit or review a model (\"is this mesh clean?\", \"check my character for holes or flipped normals\", \"audit this .blend before I export it\"), find a dent or imperfection flat renders hide, test whether one part clips through another (\"does the belt clip through the coat?\"), or say which part is in front (\"the cape or the arm?\"). Also re-audits after a fix. Reports findings only — does not edit the scene or the model."
 tools: Bash, Read, Glob, Grep
 skills: model-inspection
 ---
