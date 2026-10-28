@@ -1,6 +1,6 @@
 ---
 name: bootstrap
-description: Find the Blender install blender-inspect will use and check its version, or diagnose why a blender_* tool refused. Use for setup, a missing or wrong Blender, or before the first inspection run.
+description: "Work out which Blender the mesh inspection will use and whether it works: find the install, check its version (tested on 5.2), point the inspector at a newly installed Blender, or diagnose a refusal such as \"blender executable not found\" or \"does not resolve to a file\". Use when an inspection of a .blend refused or picked the wrong Blender, before the first inspection run, or when asked which Blender or version will be used. Not for installing Blender, general Blender scripting or usage, the inspection itself (defects, depth order), or image and Python dependency setup."
 ---
 
 # blender-inspect bootstrap
@@ -8,6 +8,8 @@ description: Find the Blender install blender-inspect will use and check its ver
 The plugin has no Python dependencies: its `scripts/blender_*.py` wrappers use
 only the standard library (Python 3.11+) and shell out to Blender. Setup is
 finding a working Blender. Resolve `<plugin-root>` two levels above this file.
+Missing image or Python packages (OCR, embeddings, SSIM, OpenCV) are a
+different plugin's bootstrap, not this one.
 
 ## Discovery order
 
@@ -61,8 +63,8 @@ Report that line verbatim; do not infer success.
 
 ## Boundaries
 
-Do not install or download Blender, and do not edit the user's PATH or
-environment without being asked. A status question does not authorise changes.
+Do not install or download Blender, or edit the user's PATH or environment,
+without being asked; a status question does not authorise changes.
 `--factory-startup` is deliberate, so user add-ons and preferences never load;
 do not remove it. Report the resolved path, the version, and whether the probe
 ran.
