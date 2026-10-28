@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-TOOL_VERSION = "0.10.0"
+TOOL_VERSION = "0.10.1"
 
 
 class SolveError(ValueError):

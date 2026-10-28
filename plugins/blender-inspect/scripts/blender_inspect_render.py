@@ -32,7 +32,7 @@ import blender_common  # noqa: E402
 from blender_multiview_render import ViewManifestError, validate_view_manifest  # noqa: E402
 
 TOOL = "blender_inspect_render"
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 SCHEMA = "inspect-render-v1"
 
 MODES = ("matcap", "depth", "normal", "ao", "object-id")

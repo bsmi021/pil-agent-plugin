@@ -47,7 +47,7 @@ from blender_inspect_render import (  # noqa: E402
 )
 
 TOOL = "blender_depth_order"
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 SCHEMA = "depth-order-v1"
 
 DEFAULT_RESOLUTION = 512

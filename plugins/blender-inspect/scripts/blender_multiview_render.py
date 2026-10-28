@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import blender_common  # noqa: E402
 
 TOOL = "blender_multiview_render"
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 
 
 class ViewManifestError(ValueError):

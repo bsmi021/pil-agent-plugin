@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import blender_common  # noqa: E402
 
 TOOL = "blender_mesh"
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 
 # Executed inside Blender's bundled Python after `blender_common`'s header,
 # which supplies `emit`. Uses only `bpy` and `mathutils`.

@@ -256,7 +256,7 @@ def test_payload_keeps_every_view_and_states_its_limits():
 
     payload = R.build_payload(Path("s.blend"), params, render)
 
-    assert payload["tool"] == "blender_inspect_render" and payload["version"] == R.TOOL_VERSION == "0.1.0"
+    assert payload["tool"] == "blender_inspect_render" and payload["version"] == R.TOOL_VERSION == "0.1.1"
     assert payload["schema"] == "inspect-render-v1"
     assert [v["name"] for v in payload["views"]] == ["a", "b"]
     assert payload["parameters"]["modes"] == ["depth"] and payload["parameters"]["lens_mm"] == 50.0

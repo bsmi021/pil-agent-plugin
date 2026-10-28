@@ -54,6 +54,13 @@ uv run pytest -q plugins/blender-inspect/tests
 
 ## Status
 
+**0.1.1 — skills trigger on plain requests.** The `model-inspection` and
+`bootstrap` skill descriptions were rewritten so the model picks them up from
+ordinary asks ("check this .blend for holes", "which Blender will this use?")
+without naming the plugin. `model-inspection` now hands inspections to the
+`blender-model-inspector` agent instead of running them in the main thread.
+Tools are unchanged apart from the version number.
+
 **0.1.0 — First release of blender-inspect.** A second plugin in the
 `pil-agent-plugin` marketplace that reads depth and defects from the Blender
 scene itself: `blender_mesh_audit` (ten mesh-defect classes with locations),
