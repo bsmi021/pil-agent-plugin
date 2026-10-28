@@ -22,6 +22,9 @@ below. Subagents cannot spawn subagents, so each agent runs its own tools.
 | Single layer: Blender mesh defects, depth order, a dent flat renders hide | `blender-inspect:blender-model-inspector`, when the `blender-inspect` plugin is installed |
 | Single layer: fitting an existing template to calibrated views | the [`multiview-reconstruction`](../multiview-reconstruction/SKILL.md) skill, and its agent (`multiview-fit-analyst`) when present |
 
+If you are the combined-evidence-analyst agent, skip this handoff and run the
+layers' tools yourself.
+
 Give the agent the file paths, the question and the evidence you need back
 (measurements, locations, evidence images). Independent single-layer agents may
 run in parallel; the main thread then combines their findings. If an agent type
