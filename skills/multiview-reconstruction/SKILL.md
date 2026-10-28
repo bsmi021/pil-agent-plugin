@@ -17,7 +17,8 @@ not in the main thread and not in a general-purpose agent. The stages produce
 long payloads, and the agent reduces them to per-view residuals, refusal states
 and the weakest view; it is read-only apart from scratch outputs. Give it the
 view names, projection matrices, correspondence files, scale anchors, the
-template `.blend` and which stages are wanted, then relay its report. The
+template `.blend` and which stages are wanted, then relay its report. If you are the
+multiview-fit-analyst agent, skip this handoff and run the stages yourself. The
 sections below are the method the agent follows; read them directly only to
 answer a question about the method.
 
