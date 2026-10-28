@@ -55,7 +55,7 @@ import blender_common  # noqa: E402
 from blender_common import resolve_blender_executable  # noqa: E402
 
 TOOL = "blender_render"
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 
 STRUCTURE_DIFF_ENV = "BLENDER_INSPECT_STRUCTURE_DIFF"
 # plugins/blender-inspect/scripts/ -> the repository root holding both plugins.

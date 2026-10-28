@@ -1,6 +1,6 @@
 ---
 name: model-inspection
-description: Find mesh defects, hidden dents, flipped faces, interpenetration and front-back order in a Blender scene from the scene's own data. Use when modeling or reviewing a .blend and flat renders cannot show depth, surface or topology problems.
+description: "Use when someone wants their own Blender model checked for problems: any .blend (a path, or already open) or a character or prop they've made. Run it before they bake, export, rig or send to Unity, and again after a fix. The request may be a plain \"is this mesh clean?\" or \"audit/sanity-check my model\", or a symptom: dark or odd shading patches, flipped or inside-out faces, holes, non-manifold or doubled geometry, a surface that looks off from some angles, a dent the viewport shows but renders don't, parts clipping through each other, or which part sits in front. It inspects the scene's real geometry and depth, so it can name which faces are bad and where, instead of guessing from screenshots. No tool name needed. Don't use for general Blender how-to (retopology technique, shortcuts, bevels, render passes, install or launch trouble), pretty renders, or fitting a model to reference images."
 ---
 
 # Blender model inspection
@@ -11,6 +11,18 @@ read it with these tools instead of judging from a screenshot. Every tool
 runs Blender headless with `--factory-startup --background`, never overwrites the
 `.blend`, and needs Blender; if it is missing or unverified, use the sibling
 [`bootstrap`](../bootstrap/SKILL.md) skill first.
+
+## Delegate the analysis
+
+Hand any inspection, audit or review request to the
+`blender-inspect:blender-model-inspector` agent through the Agent tool
+(`subagent_type: "blender-inspect:blender-model-inspector"`), not the main
+thread and not a general-purpose agent. Give it the `.blend` path, the parts or
+suspicion the user named, and any pairs that may touch. It runs the loop below
+and returns the report. It is read-only, so the main thread keeps the fix step
+(4); after a fix, delegate the re-audit to the agent again. A single quick
+count (`blender_mesh.py`) may run inline. If you are that agent, skip this
+section and run the loop yourself.
 
 Resolve `<plugin-root>` two levels above this file. Tools live at
 `<plugin-root>/scripts/blender_*.py` and run under any Python 3.11+.

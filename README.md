@@ -30,8 +30,8 @@ This repository is a marketplace with two plugins:
 
 | Plugin | Path | Role |
 |---|---|---|
-| `pil-agent-plugin` (0.10.0) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
-| `blender-inspect` (0.1.0) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
+| `pil-agent-plugin` (0.10.1) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
+| `blender-inspect` (0.1.1) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
 
 Blender work belongs to `blender-inspect`. The Blender tools that started here
 (`pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render`,
@@ -395,6 +395,15 @@ and measure **second**:
 
 It reports findings only; it never edits files.
 
+Two more agents cover the other analysis skills, and the skills hand work to
+them on their own:
+
+- `combined-evidence-analyst` (from `image-analysis`) runs the image, pixel,
+  multi-view and Blender layers itself for concept-to-model reviews and clipping
+  questions.
+- `multiview-fit-analyst` (from `multiview-reconstruction`) fits a template to
+  calibrated views and reports residuals per view.
+
 ### 3. Direct CLI
 
 Both tools emit JSON on stdout, are deterministic (repeated runs are
@@ -705,6 +714,19 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.10.1 — skills trigger on plain requests and hand analysis to specialist agents.**
+The `image-measurement`, `image-analysis`, `multiview-reconstruction` and
+`bootstrap` skill descriptions were rewritten so the model picks them up from
+ordinary asks ("does this match the mockup?", "is that clipping the geometry or
+the camera?") without naming the plugin or its tools. Analysis now goes to a
+dedicated agent instead of the general-purpose one: two-image comparisons to
+`image-comparison-analyst`, image-plus-Blender reviews to the new
+`combined-evidence-analyst`, and calibrated multi-view fits to the new
+`multiview-fit-analyst`. In a cross-skill routing eval with both plugins loaded
+(32 queries, 2 runs), the correct skill fired 58/64 times (was 50/64) and the
+correct specialist agent took the work 32/36 times (was 1/36), with no false
+triggers. Tools are unchanged apart from the version number.
 
 **0.10.0 — two-plugin layout and concept-image depth.** The repository now
 ships two plugins from one marketplace: `pil-agent-plugin` (image measurement)

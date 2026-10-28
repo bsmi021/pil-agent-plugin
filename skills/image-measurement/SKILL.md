@@ -1,6 +1,6 @@
 ---
 name: image-measurement
-description: Measure one image or compare two with reproducible pixel, colour, structure, region, OCR, embedding, and metadata tools. Use when a request needs numeric image facts or localized changes, not mesh geometry.
+description: Use this skill before answering any question about image files where eyeballing would give a guess instead of a number. Native vision can't give exact hex codes, text positions, or a reliable 'same or different', so run the measuring tools. Use it to pull exact colour values or a palette for CSS or brand work; transcribe text from a scan, receipt or screenshot and locate each line; get dimensions, alpha, EXIF or colour profile; decide whether two files are the same picture (resized, cropped, edited, duplicate) or whether a revision kept the layout and colours; and check whether a built screenshot, render or export matches its mockup or design, and where it differs. Use it for plain requests like 'do these match?', 'what are the exact colours?', 'did anything else change?', or 'read this image's text'. Don't use it to create, edit or just describe images, write image code, check Blender meshes, or compare concept art to 3D models. Two-image comparisons go to the image-comparison-analyst agent.
 ---
 
 # Image measurement
@@ -8,6 +8,23 @@ description: Measure one image or compare two with reproducible pixel, colour, s
 Use native visual inspection for meaning, objects, layout, and style. Use this
 skill when the answer needs reproducible numbers, coordinates, file facts, or a
 declared comparison verdict.
+
+## Delegate two-image comparisons
+
+When the request compares two images (does this match the reference, did the
+edit change anything else, what differs, is it the same picture, how much
+changed), hand it to the `pil-agent-plugin:image-comparison-analyst` agent with
+the Agent tool (`subagent_type: "pil-agent-plugin:image-comparison-analyst"`)
+instead of measuring in the main thread or in a general-purpose agent. The
+analyst pairs its own reading of both images with the measurements below and
+reports where they disagree, which is the part a single pass tends to miss.
+Give it both file paths, what the user wants (exact match, same style, or an
+intended change such as "warmer, keep the layout"), and whether the images show
+an object on a backdrop. Relay its verdict, confirmed differences and limits.
+
+Keep one-image lookups inline (hex values, a text read, dimensions or EXIF, a
+single hash). If you are the analyst agent, this skill is your toolbox: do the
+measuring yourself rather than delegating again.
 
 For calibrated template fitting, Blender clearance, or an image-plus-mesh
 review, route through [`image-analysis`](../image-analysis/SKILL.md) or

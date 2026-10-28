@@ -386,7 +386,7 @@ def test_payload_adds_a_summary_to_every_pair_and_states_its_limits():
 
     payload = O.build_payload(Path("s.blend"), _params(), render)
 
-    assert payload["tool"] == "blender_depth_order" and payload["version"] == O.TOOL_VERSION == "0.1.0"
+    assert payload["tool"] == "blender_depth_order" and payload["version"] == O.TOOL_VERSION == "0.1.1"
     assert payload["schema"] == "depth-order-v1"
     assert payload["views"][0]["pairs"][0]["summary"] == "Belt is 0.021 in front of Tunic in view front (overlap 34% of Belt)"
     assert payload["parameters"]["lens_mm"] == 50.0 and payload["parameters"]["views"] == ["front-left-high"]

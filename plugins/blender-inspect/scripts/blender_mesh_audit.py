@@ -44,7 +44,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import blender_common  # noqa: E402
 
 TOOL = "blender_mesh_audit"
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 SCHEMA = "mesh-audit-v1"
 
 DEFECT_CLASSES = (

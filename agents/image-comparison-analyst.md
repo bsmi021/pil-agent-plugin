@@ -1,6 +1,6 @@
 ---
 name: image-comparison-analyst
-description: Compares two images rigorously by combining its own visual reading with numeric measurement from the bundled Pillow tools, and reports where the two disagree. Use when asked whether a render, screenshot, mockup or generated image matches a reference; whether a revision kept the original's colour scheme, layout or style; or what specifically differs between two versions. Reports findings only — does not edit images or code. Does not measure 3D geometry or polygon count.
+description: Use proactively whenever the user asks to compare two images: does this screenshot, render, export or generated image match the mockup or reference; did a revision or recolour keep the original's colours, layout or style; what changed between before and after, and where; is it the same picture at another size. Pairs its own visual reading with numeric measurement and reports where the two disagree. Delegate these to it instead of comparing in the main thread. Reports findings only, never edits images or code. Cannot measure 3D geometry or polygon count.
 tools: Bash, Read, Glob, Grep
 skills: image-measurement
 ---
