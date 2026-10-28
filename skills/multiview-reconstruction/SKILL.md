@@ -1,6 +1,6 @@
 ---
 name: multiview-reconstruction
-description: Fit an existing 3D template to calibrated multi-view image constraints, probe Blender clearance, and review locked renders. Use when projections, correspondences, and scale anchors are available.
+description: Fit an existing 3D template mesh to several calibrated views, or check whether calibrated views agree. Use for asks like "fit my base mesh to these front/side/back reference photos", "I have camera matrices and landmark correspondences for four views, solve the template", "do these views agree on the model's proportions?", or "check the fitted model against every view with locked cameras". Needs calibrated views, template-to-image correspondences and scale anchors; without them, report underconstrained rather than guess. Not for building a 3D model from uncalibrated photos, generating images, or general Blender modelling.
 ---
 
 # Multi-view reconstruction
@@ -9,8 +9,20 @@ Use this skill to constrain an existing template mesh from several calibrated
 views and evaluate the result in Blender. It does not infer hidden topology or
 metric 3D geometry from images alone.
 
-Use [`image-measurement`](../image-measurement/SKILL.md) for ordinary image
-inspection or pair comparison. Use the
+## Hand the work to the fit analyst
+
+Run a solve or review through the `pil-agent-plugin:multiview-fit-analyst`
+agent (Agent tool, `subagent_type: "pil-agent-plugin:multiview-fit-analyst"`),
+not in the main thread and not in a general-purpose agent. The stages produce
+long payloads, and the agent reduces them to per-view residuals, refusal states
+and the weakest view; it is read-only apart from scratch outputs. Give it the
+view names, projection matrices, correspondence files, scale anchors, the
+template `.blend` and which stages are wanted, then relay its report. The
+sections below are the method the agent follows; read them directly only to
+answer a question about the method.
+
+For ordinary image inspection or a pair comparison use
+[`image-measurement`](../image-measurement/SKILL.md). Use the
 [`image-analysis`](../image-analysis/SKILL.md) umbrella when the request also
 needs semantic inspection, pixel comparison, or a full concept-to-model review.
 
@@ -19,12 +31,14 @@ needs semantic inspection, pixel comparison, or a full concept-to-model review.
 A solve needs named views, calibrated projection matrices, explicit template
 correspondences, and scale anchors or fixed coordinates. Do not invent hidden or
 ambiguous landmarks. If independent observation rank is insufficient or views
-conflict, preserve the tool's `UNDERDETERMINED` or `VIEW_CONFLICT` result.
+conflict, preserve the tool's `UNDERDETERMINED` or `VIEW_CONFLICT` result and
+tell the user what is missing instead of producing a best guess.
 
 Contours and landmarks are projected-appearance evidence. Probe clipping and
 body clearance from the Blender scene with `blender_fit.py` from the
-`blender-inspect` plugin; silhouettes do not prove collision state. Keep every required view in preparation, rendering,
-and review so a failure cannot disappear from the aggregate.
+`blender-inspect` plugin; silhouettes do not prove collision state. Keep every
+required view in preparation, rendering, and review so a failure cannot
+disappear from the aggregate.
 
 ## Run the needed stages
 
