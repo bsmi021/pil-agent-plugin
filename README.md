@@ -156,6 +156,8 @@ print('valid')"
   [Concept-image depth](#concept-image-depth-pil_depth) for how to obtain it and
   its licence.
   Any other model runs, but is flagged `model_not_gated` and advertises nothing.
+  It runs on CPU with the stock runtime; for GPU, swap in `onnxruntime-gpu` or
+  `onnxruntime-directml` (see [GPU depth on Windows](#gpu-depth-on-windows)).
 - Optional OCR tool: a system **tesseract** binary (e.g. `apt-get install tesseract-ocr`)
 - Optional Blender tools: a local Blender executable (tested with Blender 5.2)
 - **[uv](https://docs.astral.sh/uv/)** recommended, for a pinned environment
@@ -316,6 +318,31 @@ winget install --id Microsoft.VCRedist.2015+.x64 --exact
 uv sync --extra embedding
 & .\.venv\Scripts\python.exe .\scripts\pil_embed.py diagnose
 ```
+
+### GPU depth on Windows
+
+`pil_depth --provider auto` (the default) uses the GPU once a GPU build of ONNX
+Runtime replaces the CPU wheel. `onnxruntime-directml` works on any DirectX 12
+GPU; `onnxruntime-gpu` needs an NVIDIA GPU, and its `[cuda,cudnn]` extras bring
+CUDA and cuDNN from pip wheels, so no system CUDA install is needed. Both use the
+same `onnxruntime` import name as the CPU wheel, so swap one for the other:
+
+```powershell
+uv pip uninstall onnxruntime
+uv pip install onnxruntime-directml          # or: uv pip install "onnxruntime-gpu[cuda,cudnn]"
+& .\.venv\Scripts\python.exe .\scripts\pil_depth.py diagnose --provider auto
+```
+
+`diagnose` lists the providers it loaded (`DmlExecutionProvider` or
+`CUDAExecutionProvider` first). Run the tools with `.venv\Scripts\python.exe` or
+`uv run --no-sync` after the swap. Any `uv sync --extra embedding`, and any
+`uv run --extra embedding` without `--no-sync`, reinstalls the CPU wheel, which
+then shadows the GPU build, so the swap has to be repeated. To go back to a clean
+CPU install, run `uv sync --extra embedding --reinstall-package onnxruntime`. A
+plain `uv sync` does remove the GPU wheel, but because both wheels share the
+`onnxruntime` folder it can leave that folder broken. GPU results match CPU only
+to float tolerance; use `--provider cpu` when a result must match a CPU run
+exactly.
 
 ### Plugin registration
 
@@ -569,7 +596,7 @@ profiles, discovery and MCP, use the [0.9.0 workflow guide](docs/measurement-wor
 | What **text** does the image contain, machine-read? | `pil_ocr` | Tesseract lines/words with engine confidence and frame-mapped boxes; `--claims-out` feeds the semantic layer |
 | Is this a **copy** of that image, surviving crop/rotation? | `pil_embed` | pinned-model embedding `cosine_similarity`, gate-validated where dhash breaks (`--extra embedding`) |
 | **Rank** other photos by how related they are to this one | `pil_embed` | `cosine_similarity` under the CLIP model — gate-validated for ranking, never a "same place" verdict |
-| How **deep** is each part of a concept image? (model-inferred, relative) | `pil_depth estimate` | `.npy` relative inverse depth + heatmap; never metric (`--extra embedding` + a depth model) |
+| How **deep** is each part of a concept image? (model-inferred, relative) | `pil_depth estimate` | `.npy` relative inverse depth + heatmap; never metric (`--extra embedding` + a depth model; `--provider` for GPU) |
 | Does that concept depth **agree** with a Blender render's exact depth? | `pil_depth compare` | scale/shift-aligned `spearman`, `absrel`, and the worst-disagreement `regions` |
 | Record/verify/compare **vision claims** about an image | `pil_semantic_record` | sealed `vision_claim` records — sha256-bound, content-addressed, never a measurement |
 | Let me **see** a region at full resolution | `pil_crop` | native-resolution crop, integer upscale only |
