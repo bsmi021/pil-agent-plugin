@@ -24,7 +24,7 @@ from pil_common import (
     mask_bbox,
 )
 
-TOOL_VERSION = "0.10.1"
+TOOL_VERSION = "0.10.2"
 
 
 class PrepareError(ValueError):

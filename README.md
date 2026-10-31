@@ -30,7 +30,7 @@ This repository is a marketplace with two plugins:
 
 | Plugin | Path | Role |
 |---|---|---|
-| `pil-agent-plugin` (0.10.1) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
+| `pil-agent-plugin` (0.10.2) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
 | `blender-inspect` (0.1.1) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
 
 Blender work belongs to `blender-inspect`. The Blender tools that started here
@@ -494,6 +494,15 @@ uv run python scripts/pil_depth.py compare out/concept_inverse_depth.npy \
 - Nothing is calibrated: there is no pass/fail threshold for Spearman or AbsRel,
   and because scale and shift are fitted away, agreement says the depth *order*
   and shape match, not that distances are right.
+- **GPU.** `estimate` and `diagnose` take `--provider auto|cpu|cuda|dml`. `auto`
+  (the default) uses CUDA if the installed onnxruntime offers it, else DirectML,
+  else CPU. The stock `onnxruntime` wheel is CPU-only, so for a GPU install
+  `onnxruntime-gpu[cuda,cudnn]` (NVIDIA; CUDA and cuDNN come from pip wheels) or
+  `onnxruntime-directml` (any DirectX 12 GPU on Windows) **in place of**
+  `onnxruntime` in your environment; they share its import name, so this repo
+  ships no extra for them. An explicit `cuda` or `dml` that is not available, or
+  fails to initialise, exits 2. `engine.providers` records what actually ran. GPU
+  output matches CPU to float tolerance, not bit for bit.
 
 **Obtaining the model.** The tool needs an ONNX export of Depth Anything V2
 **Small** (the ViT-S variant, about 25M parameters). Only the **Small** model is
@@ -714,6 +723,21 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.10.2 — `pil_depth` runs on the GPU.** `pil_depth estimate` and `diagnose`
+take `--provider auto|cpu|cuda|dml`. The default, `auto`, uses CUDA when the
+installed onnxruntime offers it, else DirectML, else CPU, so a stock install
+behaves as before. An explicit `cuda` or `dml` that is unavailable or fails to
+initialise exits 2 with a one-line reason. `engine.providers` (and `providers`
+in `diagnose`) now records the providers the session actually used, and
+`provider_requested` records the choice. GPU support needs
+`onnxruntime-gpu[cuda,cudnn]` or `onnxruntime-directml` installed in place of
+`onnxruntime`; no new dependency is added. On an RTX 4070 Laptop GPU with Depth
+Anything V2 Small and a 924x518 input, one `estimate` call took about 2.9 s on
+CUDA or DirectML against 5.1 s on CPU (whole process, model load included). The
+GPU maps differ from the CPU map by at most 0.03 (CUDA) and 0.0003 (DirectML), on
+a depth range of 12.5, so compare them with a tolerance, not by hash. Other
+tools are unchanged apart from the version number.
 
 **0.10.1 — skills trigger on plain requests and hand analysis to specialist agents.**
 The `image-measurement`, `image-analysis`, `multiview-reconstruction` and
