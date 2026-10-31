@@ -20,7 +20,7 @@ onnxruntime, model or input exits 2 with a one-line reason and empty stdout.
 Usage:
     python pil_depth.py diagnose --model depth_anything_v2_vits.onnx
     python pil_depth.py estimate concept.png --model depth_anything_v2_vits.onnx \\
-        --output-dir out/ [--mask selection-mask.json]
+        --output-dir out/ [--mask selection-mask.json] [--provider auto|cpu|cuda|dml]
     python pil_depth.py compare out/concept_inverse_depth.npy render_depth.npy \\
         --output-dir out/ [--mask mask.png]
 """
@@ -43,7 +43,7 @@ from pil_common import load_rgba_straight  # noqa: E402
 from pil_io import digest, save_png  # noqa: E402
 from pil_region import RegionError, rect_to_fractional  # noqa: E402
 
-TOOL_VERSION = "0.10.1"
+TOOL_VERSION = "0.10.2"
 
 MODEL_ENV_VAR = "PIL_AGENT_DEPTH_MODEL"
 
@@ -81,6 +81,16 @@ KNOWN_MODELS = {
 }
 
 DEPTH_KIND = "relative_inverse_depth"
+
+# --provider choices -> onnxruntime execution providers. CPU stays last in every
+# list so ops a GPU provider lacks fall back to it. ``auto`` takes the first GPU
+# provider the installed onnxruntime build offers (onnxruntime-gpu for CUDA,
+# onnxruntime-directml for DirectML); the stock wheel offers neither, so auto
+# is CPU there.
+CPU_PROVIDER = "CPUExecutionProvider"
+GPU_PROVIDERS = {"cuda": "CUDAExecutionProvider", "dml": "DmlExecutionProvider"}
+AUTO_ORDER = ("cuda", "dml")
+PROVIDER_CHOICES = ("auto", "cpu", "cuda", "dml")
 
 # compare: render grid is the target; a concept map is resampled onto it only
 # when the aspect ratios agree this closely (relative difference of w/h).
@@ -193,19 +203,59 @@ def _resize_float(arr, size, resample_name="BILINEAR"):
     return np.asarray(out, dtype=np.float32)
 
 
-def _setup(model_arg):
+def select_providers(choice, available):
+    """The provider list to request for a --provider choice."""
+    if choice == "cpu":
+        return [CPU_PROVIDER]
+    if choice == "auto":
+        for key in AUTO_ORDER:
+            if GPU_PROVIDERS[key] in available:
+                return [GPU_PROVIDERS[key], CPU_PROVIDER]
+        return [CPU_PROVIDER]
+    wanted = GPU_PROVIDERS[choice]
+    if wanted not in available:
+        raise DepthError(
+            f"--provider {choice} needs {wanted}, but this onnxruntime build offers "
+            f"{', '.join(available) or 'none'}; install "
+            f"{'onnxruntime-gpu' if choice == 'cuda' else 'onnxruntime-directml'} "
+            "in place of onnxruntime, or use --provider auto or cpu"
+        )
+    return [wanted, CPU_PROVIDER]
+
+
+def _setup(model_arg, provider="auto"):
     onnxruntime = _load_runtime()
     model_path = _resolve_model(model_arg)
+    requested = select_providers(provider, list(onnxruntime.get_available_providers()))
+    if requested[0] == GPU_PROVIDERS["cuda"] and hasattr(onnxruntime, "preload_dlls"):
+        # onnxruntime-gpu >= 1.21: load CUDA/cuDNN from the nvidia-* pip wheels
+        # (the [cuda,cudnn] extras) so no system CUDA install is needed.
+        try:
+            onnxruntime.preload_dlls()
+        except Exception:  # noqa: BLE001 - session creation reports the real failure
+            pass
     try:
         options = onnxruntime.SessionOptions()
         options.intra_op_num_threads = 1
         options.inter_op_num_threads = 1
+        if requested[0] == GPU_PROVIDERS["dml"]:
+            # DirectML does not support memory-pattern optimisation.
+            options.enable_mem_pattern = False
         session = onnxruntime.InferenceSession(
-            str(model_path), sess_options=options, providers=["CPUExecutionProvider"]
+            str(model_path), sess_options=options, providers=requested
         )
     except Exception as exc:
         # ORT exposes several native exception types, not all RuntimeError.
         raise DepthError(f"cannot load ONNX model {model_path}: {exc}") from exc
+    used = list(session.get_providers())
+    if provider in GPU_PROVIDERS and requested[0] not in used:
+        # ORT drops a listed provider that fails to initialise (missing CUDA
+        # DLLs, no device) and carries on with the rest; an explicit request refuses.
+        raise DepthError(
+            f"--provider {provider}: {requested[0]} failed to initialise and "
+            f"onnxruntime fell back to {', '.join(used)}; check the GPU runtime "
+            "libraries or use --provider auto or cpu"
+        )
     static_size = _static_input_size(session)
     return onnxruntime, model_path, session, static_size
 
@@ -288,33 +338,41 @@ def _estimate_limits():
         "The heatmap is min-max normalised per image (inside the mask when "
         "one is given), so its colours are not comparable between images. The "
         ".npy is the model output unscaled.",
-        "Determinism is scoped like pil_embed: same model file, same "
-        "onnxruntime build, same machine (CPU provider, single-threaded) "
-        "reproduces the payload; cross-machine bit-identity is not claimed.",
+        "Determinism depends on the execution provider recorded under "
+        "engine.providers. On CPU alone (single-threaded) the same model file, "
+        "onnxruntime build and machine reproduce the payload. A GPU provider "
+        "(CUDA, DirectML) can differ from the CPU result, and between runs, in "
+        "the low bits of the float values, which changes the .npy sha256; "
+        "compare GPU and CPU maps with a tolerance, not by hash. Cross-machine "
+        "bit-identity is never claimed.",
     ]
 
 
 def run_diagnose(args):
-    runtime, model, session, static_size = _setup(args.model)
+    runtime, model, session, static_size = _setup(args.model, args.provider)
     digest_hex = hashlib.sha256(model.read_bytes()).hexdigest()
+    providers = list(session.get_providers())
     return {
         "tool": "pil_depth",
         "command": "diagnose",
         "version": TOOL_VERSION,
         "python": sys.executable,
         "runtime": f"onnxruntime {runtime.__version__}",
+        "provider_requested": args.provider,
+        "providers": providers,
+        "available_providers": list(runtime.get_available_providers()),
         "model_path": str(model),
         **_model_block(model, digest_hex),
         "preprocessing_profile": DEFAULT_PREPROCESSING_PROFILE,
         "input_shape": session.get_inputs()[0].shape,
         "output_shape": session.get_outputs()[0].shape,
         "static_input_size": list(static_size) if static_size else None,
-        "note": "Model loaded on CPU; no inference performed.",
+        "note": f"Model loaded on {', '.join(providers)}; no inference performed.",
     }
 
 
 def run_estimate(args):
-    onnxruntime, model_path, session, static_size = _setup(args.model)
+    onnxruntime, model_path, session, static_size = _setup(args.model, args.provider)
     spec = PREPROCESSING_PROFILES[DEFAULT_PREPROCESSING_PROFILE]
     image_path = Path(args.image)
     try:
@@ -385,7 +443,8 @@ def run_estimate(args):
         ),
         "engine": {
             "runtime": f"onnxruntime {onnxruntime.__version__}",
-            "providers": ["CPUExecutionProvider"],
+            "provider_requested": args.provider,
+            "providers": list(session.get_providers()),
             **_model_block(model_path, model_sha256),
         },
         "parameters": {
@@ -773,10 +832,16 @@ def main(argv=None):
 
     diagnose = sub.add_parser("diagnose", help="check runtime and model without an image")
     diagnose.add_argument("--model", default=None, help=f"ONNX depth model (else ${MODEL_ENV_VAR})")
+    provider_help = (
+        "onnxruntime execution provider: auto (default) = CUDA, else DirectML, "
+        "else CPU, whichever the installed build offers; cuda/dml refuse when unavailable"
+    )
+    diagnose.add_argument("--provider", choices=PROVIDER_CHOICES, default="auto", help=provider_help)
 
     estimate = sub.add_parser("estimate", help="infer relative inverse depth for one image")
     estimate.add_argument("image", help="concept image")
     estimate.add_argument("--model", default=None, help=f"ONNX depth model (default: ${MODEL_ENV_VAR})")
+    estimate.add_argument("--provider", choices=PROVIDER_CHOICES, default="auto", help=provider_help)
     estimate.add_argument(
         "--mask", default=None,
         help="selection-mask-v1 manifest from pil_mask.py bound to this image; "
