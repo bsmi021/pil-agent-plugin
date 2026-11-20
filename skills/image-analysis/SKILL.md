@@ -1,6 +1,9 @@
 ---
 name: image-analysis
-description: 'Use this skill whenever a 3D model, character, prop or Blender scene is being judged against reference pictures (concept art, a reference photo, a sheet) and the answer needs both what it looks like and what the mesh is doing. Typical asks: "does the model match the concept?", "are the proportions or silhouette off?", "is this thinner than the reference or just a different angle?", "does the helmet really sink into the head or is it just lighting?", "something looks wrong in the mesh - what?". Covers a model, render, viewport screenshot or .blend checked against reference images, and the diagnosis of whether a visible problem is appearance (colour, lighting, camera angle) or geometry (clipping, depth order, hidden dents). Not for a plain image-to-image diff or colour readout, a Blender-only mesh audit with no reference images, generating or editing images, or modeling something new.'
+description: 'Use this skill whenever a 3D model, character, prop or Blender scene is being judged against reference pictures (concept art, a reference photo, a sheet) and the answer needs both what it looks like and what the mesh is doing. Typical asks: ''does the model match the concept?'', ''are the proportions or silhouette off?'', ''is this thinner than the reference or just a different angle?'', ''does the helmet really sink into the head or is it just lighting?'', ''something looks wrong in the mesh - what?''. Covers a model, render, viewport screenshot or .blend checked against reference images, and the diagnosis of whether a visible problem is appearance (colour, lighting, camera angle) or geometry (clipping, depth order, hidden dents). Not for a plain image-to-image diff or colour readout, a Blender-only mesh audit with no reference images, generating or editing images, or modeling something new.'
+metadata:
+  author: bsmi021
+  tags: [3d-model, concept-art, blender, reference-review, geometry]
 ---
 
 # Combined image analysis

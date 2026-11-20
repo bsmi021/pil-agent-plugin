@@ -1,6 +1,9 @@
 ---
 name: model-inspection
-description: "Use when someone wants their own Blender model checked for problems: any .blend (a path, or already open) or a character or prop they've made. Run it before they bake, export, rig or send to Unity, and again after a fix. The request may be a plain \"is this mesh clean?\" or \"audit/sanity-check my model\", or a symptom: dark or odd shading patches, flipped or inside-out faces, holes, non-manifold or doubled geometry, a surface that looks off from some angles, a dent the viewport shows but renders don't, parts clipping through each other, or which part sits in front. It inspects the scene's real geometry and depth, so it can name which faces are bad and where, instead of guessing from screenshots. No tool name needed. Don't use for general Blender how-to (retopology technique, shortcuts, bevels, render passes, install or launch trouble), pretty renders, or fitting a model to reference images."
+description: 'Use when someone wants their own Blender model checked for problems: any .blend (a path, or already open) or a character or prop they''ve made. Run it before they bake, export, rig or send to Unity, and again after a fix. The request may be a plain ''is this mesh clean?'' or ''audit/sanity-check my model'', or a symptom: dark or odd shading patches, flipped or inside-out faces, holes, non-manifold or doubled geometry, a surface that looks off from some angles, a dent the viewport shows but renders don''t, parts clipping through each other, or which part sits in front. It inspects the scene''s real geometry and depth, so it can name which faces are bad and where, instead of guessing from screenshots. No tool name needed. Don''t use for general Blender how-to (retopology technique, shortcuts, bevels, render passes, install or launch trouble), pretty renders, or fitting a model to reference images.'
+metadata:
+  author: bsmi021
+  tags: [blender, mesh, audit, normals, clipping]
 ---
 
 # Blender model inspection

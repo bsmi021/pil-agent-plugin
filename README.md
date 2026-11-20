@@ -30,8 +30,8 @@ This repository is a marketplace with two plugins:
 
 | Plugin | Path | Role |
 |---|---|---|
-| `pil-agent-plugin` (0.10.1) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
-| `blender-inspect` (0.1.1) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
+| `pil-agent-plugin` (0.10.2) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
+| `blender-inspect` (0.1.2) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
 
 Blender work belongs to `blender-inspect`. The Blender tools that started here
 (`pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render`,
@@ -714,6 +714,15 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.10.2 — skill metadata cleanup.** Following a NVIDIA SkillEvaluator Tier 1
+pass, all four skills gained `metadata.author` and `metadata.tags`, and the
+double quotes in the `bootstrap`, `image-analysis` and
+`multiview-reconstruction` descriptions became single quotes so harnesses that
+escape them show clean text. Description content is otherwise unchanged; routing was not re-measured.
+Tier 1 quality scores rose 3.5 points each: `image-measurement` 86.5 → 90.0,
+`image-analysis` 84.8 → 88.2, `multiview-reconstruction` 81.0 → 84.5,
+`bootstrap` 83.0 → 86.5. Tools are unchanged apart from the version number.
 
 **0.10.1 — skills trigger on plain requests and hand analysis to specialist agents.**
 The `image-measurement`, `image-analysis`, `multiview-reconstruction` and

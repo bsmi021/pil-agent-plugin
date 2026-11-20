@@ -1,6 +1,9 @@
 ---
 name: bootstrap
-description: "Work out which Blender the mesh inspection will use and whether it works: find the install, check its version (tested on 5.2), point the inspector at a newly installed Blender, or diagnose a refusal such as \"blender executable not found\" or \"does not resolve to a file\". Use when an inspection of a .blend refused or picked the wrong Blender, before the first inspection run, or when asked which Blender or version will be used. Not for installing Blender, general Blender scripting or usage, the inspection itself (defects, depth order), or image and Python dependency setup."
+description: 'Work out which Blender the mesh inspection will use and whether it works: find the install, check its version (tested on 5.2), point the inspector at a newly installed Blender, or diagnose a refusal such as ''blender executable not found'' or ''does not resolve to a file''. Use when an inspection of a .blend refused or picked the wrong Blender, before the first inspection run, or when asked which Blender or version will be used. Not for installing Blender, general Blender scripting or usage, the inspection itself (defects, depth order), or image and Python dependency setup.'
+metadata:
+  author: bsmi021
+  tags: [blender, setup, executable, version-check]
 ---
 
 # blender-inspect bootstrap

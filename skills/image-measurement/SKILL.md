@@ -1,6 +1,9 @@
 ---
 name: image-measurement
 description: Use this skill before answering any question about image files where eyeballing would give a guess instead of a number. Native vision can't give exact hex codes, text positions, or a reliable 'same or different', so run the measuring tools. Use it to pull exact colour values or a palette for CSS or brand work; transcribe text from a scan, receipt or screenshot and locate each line; get dimensions, alpha, EXIF or colour profile; decide whether two files are the same picture (resized, cropped, edited, duplicate) or whether a revision kept the layout and colours; and check whether a built screenshot, render or export matches its mockup or design, and where it differs. Use it for plain requests like 'do these match?', 'what are the exact colours?', 'did anything else change?', or 'read this image's text'. Don't use it to create, edit or just describe images, write image code, check Blender meshes, or compare concept art to 3D models. Two-image comparisons go to the image-comparison-analyst agent.
+metadata:
+  author: bsmi021
+  tags: [image, colour, ocr, image-diff, measurement]
 ---
 
 # Image measurement
