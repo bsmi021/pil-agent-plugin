@@ -57,7 +57,9 @@ uv run pytest -q plugins/blender-inspect/tests
 **0.1.2 — skill metadata cleanup.** Following a NVIDIA SkillEvaluator Tier 1
 pass, both skills gained `metadata.author` and `metadata.tags`, and the
 double quotes in their descriptions became single quotes so harnesses that
-escape them show clean text. Description content is otherwise unchanged; routing was not re-measured.
+escape them show clean text. Description content is otherwise unchanged. In a
+live SkillEvaluator Tier 3 run with all six marketplace skills installed, both
+skills fired on every case meant for them and stayed out of the others.
 Tier 1 quality score: `model-inspection` 78.5 → 82.0, `bootstrap` 86.5 → 90.0.
 Tools are unchanged apart from the version number.
 

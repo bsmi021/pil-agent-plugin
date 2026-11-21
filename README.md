@@ -715,14 +715,20 @@ does not fail loudly, it quietly costs 36% of the margin.
 
 ## Status
 
-**0.10.2 — skill metadata cleanup.** Following a NVIDIA SkillEvaluator Tier 1
-pass, all four skills gained `metadata.author` and `metadata.tags`, and the
-double quotes in the `bootstrap`, `image-analysis` and
-`multiview-reconstruction` descriptions became single quotes so harnesses that
-escape them show clean text. Description content is otherwise unchanged; routing was not re-measured.
-Tier 1 quality scores rose 3.5 points each: `image-measurement` 86.5 → 90.0,
+**0.10.2 — SkillEvaluator pass: metadata cleanup and a camera-vs-geometry rule.**
+Following a NVIDIA SkillEvaluator run, all four skills gained
+`metadata.author` and `metadata.tags`, and the double quotes in the
+`bootstrap`, `image-analysis` and `multiview-reconstruction` descriptions
+became single quotes so harnesses that escape them show clean text. Tier 1
+quality scores rose 3.5 points each: `image-measurement` 86.5 → 90.0,
 `image-analysis` 84.8 → 88.2, `multiview-reconstruction` 81.0 → 84.5,
-`bootstrap` 83.0 → 86.5. Tools are unchanged apart from the version number.
+`bootstrap` 83.0 → 86.5. `image-analysis` now keeps a width or proportion
+difference between differently framed images as "appearance or camera" until a
+matched-camera render or mesh measurement confirms it. In live Tier 3 runs
+(Claude Code, all six marketplace skills installed together, 4 cases each),
+the right skill fired in 24 of 24 cases, and the new rule raised
+`image-analysis` lift over the no-skill baseline from +5.3 to +7.5 points.
+Descriptions are unchanged. Tools are unchanged apart from the version number.
 
 **0.10.1 — skills trigger on plain requests and hand analysis to specialist agents.**
 The `image-measurement`, `image-analysis`, `multiview-reconstruction` and

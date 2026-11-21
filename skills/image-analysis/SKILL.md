@@ -98,7 +98,11 @@ calibration, batch, and MCP workflows are in [measurement workflows](../../docs/
 ## Synthesize and report
 
 Group findings by evidence layer, then state which differences are appearance
-(colour, shading, camera, lighting) and which are geometry. For a requested
+(colour, shading, camera, lighting) and which are geometry. A width, thickness
+or proportion difference seen in images from different or unknown cameras stays
+"appearance or camera" until a locked matched-camera render or a mesh
+measurement confirms it; say which check would settle it instead of calling it
+geometry. For a requested
 match target, define the required views, metrics, thresholds, geometry
 constraints, and worst-case rule before judging it. Report the weakest required
 view, all refusal states, and the assumptions that limit each claim. The
