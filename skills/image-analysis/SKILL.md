@@ -1,6 +1,9 @@
 ---
 name: image-analysis
-description: 'Use this skill whenever a 3D model, character, prop or Blender scene is being judged against reference pictures (concept art, a reference photo, a sheet) and the answer needs both what it looks like and what the mesh is doing. Typical asks: "does the model match the concept?", "are the proportions or silhouette off?", "is this thinner than the reference or just a different angle?", "does the helmet really sink into the head or is it just lighting?", "something looks wrong in the mesh - what?". Covers a model, render, viewport screenshot or .blend checked against reference images, and the diagnosis of whether a visible problem is appearance (colour, lighting, camera angle) or geometry (clipping, depth order, hidden dents). Not for a plain image-to-image diff or colour readout, a Blender-only mesh audit with no reference images, generating or editing images, or modeling something new.'
+description: 'Use this skill whenever a 3D model, character, prop or Blender scene is being judged against reference pictures (concept art, a reference photo, a sheet) and the answer needs both what it looks like and what the mesh is doing. Typical asks: ''does the model match the concept?'', ''are the proportions or silhouette off?'', ''is this thinner than the reference or just a different angle?'', ''does the helmet really sink into the head or is it just lighting?'', ''something looks wrong in the mesh - what?''. Covers a model, render, viewport screenshot or .blend checked against reference images, and the diagnosis of whether a visible problem is appearance (colour, lighting, camera angle) or geometry (clipping, depth order, hidden dents). Not for a plain image-to-image diff or colour readout, a Blender-only mesh audit with no reference images, generating or editing images, or modeling something new.'
+metadata:
+  author: bsmi021
+  tags: [3d-model, concept-art, blender, reference-review, geometry]
 ---
 
 # Combined image analysis
@@ -95,7 +98,11 @@ calibration, batch, and MCP workflows are in [measurement workflows](../../docs/
 ## Synthesize and report
 
 Group findings by evidence layer, then state which differences are appearance
-(colour, shading, camera, lighting) and which are geometry. For a requested
+(colour, shading, camera, lighting) and which are geometry. A width, thickness
+or proportion difference seen in images from different or unknown cameras stays
+"appearance or camera" until a locked matched-camera render or a mesh
+measurement confirms it; say which check would settle it instead of calling it
+geometry. For a requested
 match target, define the required views, metrics, thresholds, geometry
 constraints, and worst-case rule before judging it. Report the weakest required
 view, all refusal states, and the assumptions that limit each claim. The

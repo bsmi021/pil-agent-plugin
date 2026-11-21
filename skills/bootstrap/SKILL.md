@@ -1,6 +1,9 @@
 ---
 name: bootstrap
-description: "Fix or check the setup behind the image tools: a missing dependency, OCR (Tesseract) not found, the embedding/ONNX model or scikit-image (SSIM) unavailable, or getting image measurement, image comparison or multi-view fitting (OpenCV, SciPy) ready on this machine. Use when an image comparison or measurement tool says something is missing or not ready, or when asked to install or check what those capabilities need. Not for Blender executable or version problems, general Python installs for unrelated projects, or the image analysis itself."
+description: 'Fix or check the setup behind the image tools: a missing dependency, OCR (Tesseract) not found, the embedding/ONNX model or scikit-image (SSIM) unavailable, or getting image measurement, image comparison or multi-view fitting (OpenCV, SciPy) ready on this machine. Use when an image comparison or measurement tool says something is missing or not ready, or when asked to install or check what those capabilities need. Not for Blender executable or version problems, general Python installs for unrelated projects, or the image analysis itself.'
+metadata:
+  author: bsmi021
+  tags: [setup, dependencies, ocr, onnx, image-tools]
 ---
 
 # PIL Agent Plugin bootstrap

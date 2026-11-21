@@ -1,6 +1,9 @@
 ---
 name: multiview-reconstruction
-description: Fit an existing 3D template mesh to several calibrated views, or check whether calibrated views agree. Use for asks like "fit my base mesh to these front/side/back reference photos", "I have camera matrices and landmark correspondences for four views, solve the template", "do these views agree on the model's proportions?", or "check the fitted model against every view with locked cameras". Needs calibrated views, template-to-image correspondences and scale anchors; without them, report underconstrained rather than guess. Not for building a 3D model from uncalibrated photos, generating images, or general Blender modelling.
+description: Fit an existing 3D template mesh to several calibrated views, or check whether calibrated views agree. Use for asks like 'fit my base mesh to these front/side/back reference photos', 'I have camera matrices and landmark correspondences for four views, solve the template', 'do these views agree on the model's proportions?', or 'check the fitted model against every view with locked cameras'. Needs calibrated views, template-to-image correspondences and scale anchors; without them, report underconstrained rather than guess. Not for building a 3D model from uncalibrated photos, generating images, or general Blender modelling.
+metadata:
+  author: bsmi021
+  tags: [3d-model, multi-view, camera-calibration, mesh-fitting]
 ---
 
 # Multi-view reconstruction

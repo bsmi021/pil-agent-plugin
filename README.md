@@ -30,8 +30,8 @@ This repository is a marketplace with two plugins:
 
 | Plugin | Path | Role |
 |---|---|---|
-| `pil-agent-plugin` (0.10.2) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
-| `blender-inspect` (0.1.1) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
+| `pil-agent-plugin` (0.10.3) | repository root | Image measurement: palettes, structure, regions, OCR, embeddings, concept-image depth (`pil_depth`), multi-view reconstruction |
+| `blender-inspect` (0.1.2) | [`plugins/blender-inspect/`](plugins/blender-inspect/README.md) | Blender scenes: mesh stats, mesh-defect audit, depth-revealing render modes, which-part-is-in-front, clearance fit, matched renders |
 
 Blender work belongs to `blender-inspect`. The Blender tools that started here
 (`pil_blender_mesh`, `pil_blender_fit`, `pil_blender_render`,
@@ -750,6 +750,21 @@ does not fail loudly, it quietly costs 36% of the margin.
   colour distance, threshold calibration, contract-driven verdicts
 
 ## Status
+
+**0.10.3 — SkillEvaluator pass: metadata cleanup and a camera-vs-geometry rule.**
+Following a NVIDIA SkillEvaluator run, all four skills gained
+`metadata.author` and `metadata.tags`, and the double quotes in the
+`bootstrap`, `image-analysis` and `multiview-reconstruction` descriptions
+became single quotes so harnesses that escape them show clean text. Tier 1
+quality scores rose 3.5 points each: `image-measurement` 86.5 → 90.0,
+`image-analysis` 84.8 → 88.2, `multiview-reconstruction` 81.0 → 84.5,
+`bootstrap` 83.0 → 86.5. `image-analysis` now keeps a width or proportion
+difference between differently framed images as "appearance or camera" until a
+matched-camera render or mesh measurement confirms it. In live Tier 3 runs
+(Claude Code, all six marketplace skills installed together, 4 cases each),
+the right skill fired in 24 of 24 cases, and the new rule raised
+`image-analysis` lift over the no-skill baseline from +5.3 to +7.5 points.
+Descriptions are unchanged. Tools are unchanged apart from the version number.
 
 **0.10.2 — `pil_depth` runs on the GPU.** `pil_depth estimate` and `diagnose`
 take `--provider auto|cpu|cuda|dml`. The default, `auto`, uses CUDA when the
