@@ -44,12 +44,20 @@ class FakeSession:
 
     last = None
 
-    def __init__(self, path, sess_options=None, providers=None, *, shape, output=None):
+    def __init__(self, path, sess_options=None, providers=None, *, shape, output=None, initialised=None):
         self.path = path
+        self.sess_options = sess_options
         self.providers = providers
         self.shape = shape
         self.output = output
+        self.initialised = initialised
         self.fed = []
+
+    def get_providers(self):
+        # like ORT: requested providers that failed to initialise are dropped
+        if self.initialised is None:
+            return list(self.providers)
+        return [p for p in self.providers if p in self.initialised]
 
     def get_inputs(self):
         return [SimpleNamespace(name="pixel_values", shape=self.shape)]
@@ -68,11 +76,13 @@ class FakeSession:
         return [ramp[None, ...]]
 
 
-def install_fake_runtime(monkeypatch, shape=("batch", 3, "height", "width"), output=None):
+def install_fake_runtime(monkeypatch, shape=("batch", 3, "height", "width"), output=None,
+                         available=("CPUExecutionProvider",), initialised=None):
     holder = {}
 
     def factory(path, sess_options=None, providers=None):
-        session = FakeSession(path, sess_options, providers, shape=list(shape), output=output)
+        session = FakeSession(path, sess_options, providers, shape=list(shape), output=output,
+                              initialised=initialised)
         holder["session"] = session
         return session
 
@@ -80,6 +90,8 @@ def install_fake_runtime(monkeypatch, shape=("batch", 3, "height", "width"), out
         __version__="0.0-test",
         SessionOptions=lambda: SimpleNamespace(intra_op_num_threads=None, inter_op_num_threads=None),
         InferenceSession=factory,
+        get_available_providers=lambda: list(available),
+        preload_dlls=lambda: holder.__setitem__("preloaded", True),
     )
     monkeypatch.setattr(pil_depth, "_load_runtime", lambda: runtime)
     return holder
@@ -321,6 +333,77 @@ def test_diagnose(monkeypatch, capsys, model):
     assert payload["static_input_size"] == [518, 518]
     assert payload["model_known"] is False and len(payload["model_sha256"]) == 64
     assert payload["preprocessing_profile"] == "depth-anything-v2"
+    assert payload["providers"] == ["CPUExecutionProvider"] and payload["provider_requested"] == "auto"
+    assert "CPUExecutionProvider" in payload["note"]
+
+
+# ------------------------------------------------------------- providers
+
+
+CUDA, DML, CPU = "CUDAExecutionProvider", "DmlExecutionProvider", "CPUExecutionProvider"
+
+
+@pytest.mark.parametrize(
+    ("available", "expected"),
+    [
+        ([CUDA, DML, CPU], [CUDA, CPU]),
+        ([DML, CUDA, CPU], [CUDA, CPU]),  # CUDA wins regardless of ORT's listing order
+        (["AzureExecutionProvider", DML, CPU], [DML, CPU]),
+        (["AzureExecutionProvider", CPU], [CPU]),
+    ],
+)
+def test_auto_provider_order(monkeypatch, capsys, model, image, tmp_path, available, expected):
+    holder = install_fake_runtime(monkeypatch, available=available)
+    code, payload, _ = run(capsys, "estimate", image, "--model", model, "--output-dir", tmp_path / "o")
+    assert code == 0
+    assert holder["session"].providers == expected
+    assert payload["engine"]["providers"] == expected
+    assert payload["engine"]["provider_requested"] == "auto"
+    # DirectML cannot run with memory patterns; other providers keep the default
+    assert hasattr(holder["session"].sess_options, "enable_mem_pattern") == (expected[0] == DML)
+    # CUDA from pip wheels needs its DLLs preloaded; nothing else does
+    assert holder.get("preloaded", False) == (expected[0] == CUDA)
+
+
+def test_cpu_provider_ignores_available_gpus(monkeypatch, capsys, model, image, tmp_path):
+    holder = install_fake_runtime(monkeypatch, available=[CUDA, DML, CPU])
+    code, payload, _ = run(capsys, "estimate", image, "--model", model, "--provider", "cpu",
+                           "--output-dir", tmp_path / "o")
+    assert code == 0 and holder["session"].providers == [CPU]
+    assert payload["engine"]["providers"] == [CPU] and payload["engine"]["provider_requested"] == "cpu"
+
+
+@pytest.mark.parametrize(("choice", "available"), [("cuda", [DML, CPU]), ("dml", [CUDA, CPU]), ("cuda", [CPU])])
+def test_explicit_unavailable_provider_is_a_refusal(monkeypatch, capsys, model, image, tmp_path,
+                                                     choice, available):
+    holder = install_fake_runtime(monkeypatch, available=available)
+    for argv in (("estimate", image, "--output-dir", tmp_path / "o"), ("diagnose",)):
+        code, payload, err = run(capsys, *argv, "--model", model, "--provider", choice)
+        assert (code, payload) == (2, None) and err.count("\n") == 1
+        assert err.startswith(f"pil_depth: --provider {choice} needs ")
+    assert "session" not in holder and not (tmp_path / "o").exists()
+
+
+def test_payload_records_providers_actually_used(monkeypatch, capsys, model, image, tmp_path):
+    # auto requests CUDA, but the provider fails to initialise and ORT runs on CPU:
+    # the payload reports what ran, not what was asked for.
+    install_fake_runtime(monkeypatch, available=[CUDA, CPU], initialised=[CPU])
+    code, payload, _ = run(capsys, "estimate", image, "--model", model, "--output-dir", tmp_path / "a")
+    assert code == 0 and payload["engine"]["providers"] == [CPU]
+    code, payload, _ = run(capsys, "diagnose", "--model", model)
+    assert code == 0 and payload["providers"] == [CPU] and payload["available_providers"] == [CUDA, CPU]
+
+    install_fake_runtime(monkeypatch, available=[DML, CPU])
+    code, payload, _ = run(capsys, "estimate", image, "--model", model, "--output-dir", tmp_path / "b")
+    assert code == 0 and payload["engine"]["providers"] == [DML, CPU]
+
+
+def test_explicit_provider_that_fails_to_initialise_is_a_refusal(monkeypatch, capsys, model, image, tmp_path):
+    install_fake_runtime(monkeypatch, available=[CUDA, CPU], initialised=[CPU])
+    code, payload, err = run(capsys, "estimate", image, "--model", model, "--provider", "cuda",
+                             "--output-dir", tmp_path / "o")
+    assert (code, payload) == (2, None) and err.count("\n") == 1
+    assert "failed to initialise" in err and not (tmp_path / "o").exists()
 
 
 # -------------------------------------------------------------- compare

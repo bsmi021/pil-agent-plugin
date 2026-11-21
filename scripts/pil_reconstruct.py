@@ -20,7 +20,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-TOOL_VERSION = "0.10.2"
+TOOL_VERSION = "0.10.3"
 SCRIPTS = Path(__file__).resolve().parent
 
 
